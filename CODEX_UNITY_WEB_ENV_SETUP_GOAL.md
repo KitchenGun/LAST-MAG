@@ -76,7 +76,8 @@ REPOSITORY_URL=https://github.com/KitchenGun/Gulag-project
 
 - 비공개 저장소를 만들고 디자이너 계정에 접근 권한을 부여한다.
 - 기본 브랜치를 `main`으로 설정한다.
-- 협업 시작 전 `main` 브랜치 보호 정책과 릴리스 태그 정책을 소유자가 정하고 적용한다. 필요한 승인 수와 첫 태그 버전은 프로젝트 의사결정 사항이므로 디자이너 Codex가 임의로 정하거나 생성하지 않는다.
+- GitHub Free private 저장소 제한으로 `main` 브랜치 보호는 적용하지 않는다. 소유자와 협업자는 `art/*`, `dev/*`, `fix/*` 브랜치 및 리뷰 절차를 수동으로 지키고, 강제 푸시·삭제·직접 병합을 하지 않는다.
+- 초기 환경 태그 `v0.1.0`은 소유자가 생성한다. 이후 릴리스 태그 정책은 소유자만 정하고 생성한다.
 - `ProjectSettings/ProjectVersion.txt`를 `6000.3.21f1`로 커밋한다.
 - URP 설정과 `com.unity.render-pipelines.universal` 의존성을 커밋한다.
 - `Packages/manifest.json`의 MCP 패키지를 다음 커밋으로 고정한다.
