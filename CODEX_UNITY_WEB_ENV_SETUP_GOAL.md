@@ -99,7 +99,7 @@ https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#4ce7dd3cc54e37e2ed6
 
 - 기존 설치를 제거하거나 다른 Unity 버전으로 프로젝트를 열지 않는다.
 - `git init`, 새 저장소 Publish, Commit, Push, Merge, 태그 생성을 하지 않는다.
-- 저장소 추적 파일을 생성·수정·삭제하지 않는다.
+- 온보딩 단계에서는 저장소 추적 파일을 생성·수정·삭제하지 않는다. PASS 후 사용자가 명시한 디자인 작업은 아래 협업 규칙에 따라 진행할 수 있다.
 - 현재 작업 트리가 더러우면 정리하거나 되돌리지 않고 변경 파일만 보고한다.
 - 개인 절대경로와 설치경로는 최종 채팅 보고에만 표시한다.
 - 최신 Unity Hub에서 폐기 예정인 headless Hub CLI를 사용하지 않는다.
@@ -107,6 +107,7 @@ https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#4ce7dd3cc54e37e2ed6
 - GitHub Desktop 로그인과 비공개 저장소 클론은 사용자가 직접 확인한다.
 - 같은 Scene, Prefab, `.asset`, Animator Controller는 담당자 확인 없이 동시에 수정하지 않는다.
 - 브랜치는 역할이 아니라 작업 성격에 따라 `art/*`, `dev/*`, `fix/*`를 사용한다.
+- 온보딩 PASS 후 명시된 디자인 작업에서는 Scene, Prefab, `.asset`을 Unity UI 또는 승인된 `unityMCP` 쓰기 도구로 수정할 수 있다. 수정 전 파일 경로·담당자를 공유하고, MCP 쓰기는 `writes` 승인을 거친다. C# 스크립트 생성, Play Mode, Web 빌드, Commit, Push, Merge, Tag는 별도 요청 전까지 범위 밖이다.
 
 ---
 
@@ -313,8 +314,8 @@ default_tools_approval_mode = "writes"
 | Editor state read | | |
 | Console read | | |
 
-## 의도적으로 실행하지 않음
-- MCP 쓰기: not_run
+## 온보딩 중 의도적으로 실행하지 않음
+- MCP 쓰기: not_run (PASS 후 명시된 디자인 에셋 작업에서는 승인 후 가능)
 - C# 스크립트 생성: not_run
 - Play Mode: not_run
 - Web 빌드: not_run

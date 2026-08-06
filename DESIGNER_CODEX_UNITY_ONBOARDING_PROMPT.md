@@ -35,13 +35,13 @@ MCP_TRANSPORT=stdio
 5. `unityMCP`가 고정 버전 `stdio`로 연결됨
 6. MCP로 Unity Editor 상태와 Console을 읽을 수 있음
 
-MCP 쓰기, 스크립트 생성, Play Mode, Web 빌드와 브라우저 검증은 수행하지 말고 `not_run`으로 보고하라.
+온보딩 중에는 MCP 쓰기, 스크립트 생성, Play Mode, Web 빌드와 브라우저 검증을 수행하지 말고 `not_run`으로 보고하라.
 
 ## 절대 규칙
 
 - `REPOSITORY_URL`의 비공개 저장소에 접근할 수 없으면 즉시 중단하고 권한 부여를 요청하라.
 - 새 프로젝트 생성, `git init`, 저장소 Publish를 하지 마라.
-- 저장소 추적 파일을 생성·수정·삭제하지 마라.
+- 온보딩 단계에서는 저장소 추적 파일을 생성·수정·삭제하지 마라. PASS 후 별도 디자인 작업이 명시되면 아래 "온보딩 완료 후 디자인 에셋 작업" 규칙을 따른다.
 - Commit, Push, Pull Request, Merge, 태그 생성을 하지 마라.
 - 기존 설치를 제거하거나 다른 Unity 버전으로 프로젝트를 열지 마라.
 - 더러운 작업 트리를 정리, reset, checkout, stash하지 마라.
@@ -186,7 +186,17 @@ Unity Editor를 프로젝트가 열린 상태로 유지하고 사용자에게 Co
 3. 읽기 도구로 Unity Editor 상태를 조회한다.
 4. 읽기 도구로 Console 로그와 Error 개수를 확인한다.
 
-도구 이름을 추측하지 말고 현재 노출된 도구만 사용하라. GameObject, Scene, Asset, C# 파일을 생성하거나 Play Mode를 실행하지 마라.
+도구 이름을 추측하지 말고 현재 노출된 도구만 사용하라. 이 온보딩 검증에서는 GameObject, Scene, Asset, C# 파일을 생성하거나 Play Mode를 실행하지 마라.
+
+## 7.1 온보딩 완료 후 디자인 에셋 작업
+
+사용자가 PASS 이후 Scene, Prefab, `.asset` 수정 작업을 명시하면 Unity UI 또는 `unityMCP` 쓰기 도구로 수정할 수 있다. 단, 다음을 모두 지켜라.
+
+- 수정 전 정확한 Scene, Prefab, `.asset`, Animator Controller 경로와 담당자를 공유한다. 같은 파일을 동시에 수정하지 않는다.
+- 작업 성격에 맞는 `art/*`, `dev/*`, `fix/*` 브랜치에서만 진행한다.
+- MCP 쓰기 도구는 Codex의 `writes` 승인 절차를 거쳐 사용한다.
+- C# 스크립트 생성, Play Mode, Web 빌드, Commit, Push, Merge, Tag는 별도 요청이 있기 전까지 수행하지 않는다.
+- 수정한 파일 목록과 Unity Console 결과를 채팅으로 보고한다.
 
 ## 8. 최종 무변경 확인
 
@@ -237,8 +247,8 @@ git lfs status
 | Editor state read | | |
 | Console read | | |
 
-## 의도적으로 실행하지 않음
-- MCP 쓰기: not_run
+## 온보딩 중 의도적으로 실행하지 않음
+- MCP 쓰기: not_run (PASS 후 명시된 디자인 에셋 작업에서는 승인 후 가능)
 - C# 스크립트 생성: not_run
 - Play Mode: not_run
 - Web 빌드: not_run
