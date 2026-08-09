@@ -1,10 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Serialization;
 
 [RequireComponent(typeof(CharacterController))]
 public sealed class FirstPersonController : MonoBehaviour
 {
+    private const int k_WeaponSlotCount = 3;
+    private static readonly string[] k_WeaponNames = { "PISTOL", "SHOTGUN", "RIFLE" };
+    private static readonly float[] k_WeaponDamage = { 30f, 12f, 15f };
+
     [SerializeField] private InputActionAsset m_inputActions;
     [SerializeField] private Camera m_playerCamera;
     [SerializeField] private GameplayHUD m_gameplayHUD;
@@ -13,9 +16,8 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
-    [FormerlySerializedAs("m_reserveAmmo")]
-    [SerializeField] private int m_ammo = 60;
-    [SerializeField] private int m_maxAmmo = 120;
+    [SerializeField] private int[] m_weaponAmmo = { 15, 6, 30 };
+    [SerializeField] private int[] m_maxWeaponAmmo = { 15, 6, 30 };
 
     private const float k_RaycastDistance = 100f;
     private const float k_MaxPitch = 80f;
@@ -29,6 +31,9 @@ public sealed class FirstPersonController : MonoBehaviour
     private InputAction m_jumpAction;
     private float m_verticalVelocity;
     private float m_pitch;
+    private int m_activeWeaponSlot = 1;
+
+    public int ActiveWeaponSlot => m_activeWeaponSlot;
 
     private void Awake()
     {
@@ -43,7 +48,13 @@ public sealed class FirstPersonController : MonoBehaviour
     private void Start()
     {
         Debug.Assert(m_gameplayHUD != null);
-        m_gameplayHUD?.RefreshWeapon(1, "PISTOL", m_ammo, true);
+        Debug.Assert(IsAmmoConfigurationValid());
+        if (!IsAmmoConfigurationValid())
+        {
+            return;
+        }
+
+        SelectWeapon(1);
     }
 
     private void OnEnable()
@@ -66,8 +77,8 @@ public sealed class FirstPersonController : MonoBehaviour
         }
 
         Debug.Assert(m_inputActions != null && m_playerCamera != null);
-        Debug.Assert(m_maxAmmo > 0 && m_ammo >= 0 && m_ammo <= m_maxAmmo);
-        if (m_inputActions == null || m_playerCamera == null)
+        Debug.Assert(IsAmmoConfigurationValid());
+        if (m_inputActions == null || m_playerCamera == null || !IsAmmoConfigurationValid())
         {
             return false;
         }
@@ -109,6 +120,8 @@ public sealed class FirstPersonController : MonoBehaviour
             UnlockCursor();
         }
 
+        HandleWeaponSelection();
+
         if (m_playerMap == null || Cursor.lockState != CursorLockMode.Locked)
         {
             return;
@@ -116,6 +129,68 @@ public sealed class FirstPersonController : MonoBehaviour
 
         HandleLook();
         HandleMovement();
+    }
+
+    private void HandleWeaponSelection()
+    {
+        if (Keyboard.current == null)
+        {
+            return;
+        }
+
+        if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            SelectWeapon(1);
+        }
+        else if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            SelectWeapon(2);
+        }
+        else if (Keyboard.current.digit3Key.wasPressedThisFrame)
+        {
+            SelectWeapon(3);
+        }
+    }
+
+    private void SelectWeapon(int slot)
+    {
+        Debug.Assert(slot >= 1 && slot <= k_WeaponSlotCount);
+        if (slot < 1 || slot > k_WeaponSlotCount)
+        {
+            return;
+        }
+
+        m_activeWeaponSlot = slot;
+        m_weaponViewmodel?.SelectSlot(slot);
+        RefreshWeaponHud();
+    }
+
+    private void RefreshWeaponHud()
+    {
+        for (int index = 0; index < k_WeaponSlotCount; index++)
+        {
+            m_gameplayHUD?.RefreshWeapon(index + 1, k_WeaponNames[index], m_weaponAmmo[index], index + 1 == m_activeWeaponSlot);
+        }
+    }
+
+    public bool TryAddAmmo(int slot, int amount)
+    {
+        if (slot < 1 || slot > k_WeaponSlotCount || amount <= 0 || !IsAmmoConfigurationValid())
+        {
+            return false;
+        }
+
+        int index = slot - 1;
+        int addedAmount = Mathf.Min(amount, m_maxWeaponAmmo[index] - m_weaponAmmo[index]);
+        if (addedAmount <= 0)
+        {
+            return false;
+        }
+
+        m_weaponAmmo[index] += addedAmount;
+        m_gameplayHUD?.RefreshWeapon(slot, k_WeaponNames[index], m_weaponAmmo[index], slot == m_activeWeaponSlot);
+        m_gameplayHUD?.ShowAmmoPickup(slot, addedAmount);
+        return true;
     }
 
     private void HandleLook()
@@ -148,20 +223,26 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        if (m_ammo == 0)
+        int activeWeaponIndex = m_activeWeaponSlot - 1;
+        if (m_weaponAmmo[activeWeaponIndex] == 0)
         {
             m_gameplayHUD?.ShowEmptyAmmoFeedback();
             return;
         }
 
-        m_ammo--;
-        m_gameplayHUD?.RefreshWeapon(1, "PISTOL", m_ammo, true);
+        m_weaponAmmo[activeWeaponIndex]--;
+        m_gameplayHUD?.RefreshWeapon(m_activeWeaponSlot, k_WeaponNames[activeWeaponIndex], m_weaponAmmo[activeWeaponIndex], true);
         m_weaponViewmodel?.PlayFireAnimation();
         Ray ray = new Ray(m_playerCamera.transform.position, m_playerCamera.transform.forward);
         float rayLength = k_RaycastDistance;
         if (Physics.Raycast(ray, out RaycastHit hit, k_RaycastDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             rayLength = hit.distance;
+            MeleeEnemy enemy = hit.collider.GetComponentInParent<MeleeEnemy>();
+            if (enemy != null)
+            {
+                enemy.ApplyDamage(k_WeaponDamage[activeWeaponIndex], m_activeWeaponSlot, enemy.IsHeadHit(hit.collider));
+            }
         }
 
         Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.red, 0.1f);
@@ -197,9 +278,34 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void OnValidate()
     {
-        m_maxAmmo = Mathf.Max(1, m_maxAmmo);
-        m_ammo = Mathf.Clamp(m_ammo, 0, m_maxAmmo);
+        if (m_weaponAmmo != null && m_maxWeaponAmmo != null && m_weaponAmmo.Length == k_WeaponSlotCount && m_maxWeaponAmmo.Length == k_WeaponSlotCount)
+        {
+            for (int index = 0; index < k_WeaponSlotCount; index++)
+            {
+                m_maxWeaponAmmo[index] = Mathf.Max(1, m_maxWeaponAmmo[index]);
+                m_weaponAmmo[index] = Mathf.Clamp(m_weaponAmmo[index], 0, m_maxWeaponAmmo[index]);
+            }
+        }
+
         m_moveSpeed = Mathf.Max(0f, m_moveSpeed);
         m_jumpHeight = Mathf.Max(0f, m_jumpHeight);
+    }
+
+    private bool IsAmmoConfigurationValid()
+    {
+        if (m_weaponAmmo == null || m_maxWeaponAmmo == null || m_weaponAmmo.Length != k_WeaponSlotCount || m_maxWeaponAmmo.Length != k_WeaponSlotCount)
+        {
+            return false;
+        }
+
+        for (int index = 0; index < k_WeaponSlotCount; index++)
+        {
+            if (m_maxWeaponAmmo[index] <= 0 || m_weaponAmmo[index] < 0 || m_weaponAmmo[index] > m_maxWeaponAmmo[index])
+            {
+                return false;
+            }
+        }
+
+        return m_activeWeaponSlot >= 1 && m_activeWeaponSlot <= k_WeaponSlotCount;
     }
 }
