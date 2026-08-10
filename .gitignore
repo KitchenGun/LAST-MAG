@@ -62,3 +62,9 @@ InitTestScene*.unity*
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers.meta
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Local archive for resources removed from Unity import scope
+/Archive/
+
+# Local generated intermediates
+/tmp/
