@@ -1,0 +1,26 @@
+Use case: precise-object-edit. Asset type: Meshy 3D reconstruction orthographic game-enemy sheet.
+
+INPUT ROLES:
+- Image 1 is the edit target. Preserve its three-panel LEFT / FRONT / TOP orthographic layout and the exact same bacteriophage enemy identity.
+- Image 2 is a silhouette constraint: the legs connect from the underside of the lower body straight down to the ground and never rise beside or above the body.
+
+PRIMARY EDIT:
+Change only the four legs and their connections under the lower base body. The current legs are too thick, rigid, and block-like. Replace them with four slender articulated biomechanical legs designed for animation.
+
+LEG DESIGN:
+- Four thin legs, symmetric, clearly much narrower than the current legs.
+- Each leg has two short rigid segments with one clearly readable compact hinge joint between them and a small joint actuator at the hip/body connection.
+- Use slim tubular or narrow faceted struts, small circular hinge housings, and a subtle compact piston/tendon linkage beside each hinge so the movement mechanism is understandable.
+- Joints must have enough visible clearance to rotate during a walking animation.
+- Small flat contact pads/feet at ground level.
+- Neutral standing pose is nearly vertical. Only a very slight outward offset is allowed for joint clearance; no long diagonal bacteriophage tail fibres, spider legs, thick columns, or oversized machinery.
+- No leg part may extend above the lower body/base plate.
+- Maintain the same ground line and overall character height.
+- TOP view must show the same four slim articulated legs at the four symmetric corners, consistent with LEFT and FRONT.
+
+STRICT INVARIANTS:
+- Preserve the capsid head exactly: same faceted geometry, size, silhouette, and panel structure.
+- Preserve the collar, central sheath/neck, lower base body, proportions, camera, panel divisions, scale, neutral gray clay material, bright background, lighting, and minimal shadows.
+- Keep UPPER as the head only and LOWER as body plus legs.
+- Do not add text, labels, arrows, colors, textures, logos, face, eyes, mouth, arms, tail, tentacles, weapons, extra limbs, or background objects.
+- True orthographic views only, no perspective and no redesign between views.

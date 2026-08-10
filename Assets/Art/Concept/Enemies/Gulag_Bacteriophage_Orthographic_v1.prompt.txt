@@ -1,0 +1,25 @@
+Use case: 3D reconstruction reference. Asset type: high-quality game enemy orthographic concept sheet. Create one original bacteriophage-inspired suicide enemy design based on the two supplied references. Image 1 defines the biological bacteriophage anatomy and especially the faceted capsid head. Image 2 defines the LEFT-view proportions and ground contact silhouette.
+
+SUBJECT AND STRUCTURE:
+- The head is the dominant design feature: a large, closed, symmetrical icosahedral bacteriophage capsid, with crisp planar triangular facets and a strong readable silhouette. It must feel like a dangerous biological explosive chamber, but do not add gore, eyes, a mouth, a face, horns, or humanoid anatomy.
+- Directly below the head is a short narrow collar and compact vertical sheath/neck.
+- Below that is a low, wide, compact lower body/base plate.
+- Use four short vertical support legs arranged symmetrically under the lower body. Every leg descends straight vertically to the same flat ground plane. Legs must not angle outward, must not rise beside or above the body, and must not resemble the long diagonal tail fibres in Image 1.
+- No arms, no human torso, no humanoid proportions, no tail, no tentacles.
+- Clear separable construction: UPPER is the capsid head only. LOWER is collar, sheath, base body, all legs and feet.
+- Keep the overall height compact and game-readable, approximately 2 meters in-world, with the head about 40 percent of total height.
+
+OUTPUT:
+- A single clean three-view orthographic sheet showing the exact same object in LEFT, FRONT, and TOP views.
+- All views identical scale, centered in equal panels, fully visible with generous margins.
+- True orthographic projection, zero perspective, no three-quarter views.
+- LEFT view must follow Image 2: faceted head, narrow vertical neck, wide low lower body, short vertical ground-connected legs.
+- FRONT view must show the four-leg symmetry and centered head/neck.
+- TOP view must show the symmetric faceted capsid and rectangular/circular compact base footprint with four legs placed symmetrically.
+
+STYLE:
+- High-quality hard-surface/biomechanical clay sculpt suitable for Meshy multi-image 3D reconstruction.
+- Neutral matte medium-gray clay material only, bright uniform light-gray background, soft even studio lighting, minimal contact shadow.
+- High geometric detail in the head facets and clean controlled bevels; lower body mechanically simple enough to rig the legs.
+- No texture maps, no color accents, no surface paint, no labels, no text, no arrows, no diagram lines, no logos, no watermark.
+- Preserve exact cross-view consistency. Do not redesign between views. No organic melting, warped geometry, floating parts, asymmetry, extra limbs, or perspective.
