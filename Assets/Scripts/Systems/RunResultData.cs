@@ -5,7 +5,17 @@ public enum PlayerDeathCause
     Unknown,
     SuicideBacteriophage,
     MeleeHumanoid,
-    RangedHumanoid
+    RangedHumanoid,
+    GrenadeSelfDamage,
+    RocketSelfDamage
+}
+
+public enum PlayerClassId
+{
+    Unknown,
+    Grenadier,
+    Engineer,
+    Sniper
 }
 
 public sealed class RunResultSnapshot
@@ -25,7 +35,10 @@ public sealed class RunResultSnapshot
         int rifleKills,
         int personalBest,
         bool isNewPersonalBest,
-        PlayerDeathCause deathCause)
+        PlayerClassId playerClass,
+        PlayerDeathCause deathCause,
+        int dmrKills = 0,
+        int skillKills = 0)
     {
         FinalScore = finalScore;
         SurvivalTime = survivalTime;
@@ -41,7 +54,10 @@ public sealed class RunResultSnapshot
         RifleKills = rifleKills;
         PersonalBest = personalBest;
         IsNewPersonalBest = isNewPersonalBest;
+        PlayerClass = playerClass;
         DeathCause = deathCause;
+        DmrKills = dmrKills;
+        SkillKills = skillKills;
     }
 
     public int FinalScore { get; }
@@ -58,7 +74,10 @@ public sealed class RunResultSnapshot
     public int RifleKills { get; }
     public int PersonalBest { get; }
     public bool IsNewPersonalBest { get; }
+    public PlayerClassId PlayerClass { get; }
     public PlayerDeathCause DeathCause { get; }
+    public int DmrKills { get; }
+    public int SkillKills { get; }
 }
 
 public static class RunResultStore
@@ -66,7 +85,20 @@ public static class RunResultStore
     private const string k_PersonalBestKey = "Gulag.PersonalBestScore";
 
     public static RunResultSnapshot Current { get; private set; }
+    public static PlayerClassId SelectedClass { get; private set; }
     public static int PersonalBest => PlayerPrefs.GetInt(k_PersonalBestKey, 0);
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetSession()
+    {
+        Current = null;
+        SelectedClass = PlayerClassId.Unknown;
+    }
+
+    public static void SelectClass(PlayerClassId playerClass)
+    {
+        SelectedClass = playerClass;
+    }
 
     public static void Set(RunResultSnapshot result)
     {
@@ -84,8 +116,36 @@ public static class RunResultStore
         PlayerPrefs.Save();
     }
 
+    public static void ClearResult()
+    {
+        Current = null;
+    }
+
     public static void Clear()
     {
         Current = null;
+        SelectedClass = PlayerClassId.Unknown;
+    }
+
+    public static string GetPlayerClassName(PlayerClassId playerClass)
+    {
+        return playerClass switch
+        {
+            PlayerClassId.Grenadier => "GRENADIER",
+            PlayerClassId.Engineer => "ENGINEER",
+            PlayerClassId.Sniper => "SNIPER",
+            _ => "UNKNOWN"
+        };
+    }
+
+    public static WeaponId GetPrimaryWeapon(PlayerClassId playerClass)
+    {
+        return playerClass switch
+        {
+            PlayerClassId.Grenadier => WeaponId.Rifle,
+            PlayerClassId.Engineer => WeaponId.Shotgun,
+            PlayerClassId.Sniper => WeaponId.DMR,
+            _ => WeaponId.Unknown
+        };
     }
 }

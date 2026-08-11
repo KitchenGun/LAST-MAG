@@ -4,6 +4,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
 public sealed class MeleeEnemy : MonoBehaviour
 {
+    private const float k_PathUpdateInterval = 0.1f;
+    private const float k_PathDestinationThresholdSqr = 0.25f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
 
@@ -25,8 +27,11 @@ public sealed class MeleeEnemy : MonoBehaviour
     private Vector3 m_lockedAttackDirection;
     private float m_hitTime;
     private float m_nextAttackTime;
+    private float m_nextPathUpdateTime;
     private bool m_isAttacking;
     private bool m_isMoving;
+    private bool m_hasPathDestination;
+    private Vector3 m_lastPathDestination;
 
     private void Awake()
     {
@@ -39,7 +44,31 @@ public sealed class MeleeEnemy : MonoBehaviour
         {
             m_animator = GetComponentInChildren<Animator>();
         }
+        if (m_animator != null)
+        {
+            m_animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+        }
         Debug.Assert(m_attackClips != null && m_attackClips.Length == 6);
+    }
+
+    private void OnEnable()
+    {
+        m_isAttacking = false;
+        m_isMoving = false;
+        m_hasPathDestination = false;
+        m_hitTime = 0f;
+        m_nextAttackTime = 0f;
+        m_nextPathUpdateTime = 0f;
+        if (m_animator != null)
+        {
+            m_animator.SetBool(s_IsMoving, false);
+            m_animator.ResetTrigger(s_Attack);
+        }
+        if (m_agent != null && m_agent.isOnNavMesh)
+        {
+            m_agent.ResetPath();
+            m_agent.isStopped = false;
+        }
     }
 
     private void Start()
@@ -92,9 +121,18 @@ public sealed class MeleeEnemy : MonoBehaviour
             return;
         }
 
+        Vector3 targetPosition = m_target.transform.position;
+        bool destinationChanged = !m_hasPathDestination
+            || (targetPosition - m_lastPathDestination).sqrMagnitude >= k_PathDestinationThresholdSqr;
+        if (Time.time >= m_nextPathUpdateTime && destinationChanged)
+        {
+            m_nextPathUpdateTime = Time.time + k_PathUpdateInterval;
+            m_lastPathDestination = targetPosition;
+            m_hasPathDestination = m_agent.SetDestination(targetPosition);
+        }
         m_agent.isStopped = false;
-        bool destinationAccepted = m_agent.SetDestination(m_target.transform.position);
-        SetMoving(destinationAccepted && m_agent.hasPath && !m_agent.pathPending && m_agent.pathStatus == NavMeshPathStatus.PathComplete && m_agent.velocity.sqrMagnitude > 0.01f);
+        SetMoving(m_hasPathDestination && m_agent.hasPath && !m_agent.pathPending
+            && m_agent.pathStatus == NavMeshPathStatus.PathComplete && m_agent.velocity.sqrMagnitude > 0.01f);
     }
 
     private void BeginAttack(Vector3 toTarget)
@@ -136,7 +174,6 @@ public sealed class MeleeEnemy : MonoBehaviour
             m_agent.isStopped = true;
         }
         SetMoving(false);
-        enabled = false;
     }
 
     private void SetMoving(bool isMoving)

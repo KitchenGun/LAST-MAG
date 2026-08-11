@@ -4,6 +4,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
 public sealed class RangedEnemy : MonoBehaviour
 {
+    private const float k_ChargePuffInterval = 0.12f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
     private static readonly Vector3[] s_SearchDirections =
@@ -24,12 +25,14 @@ public sealed class RangedEnemy : MonoBehaviour
     [SerializeField] private float m_projectileLifetime = 3f;
     [SerializeField] private Animator m_animator;
     [SerializeField] private Transform m_projectileOrigin;
+    [SerializeField] private GameObject m_chargeVisual;
 
+    private NavMeshPath m_searchPath;
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
     private PlayerHealth m_target;
-    private GameObject m_chargeVisual;
     private float m_fireTime;
+    private float m_nextChargePuffTime;
     private float m_nextAttackTime;
     private float m_nextRepositionTime;
     private int m_searchDirectionIndex;
@@ -38,6 +41,7 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private void Awake()
     {
+        m_searchPath = new NavMeshPath();
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += DisableEnemy;
         m_agent = GetComponent<NavMeshAgent>();
@@ -53,6 +57,38 @@ public sealed class RangedEnemy : MonoBehaviour
         if (m_projectileOrigin == null)
         {
             m_projectileOrigin = transform;
+        }
+        if (m_animator != null)
+        {
+            m_animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+        }
+        if (m_chargeVisual != null)
+        {
+            m_chargeVisual.SetActive(false);
+        }
+    }
+
+    private void OnEnable()
+    {
+        m_isAiming = false;
+        m_isMoving = false;
+        m_fireTime = 0f;
+        m_nextChargePuffTime = 0f;
+        m_nextAttackTime = 0f;
+        m_nextRepositionTime = 0f;
+        if (m_chargeVisual != null)
+        {
+            m_chargeVisual.SetActive(false);
+        }
+        if (m_animator != null)
+        {
+            m_animator.SetBool(s_IsMoving, false);
+            m_animator.ResetTrigger(s_Attack);
+        }
+        if (m_agent != null && m_agent.isOnNavMesh)
+        {
+            m_agent.ResetPath();
+            m_agent.isStopped = false;
         }
     }
 
@@ -114,12 +150,17 @@ public sealed class RangedEnemy : MonoBehaviour
     {
         m_isAiming = true;
         m_fireTime = Time.time + m_attackWarning;
+        m_nextChargePuffTime = Time.time;
         m_nextAttackTime = Time.time + m_attackInterval;
         if (m_animator != null && m_animator.runtimeAnimatorController != null)
         {
             m_animator.SetTrigger(s_Attack);
         }
-        m_chargeVisual = RangedProjectile.CreateChargeVisual(m_projectileOrigin, m_projectileRadius);
+        if (m_chargeVisual != null)
+        {
+            m_chargeVisual.transform.localScale = Vector3.one * m_projectileRadius * 2f;
+            m_chargeVisual.SetActive(true);
+        }
     }
 
     private void UpdateAim()
@@ -131,6 +172,11 @@ public sealed class RangedEnemy : MonoBehaviour
         }
 
         FaceTarget();
+        if (Time.time >= m_nextChargePuffTime)
+        {
+            m_health.Pool?.EmitProjectileCharge(m_projectileOrigin.position);
+            m_nextChargePuffTime = Time.time + k_ChargePuffInterval;
+        }
         if (Time.time < m_fireTime)
         {
             return;
@@ -138,17 +184,22 @@ public sealed class RangedEnemy : MonoBehaviour
 
         Vector3 origin = m_projectileOrigin.position;
         Vector3 targetPosition = m_target.transform.position + Vector3.up;
-        RangedProjectile.Create(origin, targetPosition - origin, m_projectileSpeed, m_attackDamage, m_projectileRadius, m_projectileLifetime);
-        Destroy(m_chargeVisual);
-        m_chargeVisual = null;
+        m_health.Pool?.SpawnProjectile(origin, targetPosition - origin, m_projectileSpeed,
+            m_attackDamage, m_projectileRadius, m_projectileLifetime);
+        if (m_chargeVisual != null)
+        {
+            m_chargeVisual.SetActive(false);
+        }
         m_isAiming = false;
     }
 
     private void CancelAim()
     {
         m_isAiming = false;
-        Destroy(m_chargeVisual);
-        m_chargeVisual = null;
+        if (m_chargeVisual != null)
+        {
+            m_chargeVisual.SetActive(false);
+        }
         m_nextRepositionTime = 0f;
     }
 
@@ -194,8 +245,8 @@ public sealed class RangedEnemy : MonoBehaviour
                 continue;
             }
 
-            NavMeshPath path = new();
-            if (!NavMesh.CalculatePath(transform.position, navHit.position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete)
+            if (!NavMesh.CalculatePath(transform.position, navHit.position, NavMesh.AllAreas, m_searchPath)
+                || m_searchPath.status != NavMeshPathStatus.PathComplete)
             {
                 continue;
             }
@@ -256,7 +307,6 @@ public sealed class RangedEnemy : MonoBehaviour
             m_agent.isStopped = true;
         }
         SetMoving(false);
-        enabled = false;
     }
 
     private void SetMoving(bool isMoving)

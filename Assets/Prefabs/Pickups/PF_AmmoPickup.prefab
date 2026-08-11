@@ -186,14 +186,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1b48c3727432ba49b74b856b69400d0, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::AmmoPickup
-  m_weaponSlot: 1
-  m_amount: 15
+  m_weapon: 1
+  m_amount: 5
   m_boxRenderer: {fileID: 2678922324158826634}
   m_silhouetteRenderer: {fileID: 6428161127372601945}
   m_weaponSilhouettes:
   - {fileID: 21300000, guid: 3a7347c17ae8de644a1fd94aad8c2ad9, type: 3}
   - {fileID: 21300000, guid: b74d4877985888540a0eb1e4e6597cb0, type: 3}
   - {fileID: 21300000, guid: 946d0a35ff398d547b5cd42ec62fdbef, type: 3}
+  - {fileID: 21300000, guid: 04666b39a3912d44ca14bbaabad8a839, type: 3}
   m_silhouetteMaxSize: {x: 0.7, y: 0.28}
 --- !u!1 &6520178072730181500
 GameObject:

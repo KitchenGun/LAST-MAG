@@ -1,25 +1,28 @@
-using System.Collections;
 using UnityEngine;
 
 public sealed class WeaponViewmodelController : MonoBehaviour
 {
     private const float k_ReferenceMoveSpeed = 6f;
-    private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f };
+    private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f, 0.75f };
 
     [SerializeField] private GameObject m_pistolRoot;
     [SerializeField] private GameObject m_shotgunRoot;
     [SerializeField] private GameObject m_rifleRoot;
+    [SerializeField] private GameObject m_dmrRoot;
     [SerializeField] private MuzzleFlashEffect m_pistolMuzzleFlash;
     [SerializeField] private MuzzleFlashEffect m_shotgunMuzzleFlash;
     [SerializeField] private MuzzleFlashEffect m_rifleMuzzleFlash;
+    [SerializeField] private MuzzleFlashEffect m_dmrMuzzleFlash;
+    [SerializeField] private DmrTracerEmitter m_dmrTracer;
     [Header("Weapon Audio")]
     [SerializeField] private AudioSource m_weaponAudioSource;
     [SerializeField] private AudioClip[] m_pistolFireClips;
     [SerializeField] private AudioClip[] m_shotgunFireClips;
     [SerializeField] private AudioClip[] m_rifleFireClips;
+    [SerializeField] private AudioClip[] m_dmrFireClips;
     [SerializeField] private AudioClip[] m_emptyAmmoClips;
     [SerializeField] private FootstepAudio m_playerFootsteps;
-    [SerializeField] private float[] m_weaponFireVolumes = { 1f, 1f, 1f };
+    [SerializeField] private float[] m_weaponFireVolumes = { 1f, 1f, 1f, 1f };
     [SerializeField] private float m_emptyAmmoVolume = 0.7f;
     [SerializeField] private float m_recoilDistance = 0.06f;
     [SerializeField] private float m_recoilDuration = 0.1f;
@@ -33,32 +36,35 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     [SerializeField] private float m_bobFrequency = 1.6f;
     [SerializeField] private float m_movementLerpSpeed = 10f;
 
-    private readonly Vector3[] m_rootRestPositions = new Vector3[3];
-    private readonly Quaternion[] m_rootRestRotations = new Quaternion[3];
-    private readonly int[] m_lastFireClipIndices = { -1, -1, -1 };
+    private readonly Vector3[] m_rootRestPositions = new Vector3[4];
+    private readonly Quaternion[] m_rootRestRotations = new Quaternion[4];
+    private readonly int[] m_lastFireClipIndices = { -1, -1, -1, -1 };
     private CharacterController m_characterController;
-    private Coroutine m_fireAnimation;
     private Vector3 m_movementPositionOffset;
     private Vector3 m_movementRotationOffset;
     private float m_bobPhase;
     private float m_fireRecoilAmount;
-    private int m_activeSlot;
+    private WeaponId m_activeWeapon;
     private int m_lastEmptyAmmoClipIndex = -1;
     private bool m_waitingForLanding;
+    private bool m_fireAnimationActive;
+    private float m_fireAnimationStartedAt;
 
     private void Awake()
     {
         m_characterController = GetComponentInParent<CharacterController>();
         ConfigureAudioSource();
         Debug.Assert(IsFireAudioConfigurationValid(), "Each weapon needs 2 or 3 assigned fire clips.");
-        Debug.Assert(m_characterController != null);
+        Debug.Assert(m_characterController != null && m_dmrRoot != null && m_weaponAudioSource != null,
+            "PF_Player viewmodel references are incomplete.");
         CacheRestTransforms();
-        SelectSlot(1);
+        SelectWeapon(WeaponId.Pistol);
     }
 
     private void LateUpdate()
     {
         UpdateMovementPose();
+        UpdateFireAnimation();
         ApplyActivePose();
     }
 
@@ -75,9 +81,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         }
     }
 
-    public void SelectSlot(int slot)
+    public void SelectWeapon(WeaponId weapon)
     {
-        if (slot < 1 || slot > 3)
+        if (weapon < WeaponId.Pistol || weapon > WeaponId.DMR)
         {
             return;
         }
@@ -86,10 +92,11 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         StopAllMuzzleEffects();
         ResetMovementPose();
         RestoreRestPose();
-        m_activeSlot = slot;
-        SetActive(m_pistolRoot, slot == 1);
-        SetActive(m_shotgunRoot, slot == 2);
-        SetActive(m_rifleRoot, slot == 3);
+        m_activeWeapon = weapon;
+        SetActive(m_pistolRoot, weapon == WeaponId.Pistol);
+        SetActive(m_shotgunRoot, weapon == WeaponId.Shotgun);
+        SetActive(m_rifleRoot, weapon == WeaponId.Rifle);
+        SetActive(m_dmrRoot, weapon == WeaponId.DMR);
     }
 
     public void PlayFireFeedback()
@@ -102,8 +109,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
         StopFireAnimation();
         GetActiveMuzzleFlash()?.Play();
-        PlayRandomClip(GetActiveFireClips(), ref m_lastFireClipIndices[m_activeSlot - 1], GetActiveFireVolume());
-        m_fireAnimation = StartCoroutine(PlayFireAnimationRoutine());
+        PlayRandomClip(GetActiveFireClips(), ref m_lastFireClipIndices[(int)m_activeWeapon - 1], GetActiveFireVolume());
+        m_fireAnimationStartedAt = Time.time;
+        m_fireAnimationActive = true;
     }
 
     public void PlayEmptyAmmoFeedback()
@@ -111,14 +119,38 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         PlayRandomClip(m_emptyAmmoClips, ref m_lastEmptyAmmoClipIndex, m_emptyAmmoVolume);
     }
 
+    public void PlayDmrTracer(Vector3 endPoint)
+    {
+        if (m_activeWeapon == WeaponId.DMR)
+        {
+            m_dmrTracer?.EmitTo(endPoint);
+        }
+    }
+
+    public void SetSkillArmed(bool isArmed)
+    {
+        if (!isArmed)
+        {
+            SelectWeapon(m_activeWeapon);
+            return;
+        }
+
+        StopFireAnimation();
+        StopAllMuzzleEffects();
+        SetActive(m_pistolRoot, false);
+        SetActive(m_shotgunRoot, false);
+        SetActive(m_rifleRoot, false);
+        SetActive(m_dmrRoot, false);
+    }
+
     [ContextMenu("Run Viewmodel Self Check")]
     private void RunViewmodelSelfCheck()
     {
-        SelectSlot(0);
-        Debug.Assert(m_activeSlot >= 1 && m_activeSlot <= 3);
-        SelectSlot(2);
-        Debug.Assert(m_activeSlot == 2);
-        Debug.Assert(m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 3);
+        SelectWeapon(WeaponId.Unknown);
+        Debug.Assert(m_activeWeapon >= WeaponId.Pistol && m_activeWeapon <= WeaponId.DMR);
+        SelectWeapon(WeaponId.Shotgun);
+        Debug.Assert(m_activeWeapon == WeaponId.Shotgun);
+        Debug.Assert(m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 4);
         Debug.Assert(IsFireAudioConfigurationValid());
         Debug.Assert(s_MovementScales[0] > s_MovementScales[2] && s_MovementScales[2] > s_MovementScales[1]);
         Debug.Assert(CrossedPhase(1f, 2f, Mathf.PI * 0.5f));
@@ -131,7 +163,8 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     {
         return HasTwoOrThreeClips(m_pistolFireClips)
             && HasTwoOrThreeClips(m_shotgunFireClips)
-            && HasTwoOrThreeClips(m_rifleFireClips);
+            && HasTwoOrThreeClips(m_rifleFireClips)
+            && HasTwoOrThreeClips(m_dmrFireClips);
     }
 
     private static bool HasTwoOrThreeClips(AudioClip[] clips)
@@ -156,12 +189,8 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     {
         if (m_weaponAudioSource == null)
         {
-            m_weaponAudioSource = GetComponent<AudioSource>();
-        }
-
-        if (m_weaponAudioSource == null)
-        {
-            m_weaponAudioSource = gameObject.AddComponent<AudioSource>();
+            Debug.LogError("PF_Player MainCamera is missing its weapon AudioSource.");
+            return;
         }
 
         m_weaponAudioSource.playOnAwake = false;
@@ -171,19 +200,20 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private AudioClip[] GetActiveFireClips()
     {
-        return m_activeSlot switch
+        return m_activeWeapon switch
         {
-            1 => m_pistolFireClips,
-            2 => m_shotgunFireClips,
-            3 => m_rifleFireClips,
+            WeaponId.Pistol => m_pistolFireClips,
+            WeaponId.Shotgun => m_shotgunFireClips,
+            WeaponId.Rifle => m_rifleFireClips,
+            WeaponId.DMR => m_dmrFireClips,
             _ => null
         };
     }
 
     private float GetActiveFireVolume()
     {
-        return m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 3
-            ? m_weaponFireVolumes[m_activeSlot - 1]
+        return m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 4
+            ? m_weaponFireVolumes[(int)m_activeWeapon - 1]
             : 1f;
     }
 
@@ -225,9 +255,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private void OnValidate()
     {
-        if (m_weaponFireVolumes == null || m_weaponFireVolumes.Length != 3)
+        if (m_weaponFireVolumes == null || m_weaponFireVolumes.Length != 4)
         {
-            m_weaponFireVolumes = new[] { 1f, 1f, 1f };
+            m_weaponFireVolumes = new[] { 1f, 1f, 1f, 1f };
         }
 
         for (int index = 0; index < m_weaponFireVolumes.Length; index++)
@@ -254,24 +284,27 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         }
     }
 
-    private IEnumerator PlayFireAnimationRoutine()
+    private void UpdateFireAnimation()
     {
-        float halfDuration = m_recoilDuration * 0.5f;
+        if (!m_fireAnimationActive)
+        {
+            return;
+        }
 
-        for (float elapsed = 0f; elapsed < halfDuration; elapsed += Time.deltaTime)
+        float halfDuration = m_recoilDuration * 0.5f;
+        float elapsed = Time.time - m_fireAnimationStartedAt;
+        if (elapsed < halfDuration)
         {
             m_fireRecoilAmount = Mathf.Clamp01(elapsed / halfDuration);
-            yield return null;
+            return;
         }
-
-        for (float elapsed = 0f; elapsed < halfDuration; elapsed += Time.deltaTime)
+        if (elapsed < m_recoilDuration)
         {
-            m_fireRecoilAmount = 1f - Mathf.Clamp01(elapsed / halfDuration);
-            yield return null;
+            m_fireRecoilAmount = 1f - Mathf.Clamp01((elapsed - halfDuration) / halfDuration);
+            return;
         }
-
         m_fireRecoilAmount = 0f;
-        m_fireAnimation = null;
+        m_fireAnimationActive = false;
     }
 
     private void UpdateMovementPose()
@@ -363,10 +396,10 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             return;
         }
 
-        root.localPosition = GetRootRestPosition(m_activeSlot)
+        root.localPosition = GetRootRestPosition(m_activeWeapon)
             + m_movementPositionOffset
             + Vector3.back * (m_recoilDistance * m_fireRecoilAmount);
-        root.localRotation = Quaternion.Euler(m_movementRotationOffset) * GetRootRestRotation(m_activeSlot);
+        root.localRotation = Quaternion.Euler(m_movementRotationOffset) * GetRootRestRotation(m_activeWeapon);
     }
 
     private void CacheRestTransforms()
@@ -374,9 +407,11 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         m_rootRestPositions[0] = GetLocalPosition(m_pistolRoot);
         m_rootRestPositions[1] = GetLocalPosition(m_shotgunRoot);
         m_rootRestPositions[2] = GetLocalPosition(m_rifleRoot);
+        m_rootRestPositions[3] = GetLocalPosition(m_dmrRoot);
         m_rootRestRotations[0] = GetLocalRotation(m_pistolRoot);
         m_rootRestRotations[1] = GetLocalRotation(m_shotgunRoot);
         m_rootRestRotations[2] = GetLocalRotation(m_rifleRoot);
+        m_rootRestRotations[3] = GetLocalRotation(m_dmrRoot);
     }
 
     private void RestoreRestPose()
@@ -384,16 +419,12 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         RestoreRootTransform(m_pistolRoot, 1);
         RestoreRootTransform(m_shotgunRoot, 2);
         RestoreRootTransform(m_rifleRoot, 3);
+        RestoreRootTransform(m_dmrRoot, 4);
     }
 
     private void StopFireAnimation()
     {
-        if (m_fireAnimation != null)
-        {
-            StopCoroutine(m_fireAnimation);
-            m_fireAnimation = null;
-        }
-
+        m_fireAnimationActive = false;
         m_fireRecoilAmount = 0f;
     }
 
@@ -406,22 +437,24 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private Transform GetActiveRoot()
     {
-        return m_activeSlot switch
+        return m_activeWeapon switch
         {
-            1 => m_pistolRoot != null ? m_pistolRoot.transform : null,
-            2 => m_shotgunRoot != null ? m_shotgunRoot.transform : null,
-            3 => m_rifleRoot != null ? m_rifleRoot.transform : null,
+            WeaponId.Pistol => m_pistolRoot != null ? m_pistolRoot.transform : null,
+            WeaponId.Shotgun => m_shotgunRoot != null ? m_shotgunRoot.transform : null,
+            WeaponId.Rifle => m_rifleRoot != null ? m_rifleRoot.transform : null,
+            WeaponId.DMR => m_dmrRoot != null ? m_dmrRoot.transform : null,
             _ => null
         };
     }
 
     private MuzzleFlashEffect GetActiveMuzzleFlash()
     {
-        return m_activeSlot switch
+        return m_activeWeapon switch
         {
-            1 => m_pistolMuzzleFlash,
-            2 => m_shotgunMuzzleFlash,
-            3 => m_rifleMuzzleFlash,
+            WeaponId.Pistol => m_pistolMuzzleFlash,
+            WeaponId.Shotgun => m_shotgunMuzzleFlash,
+            WeaponId.Rifle => m_rifleMuzzleFlash,
+            WeaponId.DMR => m_dmrMuzzleFlash,
             _ => null
         };
     }
@@ -431,29 +464,35 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         m_pistolMuzzleFlash?.StopEffect();
         m_shotgunMuzzleFlash?.StopEffect();
         m_rifleMuzzleFlash?.StopEffect();
+        m_dmrMuzzleFlash?.StopEffect();
+        m_dmrTracer?.StopEffect();
     }
 
-    private Vector3 GetRootRestPosition(int slot)
+    private Vector3 GetRootRestPosition(WeaponId weapon)
     {
-        return slot >= 1 && slot <= 3 ? m_rootRestPositions[slot - 1] : Vector3.zero;
+        int index = (int)weapon - 1;
+        return index >= 0 && index < m_rootRestPositions.Length ? m_rootRestPositions[index] : Vector3.zero;
     }
 
-    private Quaternion GetRootRestRotation(int slot)
+    private Quaternion GetRootRestRotation(WeaponId weapon)
     {
-        return slot >= 1 && slot <= 3 ? m_rootRestRotations[slot - 1] : Quaternion.identity;
+        int index = (int)weapon - 1;
+        return index >= 0 && index < m_rootRestRotations.Length ? m_rootRestRotations[index] : Quaternion.identity;
     }
 
     private float GetMovementScale()
     {
-        return m_activeSlot >= 1 && m_activeSlot <= 3 ? s_MovementScales[m_activeSlot - 1] : 0f;
+        int index = (int)m_activeWeapon - 1;
+        return index >= 0 && index < s_MovementScales.Length ? s_MovementScales[index] : 0f;
     }
 
     private void RestoreRootTransform(GameObject root, int slot)
     {
         if (root != null)
         {
-            root.transform.localPosition = GetRootRestPosition(slot);
-            root.transform.localRotation = GetRootRestRotation(slot);
+            WeaponId weapon = (WeaponId)slot;
+            root.transform.localPosition = GetRootRestPosition(weapon);
+            root.transform.localRotation = GetRootRestRotation(weapon);
         }
     }
 
@@ -474,4 +513,5 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             root.SetActive(isActive);
         }
     }
+
 }

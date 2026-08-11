@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public sealed class EnemyHealth : MonoBehaviour
 {
+    private const float k_AmmoDropChance = 0.3f;
     private static readonly int s_Hit = Animator.StringToHash("Hit");
     private static readonly int s_Die = Animator.StringToHash("Die");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
@@ -22,12 +24,17 @@ public sealed class EnemyHealth : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float m_voiceVolume = 1f;
 
     private Collider m_headHitbox;
+    private Collider[] m_colliders;
+    private bool[] m_colliderDefaults;
     private bool m_hasDroppedAmmo;
+    private GameplayObjectPool m_pool;
 
     public event Action<KillContext> ZeroHealthReached;
     public float CurrentHealth { get; private set; }
     public bool IsDisabled { get; private set; }
+    public bool IsPooled { get; private set; }
     public EnemyType Type { get; private set; }
+    public GameplayObjectPool Pool => m_pool;
 
     private void Awake()
     {
@@ -38,6 +45,31 @@ public sealed class EnemyHealth : MonoBehaviour
             m_characterRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
         }
         CreateHeadHitbox();
+        CacheColliders();
+        if (m_animator == null)
+        {
+            m_animator = GetComponentInChildren<Animator>();
+        }
+        if (m_animator != null && Type != EnemyType.Suicide)
+        {
+            m_animator.cullingMode = AnimatorCullingMode.CullUpdateTransforms;
+        }
+    }
+
+    public void PrepareForSpawn(Vector3 position, Quaternion rotation, GameplayObjectPool pool)
+    {
+        StopAllCoroutines();
+        transform.SetPositionAndRotation(position, rotation);
+        m_pool = pool;
+        CurrentHealth = m_maxHealth;
+        IsDisabled = false;
+        IsPooled = false;
+        m_hasDroppedAmmo = false;
+        RestoreColliders();
+        if (m_animator != null && m_animator.runtimeAnimatorController != null)
+        {
+            m_animator.Rebind();
+        }
     }
 
     public bool ApplyDamage(float damage, KillContext context)
@@ -62,16 +94,16 @@ public sealed class EnemyHealth : MonoBehaviour
         ZeroHealthReached?.Invoke(context);
         if (Type != EnemyType.Suicide)
         {
-            DropAmmo(transform.position, context.WeaponSlot);
+            DropAmmo(transform.position);
         }
-        if (m_playHitAndDeathAnimations)
+        if (Type != EnemyType.Suicide)
         {
-            Destroy(gameObject, m_deathRemovalDelay);
+            StartCoroutine(ReturnAfterDelay(m_playHitAndDeathAnimations ? m_deathRemovalDelay : 0f));
         }
         return true;
     }
 
-    public void DropAmmo(Vector3 deathPosition, int sourceWeaponSlot)
+    public void DropAmmo(Vector3 deathPosition)
     {
         if (m_hasDroppedAmmo)
         {
@@ -79,7 +111,19 @@ public sealed class EnemyHealth : MonoBehaviour
         }
 
         m_hasDroppedAmmo = true;
-        AmmoPickup.CreateDrop(m_ammoPickupPrefab, deathPosition, sourceWeaponSlot);
+        if (UnityEngine.Random.value >= k_AmmoDropChance)
+        {
+            return;
+        }
+
+        if (m_pool != null)
+        {
+            m_pool.SpawnAmmoDrop(deathPosition);
+        }
+        else
+        {
+            AmmoPickup.CreateDrop(m_ammoPickupPrefab, deathPosition);
+        }
     }
 
     public bool ApplyExplosionDamage(float damage, KillContext context)
@@ -87,33 +131,88 @@ public sealed class EnemyHealth : MonoBehaviour
         return ApplyDamage(damage, context);
     }
 
-    public bool IsHeadHit(Collider hitCollider)
+    public bool IsHeadHit(Ray shotRay, float maxDistance)
     {
-        return hitCollider != null && hitCollider == m_headHitbox;
+        return m_headHitbox != null
+            && m_headHitbox.enabled
+            && maxDistance > 0f
+            && m_headHitbox.Raycast(shotRay, out _, maxDistance);
     }
 
     public void DisableColliders()
     {
-        foreach (Collider ownCollider in GetComponentsInChildren<Collider>())
+        foreach (Collider ownCollider in m_colliders)
         {
             ownCollider.enabled = false;
         }
     }
 
-    private void CreateHeadHitbox()
+    public void ReturnToPool()
     {
-        if (m_characterRenderer == null)
+        if (IsPooled)
         {
             return;
         }
 
-        Bounds bounds = m_characterRenderer.bounds;
+        if (m_pool != null)
+        {
+            m_pool.ReleaseEnemy(this);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
+    internal void MarkPooled()
+    {
+        IsPooled = true;
+    }
+
+    private void CreateHeadHitbox()
+    {
         GameObject head = new("HeadHitbox");
-        head.transform.SetParent(transform, true);
-        head.transform.position = new Vector3(bounds.center.x, bounds.max.y - bounds.size.y * 0.14f, bounds.center.z);
+        head.transform.SetParent(transform, false);
+        if (Type == EnemyType.Suicide)
+        {
+            head.transform.localPosition = new Vector3(-0.0004f, 0.945f, -0.0004f);
+        }
+        else
+        {
+            head.transform.localPosition = new Vector3(-0.006f, 1.8619f, -0.013f);
+        }
+
         SphereCollider collider = head.AddComponent<SphereCollider>();
-        collider.radius = Mathf.Max(bounds.extents.x, bounds.extents.z) * 0.32f;
+        collider.radius = Type == EnemyType.Suicide ? 0.291f : 0.282f;
+        collider.isTrigger = true;
         m_headHitbox = collider;
+    }
+
+    private void CacheColliders()
+    {
+        m_colliders = GetComponentsInChildren<Collider>(true);
+        m_colliderDefaults = new bool[m_colliders.Length];
+        for (int index = 0; index < m_colliders.Length; index++)
+        {
+            m_colliderDefaults[index] = m_colliders[index].enabled;
+        }
+    }
+
+    private void RestoreColliders()
+    {
+        for (int index = 0; index < m_colliders.Length; index++)
+        {
+            m_colliders[index].enabled = m_colliderDefaults[index];
+        }
+    }
+
+    private IEnumerator ReturnAfterDelay(float delay)
+    {
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+        ReturnToPool();
     }
 
     private EnemyType ResolveEnemyType()
@@ -171,6 +270,7 @@ public sealed class EnemyHealth : MonoBehaviour
         Debug.Assert(!m_playHitAndDeathAnimations || m_animator != null);
         Debug.Assert(m_deathRemovalDelay >= 0f);
         Debug.Assert(m_ammoPickupPrefab != null);
+        Debug.Assert(m_headHitbox == null || m_headHitbox.isTrigger);
         Debug.Assert(!m_playHitAndDeathAnimations || (m_hurtClips != null && m_hurtClips.Length == 4));
         Debug.Assert(!m_playHitAndDeathAnimations || (m_deathClips != null && m_deathClips.Length == 2));
     }

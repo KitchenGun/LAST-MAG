@@ -3,51 +3,52 @@ using UnityEngine;
 [RequireComponent(typeof(SphereCollider), typeof(Rigidbody))]
 public sealed class RangedProjectile : MonoBehaviour
 {
-    private static readonly int s_BaseColor = Shader.PropertyToID("_BaseColor");
-    private static readonly int s_EmissionColor = Shader.PropertyToID("_EmissionColor");
-    private static Material s_GlowMaterial;
+    private const float k_TrailSpacing = 0.8f;
 
+    private GameplayObjectPool m_pool;
+    private SphereCollider m_collider;
+    private Rigidbody m_body;
+    private Vector3 m_lastTrailPosition;
     private float m_damage;
-    private float m_destroyTime;
+    private float m_releaseTime;
 
-    public static RangedProjectile Create(Vector3 position, Vector3 direction, float speed, float damage, float radius, float lifetime)
+    public bool IsPooled { get; private set; }
+
+    private void Awake()
     {
-        GameObject projectileObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        projectileObject.name = "RangedProjectile";
-        projectileObject.transform.position = position;
-        projectileObject.transform.localScale = Vector3.one * radius * 2f;
-        ApplyGlow(projectileObject.GetComponent<Renderer>(), Color.red * 2f);
-
-        SphereCollider collider = projectileObject.GetComponent<SphereCollider>();
-        collider.isTrigger = true;
-        Rigidbody body = projectileObject.AddComponent<Rigidbody>();
-        body.useGravity = false;
-        body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-        body.linearVelocity = direction.normalized * speed;
-
-        RangedProjectile projectile = projectileObject.AddComponent<RangedProjectile>();
-        projectile.m_damage = damage;
-        projectile.m_destroyTime = Time.time + lifetime;
-        return projectile;
+        m_collider = GetComponent<SphereCollider>();
+        m_collider.isTrigger = true;
+        m_body = GetComponent<Rigidbody>();
+        m_body.useGravity = false;
+        m_body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
     }
 
-    public static GameObject CreateChargeVisual(Transform parent, float radius)
+    public void Launch(GameplayObjectPool pool, Vector3 position, Vector3 direction, float speed,
+        float damage, float radius, float lifetime)
     {
-        GameObject charge = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        charge.name = "RangedAttackCharge";
-        charge.transform.SetParent(parent, false);
-        charge.transform.localPosition = Vector3.zero;
-        charge.transform.localScale = Vector3.one * radius * 2f;
-        charge.GetComponent<Collider>().enabled = false;
-        ApplyGlow(charge.GetComponent<Renderer>(), Color.red * 2f);
-        return charge;
+        m_pool = pool;
+        IsPooled = false;
+        transform.SetPositionAndRotation(position, Quaternion.identity);
+        transform.localScale = Vector3.one * radius * 2f;
+        m_damage = damage;
+        m_releaseTime = Time.time + lifetime;
+        m_lastTrailPosition = position;
+        m_collider.enabled = true;
+        m_body.linearVelocity = direction.normalized * speed;
     }
 
     private void Update()
     {
-        if (Time.time >= m_destroyTime)
+        if (Time.time >= m_releaseTime)
         {
-            Destroy(gameObject);
+            ReturnToPool(false);
+            return;
+        }
+
+        if ((transform.position - m_lastTrailPosition).sqrMagnitude >= k_TrailSpacing * k_TrailSpacing)
+        {
+            m_pool?.EmitProjectileTrail(transform.position);
+            m_lastTrailPosition = transform.position;
         }
     }
 
@@ -63,22 +64,45 @@ public sealed class RangedProjectile : MonoBehaviour
         {
             player.ApplyDamage(m_damage, PlayerDeathCause.RangedHumanoid);
         }
-        Destroy(gameObject);
+        ReturnToPool(true);
     }
 
-    private static void ApplyGlow(Renderer renderer, Color color)
+    private void OnDisable()
     {
-        if (s_GlowMaterial == null)
+        if (m_body != null)
         {
-            Shader shader = Shader.Find("Universal Render Pipeline/Lit");
-            s_GlowMaterial = new Material(shader);
-            s_GlowMaterial.EnableKeyword("_EMISSION");
+            m_body.linearVelocity = Vector3.zero;
+            m_body.angularVelocity = Vector3.zero;
+        }
+        if (m_collider != null)
+        {
+            m_collider.enabled = false;
+        }
+    }
+
+    private void ReturnToPool(bool emitImpact)
+    {
+        if (IsPooled)
+        {
+            return;
         }
 
-        renderer.sharedMaterial = s_GlowMaterial;
-        MaterialPropertyBlock properties = new();
-        properties.SetColor(s_BaseColor, color);
-        properties.SetColor(s_EmissionColor, color * 2f);
-        renderer.SetPropertyBlock(properties);
+        if (m_pool == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
+        if (emitImpact)
+        {
+            m_pool.EmitProjectileImpact(transform.position);
+        }
+        m_pool.ReleaseProjectile(this);
     }
+
+    internal void MarkPooled()
+    {
+        IsPooled = true;
+    }
+
 }

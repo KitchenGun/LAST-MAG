@@ -5,6 +5,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
 public sealed class SuicideEnemy : MonoBehaviour
 {
+    private const float k_PathUpdateInterval = 0.1f;
+    private const float k_PathDestinationThresholdSqr = 0.25f;
     private const float k_MinWarningEmission = 0.25f;
     private const float k_MaxWarningEmission = 4f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
@@ -31,14 +33,20 @@ public sealed class SuicideEnemy : MonoBehaviour
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
     private MaterialPropertyBlock m_warningProperties;
+    private ScoreSystem m_scoreSystem;
+    private SuicideGasEmitter m_gasEmitter;
     private Color m_normalHeadColor;
     private float m_explosionTime;
-    private int m_sourceWeaponSlot;
+    private float m_nextPathUpdateTime;
+    private WeaponId m_sourceWeapon;
     private bool m_hasPlayerAttribution;
+    private bool m_hasClassSkillAttribution;
     private bool m_isWarning;
     private bool m_isDying;
     private bool m_hasExploded;
     private bool m_isMoving;
+    private bool m_hasPathDestination;
+    private Vector3 m_lastPathDestination;
 
     private void Awake()
     {
@@ -55,6 +63,34 @@ public sealed class SuicideEnemy : MonoBehaviour
         }
 
         InitializeWarningMaterial();
+        m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+        m_gasEmitter = FindFirstObjectByType<SuicideGasEmitter>();
+    }
+
+    private void OnEnable()
+    {
+        m_damagedPlayers.Clear();
+        m_damagedEnemies.Clear();
+        m_explosionTime = 0f;
+        m_nextPathUpdateTime = 0f;
+        m_sourceWeapon = WeaponId.Unknown;
+        m_hasPlayerAttribution = false;
+        m_hasClassSkillAttribution = false;
+        m_isWarning = false;
+        m_isDying = false;
+        m_hasExploded = false;
+        m_isMoving = false;
+        m_hasPathDestination = false;
+        ResetWarningMaterial();
+        if (m_animator != null)
+        {
+            m_animator.SetBool(s_IsMoving, false);
+        }
+        if (m_agent != null && m_agent.isOnNavMesh)
+        {
+            m_agent.ResetPath();
+            m_agent.isStopped = false;
+        }
     }
 
     private void Start()
@@ -98,8 +134,17 @@ public sealed class SuicideEnemy : MonoBehaviour
         }
 
         m_agent.speed = m_moveSpeed;
-        bool destinationAccepted = m_agent.SetDestination(m_target.transform.position);
-        bool hasCompletePath = destinationAccepted && m_agent.hasPath && !m_agent.pathPending && m_agent.pathStatus == NavMeshPathStatus.PathComplete;
+        Vector3 targetPosition = m_target.transform.position;
+        bool destinationChanged = !m_hasPathDestination
+            || (targetPosition - m_lastPathDestination).sqrMagnitude >= k_PathDestinationThresholdSqr;
+        if (Time.time >= m_nextPathUpdateTime && destinationChanged)
+        {
+            m_nextPathUpdateTime = Time.time + k_PathUpdateInterval;
+            m_lastPathDestination = targetPosition;
+            m_hasPathDestination = m_agent.SetDestination(targetPosition);
+        }
+        bool hasCompletePath = m_hasPathDestination && m_agent.hasPath && !m_agent.pathPending
+            && m_agent.pathStatus == NavMeshPathStatus.PathComplete;
         if (hasCompletePath && Vector3.Distance(transform.position, m_target.transform.position) <= m_explosionRadius)
         {
             StartWarning();
@@ -132,8 +177,9 @@ public sealed class SuicideEnemy : MonoBehaviour
     private void StartDeathExplosion(KillContext context)
     {
         m_isDying = true;
-        m_sourceWeaponSlot = context.WeaponSlot;
+        m_sourceWeapon = context.Weapon;
         m_hasPlayerAttribution = context.IsPlayerAttributed;
+        m_hasClassSkillAttribution = context.IsClassSkillAttributed;
         if (m_agent.isOnNavMesh)
         {
             m_agent.isStopped = true;
@@ -154,12 +200,21 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_health.DisableColliders();
         SetMoving(false);
         SpatialAudio.PlayOneShot(m_explosionClip, transform.position, m_explosionMaxDistance, m_explosionVolume);
+        if (m_gasEmitter == null)
+        {
+            m_gasEmitter = FindFirstObjectByType<SuicideGasEmitter>();
+        }
+        m_gasEmitter?.EmitAt(transform.position, m_explosionRadius);
 
-        int sourceWeaponSlot = ResolveSourceWeaponSlot();
-        ScoreSystem scoreSystem = FindFirstObjectByType<ScoreSystem>();
-        int comboLevelSnapshot = scoreSystem != null ? scoreSystem.ComboLevel : 0;
+        WeaponId sourceWeapon = ResolveSourceWeapon();
+        if (m_scoreSystem == null)
+        {
+            m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+        }
+        int comboLevelSnapshot = m_scoreSystem != null ? m_scoreSystem.ComboLevel : 0;
         List<EnemyType> chainKills = new();
-        KillContext explosionContext = KillContext.Chain(sourceWeaponSlot, m_hasPlayerAttribution);
+        KillContext explosionContext = KillContext.Chain(
+            sourceWeapon, m_hasPlayerAttribution, m_hasClassSkillAttribution);
         m_damagedPlayers.Clear();
         m_damagedEnemies.Clear();
         foreach (Collider hit in Physics.OverlapSphere(transform.position, m_explosionRadius, Physics.AllLayers, QueryTriggerInteraction.Ignore))
@@ -182,22 +237,23 @@ public sealed class SuicideEnemy : MonoBehaviour
 
         if (m_hasPlayerAttribution)
         {
-            scoreSystem?.RegisterChainBatch(chainKills, comboLevelSnapshot, sourceWeaponSlot);
+            m_scoreSystem?.RegisterChainBatch(
+                chainKills, comboLevelSnapshot, sourceWeapon, m_hasClassSkillAttribution);
         }
 
-        m_health.DropAmmo(transform.position, sourceWeaponSlot);
-        Destroy(gameObject);
+        m_health.DropAmmo(transform.position);
+        m_health.ReturnToPool();
     }
 
-    private int ResolveSourceWeaponSlot()
+    private WeaponId ResolveSourceWeapon()
     {
-        if (m_sourceWeaponSlot >= 1 && m_sourceWeaponSlot <= 3)
+        if (m_sourceWeapon is >= WeaponId.Pistol and <= WeaponId.DMR)
         {
-            return m_sourceWeaponSlot;
+            return m_sourceWeapon;
         }
 
         FindTarget();
-        return m_targetController != null ? m_targetController.ActiveWeaponSlot : 1;
+        return m_targetController != null ? m_targetController.CurrentWeapon : WeaponId.Pistol;
     }
 
     private void InitializeWarningMaterial()
@@ -230,6 +286,19 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_warningRenderer.GetPropertyBlock(m_warningProperties, m_warningMaterialIndex);
         m_warningProperties.SetColor(s_BaseColor, m_normalHeadColor);
         m_warningProperties.SetColor(s_EmissionColor, m_normalHeadColor * emission);
+        m_warningRenderer.SetPropertyBlock(m_warningProperties, m_warningMaterialIndex);
+    }
+
+    private void ResetWarningMaterial()
+    {
+        if (m_warningRenderer == null || m_warningProperties == null)
+        {
+            return;
+        }
+
+        m_warningRenderer.GetPropertyBlock(m_warningProperties, m_warningMaterialIndex);
+        m_warningProperties.SetColor(s_BaseColor, m_normalHeadColor);
+        m_warningProperties.SetColor(s_EmissionColor, Color.black);
         m_warningRenderer.SetPropertyBlock(m_warningProperties, m_warningMaterialIndex);
     }
 
@@ -272,5 +341,11 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_deathExplosionDelay = Mathf.Max(0f, m_deathExplosionDelay);
         m_warningMaterialIndex = Mathf.Max(0, m_warningMaterialIndex);
         m_explosionMaxDistance = Mathf.Max(0.1f, m_explosionMaxDistance);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0.78f, 0.71f, 0.29f, 0.65f);
+        Gizmos.DrawWireSphere(transform.position, m_explosionRadius);
     }
 }

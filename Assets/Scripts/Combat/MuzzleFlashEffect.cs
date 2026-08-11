@@ -20,7 +20,7 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
 
     private void Update()
     {
-        if (m_light != null && m_light.enabled && Time.time >= m_lightOffTime)
+        if (m_light != null && m_light.enabled && Time.unscaledTime >= m_lightOffTime)
         {
             m_light.enabled = false;
         }
@@ -38,7 +38,7 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
         ApplyRandomVariation();
         m_particles.Play(true);
         m_light.enabled = true;
-        m_lightOffTime = Time.time + m_lightDuration;
+        m_lightOffTime = Time.unscaledTime + m_lightDuration;
     }
 
     public void StopEffect()
