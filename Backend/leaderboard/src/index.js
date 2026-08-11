@@ -1,6 +1,7 @@
 const MAX_BODY_BYTES = 1024;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const NICKNAME_PATTERN = /^[A-Za-z0-9]{2,12}$/;
+const PLAYER_CLASSES = new Set(["GRENADIER", "ENGINEER", "SNIPER"]);
 
 export default {
   async fetch(request, env) {
@@ -20,7 +21,7 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname === "/v1/leaderboard" && request.method === "GET") {
-      return getLeaderboard(env, cors);
+      return getLeaderboard(env, cors, url.searchParams.get("currentRunId"));
     }
 
     if (url.pathname === "/v1/scores" && request.method === "POST") {
@@ -62,9 +63,10 @@ async function submitScore(request, env, cors) {
   }
 
   const boardVersion = env.BOARD_VERSION;
+  const playerClass = body.playerClass ?? "UNKNOWN";
   const existing = await findScore(env.DB, boardVersion, body.runId);
   if (existing) {
-    if (existing.nickname !== body.nickname || existing.score !== body.score) {
+    if (existing.nickname !== body.nickname || existing.player_class !== playerClass || existing.score !== body.score) {
       return json({ error: "run_id_conflict" }, 409, cors);
     }
     return submissionResponse(env.DB, boardVersion, existing, true, 200, cors);
@@ -73,15 +75,15 @@ async function submitScore(request, env, cors) {
   // ponytail: v1 trusts client score; recompute after score rules freeze.
   try {
     await env.DB.prepare(
-      `INSERT INTO scores (board_version, run_id, nickname, score)
-       VALUES (?1, ?2, ?3, ?4)`
-    ).bind(boardVersion, body.runId, body.nickname, body.score).run();
+      `INSERT INTO scores (board_version, run_id, nickname, player_class, score)
+       VALUES (?1, ?2, ?3, ?4, ?5)`
+    ).bind(boardVersion, body.runId, body.nickname, playerClass, body.score).run();
   } catch (error) {
     const raced = await findScore(env.DB, boardVersion, body.runId);
     if (!raced) {
       throw error;
     }
-    if (raced.nickname !== body.nickname || raced.score !== body.score) {
+    if (raced.nickname !== body.nickname || raced.player_class !== playerClass || raced.score !== body.score) {
       return json({ error: "run_id_conflict" }, 409, cors);
     }
     return submissionResponse(env.DB, boardVersion, raced, true, 200, cors);
@@ -111,22 +113,26 @@ async function submissionResponse(db, boardVersion, scoreRow, duplicate, status,
   }, status, cors);
 }
 
-async function getLeaderboard(env, cors) {
-  const top10 = await readTop10(env.DB, env.BOARD_VERSION);
+async function getLeaderboard(env, cors, currentRunId) {
+  if (currentRunId !== null && !UUID_PATTERN.test(currentRunId)) {
+    return json({ error: "invalid_current_run_id" }, 400, cors);
+  }
+
+  const top10 = await readTop10(env.DB, env.BOARD_VERSION, currentRunId);
   return json({ boardVersion: env.BOARD_VERSION, top10 }, 200, cors);
 }
 
 async function findScore(db, boardVersion, runId) {
   return db.prepare(
-    `SELECT run_id, nickname, score
+    `SELECT run_id, nickname, player_class, score
      FROM scores
      WHERE board_version = ?1 AND run_id = ?2`
   ).bind(boardVersion, runId).first();
 }
 
-async function readTop10(db, boardVersion) {
+async function readTop10(db, boardVersion, currentRunId) {
   const result = await db.prepare(
-    `SELECT nickname, score
+    `SELECT run_id, nickname, player_class, score
      FROM scores
      WHERE board_version = ?1
      ORDER BY score DESC, submitted_at ASC, id ASC
@@ -136,7 +142,9 @@ async function readTop10(db, boardVersion) {
   return result.results.map((entry, index) => ({
     rank: index + 1,
     nickname: entry.nickname,
-    score: entry.score
+    playerClass: entry.player_class,
+    score: entry.score,
+    isCurrent: currentRunId !== null && entry.run_id === currentRunId
   }));
 }
 
@@ -149,6 +157,10 @@ export function validateSubmission(body) {
   }
   if (typeof body.nickname !== "string" || !NICKNAME_PATTERN.test(body.nickname)) {
     return "invalid_nickname";
+  }
+  if (body.playerClass !== undefined
+      && (typeof body.playerClass !== "string" || !PLAYER_CLASSES.has(body.playerClass))) {
+    return "invalid_player_class";
   }
   if (!Number.isSafeInteger(body.score) || body.score < 0 || body.score > 2147483647) {
     return "invalid_score";

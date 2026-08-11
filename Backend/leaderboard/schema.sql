@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS scores (
     board_version TEXT NOT NULL,
     run_id TEXT NOT NULL,
     nickname TEXT NOT NULL,
+    player_class TEXT NOT NULL DEFAULT 'UNKNOWN'
+        CHECK (player_class IN ('UNKNOWN', 'GRENADIER', 'ENGINEER', 'SNIPER')),
     score INTEGER NOT NULL CHECK (score >= 0 AND score <= 2147483647),
     submitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (board_version, run_id)
