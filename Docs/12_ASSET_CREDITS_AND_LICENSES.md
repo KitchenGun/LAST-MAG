@@ -52,3 +52,14 @@ Fab 에셋은 완성된 게임에 포함해 사용할 수 있지만, 원본 WAV 
 
 - 미사용 오디오와 Unity 템플릿 잔재는 로컬 `Archive/UnusedResources`로 분리했다. 이동 내역은 [미사용 리소스 분리 명세](13_UNUSED_RESOURCE_ARCHIVE.md)를 따른다.
 - 컨셉 이미지, Blender 제작 소스, 생성 중간물은 런타임 배포 에셋이 아니므로 이 문서의 사용 목록에 포함하지 않는다.
+
+## 2026-08-11 공개 배포 감사
+
+| 에셋 | 현재 확인 근거 | 상태 |
+|---|---|---|
+| [Grenade Sound FX](https://assetstore.unity.com/packages/p/grenade-sound-fx-147490) | Unity 메타데이터의 `productId: 147490`, `packageName: Grenade Sound FX`; Unity Asset Store 표준 EULA | 구매·다운로드 계정 기록 최종 확인 필요 |
+| LP Sci-Fi Interior | `Assets/Art/Environment/ThirdParty/LPSciFiInterior`에 포함되어 게임 씬에서 사용 | 원본 상품 페이지와 구매·다운로드 기록 미확인 |
+| `Iron and Ash.mp3`, `The Last Stand of Valhalla.mp3` 및 Dark Cinematic Trailer BGM | `Assets/Audio/BGM`에서 게임 씬이 사용 | 제작자·원본 링크·라이선스 미확인 |
+| FreeWeaponSounds, Footsteps Mini Sound Pack, Sewing Machine Samples, ZombieHorrorPackageFree | 위의 기존 감사 표와 동일 | 원본 링크·라이선스 미확인 |
+
+Unity Asset Store 표준 EULA는 적법하게 취득한 비제한 에셋을 완성된 게임에 포함하여 배포하는 것을 허용하지만, 저장소의 메타데이터만으로 실제 취득 계정 기록까지 증명할 수는 없다. 위 미확인 항목이 모두 해소되기 전에는 공개 WebGL 배포를 보류하고 로컬 빌드까지만 허용한다.
