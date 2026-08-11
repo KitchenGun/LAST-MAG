@@ -68,3 +68,7 @@ InitTestScene*.unity*
 
 # Local generated intermediates
 /tmp/
+/Assets/Scripts/graphify-out/
+/Assets/Scripts/graphify-out.meta
+/Assets/Resources/PerformanceTestRun*.json
+/Assets/Resources/PerformanceTestRun*.json.meta
