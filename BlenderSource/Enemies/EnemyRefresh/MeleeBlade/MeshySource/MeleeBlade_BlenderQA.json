@@ -1,0 +1,125 @@
+{
+  "task_id": "019ff515-4ce5-7182-9f1b-9f54d2606272",
+  "consumed_credits": 30,
+  "blender_version": "5.2.0 LTS",
+  "fresh_factory_import": true,
+  "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6.fbx",
+  "fbx_bytes": 18856748,
+  "mesh_count": 1,
+  "meshes": [
+    {
+      "object": "Mesh_0",
+      "vertices": 58806,
+      "polygons": 117608,
+      "triangles": 117608,
+      "materials": [
+        "Material.001"
+      ]
+    }
+  ],
+  "total_vertices": 58806,
+  "total_triangles": 117608,
+  "material_count": 1,
+  "materials": [
+    "Material.001"
+  ],
+  "texture_nodes": [
+    {
+      "material": "Material.001",
+      "node": "Image Texture",
+      "image": "texture_0.png",
+      "fbx_original_path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\model.fbm\\texture_0.png",
+      "fbx_original_exists": false,
+      "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\base_color.png",
+      "exists": true,
+      "colorspace": "sRGB"
+    },
+    {
+      "material": "Material.001",
+      "node": "Image Texture.001",
+      "image": "texture_0_emission.png",
+      "fbx_original_path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\model.fbm\\texture_0_emission.png",
+      "fbx_original_exists": false,
+      "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\emission.png",
+      "exists": true,
+      "colorspace": "sRGB"
+    },
+    {
+      "material": "Material.001",
+      "node": "Image Texture.002",
+      "image": "texture_0_normal.png",
+      "fbx_original_path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\model.fbm\\texture_0_normal.png",
+      "fbx_original_exists": false,
+      "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\normal.png",
+      "exists": true,
+      "colorspace": "Non-Color"
+    },
+    {
+      "material": "Material.001",
+      "node": "Image Texture.003",
+      "image": "texture_0_roughness.png",
+      "fbx_original_path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\model.fbm\\texture_0_roughness.png",
+      "fbx_original_exists": false,
+      "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\roughness.png",
+      "exists": true,
+      "colorspace": "Non-Color"
+    },
+    {
+      "material": "Material.001",
+      "node": "Image Texture.004",
+      "image": "texture_0_metallic.png",
+      "fbx_original_path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\model.fbm\\texture_0_metallic.png",
+      "fbx_original_exists": false,
+      "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\metallic.png",
+      "exists": true,
+      "colorspace": "Non-Color"
+    }
+  ],
+  "fbx_texture_bindings_resolved_on_fresh_import": false,
+  "qa_texture_relink_for_preview": true,
+  "downloaded_pbr_textures": [
+    {
+      "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\base_color.png",
+      "bytes": 8039600
+    },
+    {
+      "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\emission.png",
+      "bytes": 62383
+    },
+    {
+      "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\metallic.png",
+      "bytes": 22372
+    },
+    {
+      "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\normal.png",
+      "bytes": 5448224
+    },
+    {
+      "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6_textures\\roughness.png",
+      "bytes": 1079761
+    }
+  ],
+  "bounds_min": [
+    -0.938309,
+    -0.171699,
+    -0.950468
+  ],
+  "bounds_max": [
+    0.93616,
+    0.170382,
+    0.948559
+  ],
+  "dimensions_xyz": [
+    1.874469,
+    0.342081,
+    1.899027
+  ],
+  "width_to_height_ratio": 0.987068,
+  "origin_world": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "origin_at_bottom_verified": false,
+  "preview": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\MeleeBlade_BlenderPreview.png"
+}

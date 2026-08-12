@@ -1,0 +1,155 @@
+{
+  "source_fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\SuicideCapsid\\MeshySource\\SuicideCapsid_Meshy6.fbx",
+  "source_task_id": "019ff514-d5bc-7a16-b2bf-b21dcfc842b4",
+  "source_preserved": true,
+  "source_connected_components": 1,
+  "design": "Hybrid rebuild preserves and decimates the Meshy capsid/body with original UVs/normals, removes the fused eight-leg lower band, and adds an overlapping organic base plate plus six explicit low-poly chains.",
+  "lod0_before_export": {
+    "vertices": 2634,
+    "triangles": 4920,
+    "uv_layers": 1,
+    "material_slots": [
+      "M_SuicideCapsid_Lower",
+      "M_SuicideCapsid_Upper"
+    ],
+    "max_weights": 1
+  },
+  "lod1_before_export": {
+    "vertices": 1592,
+    "triangles": 2909,
+    "uv_layers": 1,
+    "material_slots": [
+      "M_SuicideCapsid_Lower",
+      "M_SuicideCapsid_Upper"
+    ],
+    "max_weights": 1
+  },
+  "fresh_lod0": {
+    "vertices": 2634,
+    "triangles": 4920,
+    "uv_layers": 1,
+    "material_slots": [
+      "M_SuicideCapsid_Lower",
+      "M_SuicideCapsid_Upper"
+    ],
+    "max_weights": 1,
+    "bone_count": 21,
+    "bone_names": [
+      "root",
+      "body",
+      "upper",
+      "leg_L_Front_01",
+      "leg_L_Front_02",
+      "leg_L_Front_03",
+      "leg_R_Front_01",
+      "leg_R_Front_02",
+      "leg_R_Front_03",
+      "leg_L_Mid_01",
+      "leg_L_Mid_02",
+      "leg_L_Mid_03",
+      "leg_R_Mid_01",
+      "leg_R_Mid_02",
+      "leg_R_Mid_03",
+      "leg_L_Rear_01",
+      "leg_L_Rear_02",
+      "leg_L_Rear_03",
+      "leg_R_Rear_01",
+      "leg_R_Rear_02",
+      "leg_R_Rear_03"
+    ],
+    "leg_chain_count": 6,
+    "actions": {
+      "Idle": [
+        0.0,
+        59.0
+      ],
+      "Move_LegsOnly": [
+        0.0,
+        24.0
+      ],
+      "Warning_Explode": [
+        0.0,
+        23.0
+      ]
+    },
+    "raw_fbx_actions": {
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Idle": [
+        0.0,
+        59.0
+      ],
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Move_LegsOnly": [
+        0.0,
+        24.0
+      ],
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Warning_Explode": [
+        0.0,
+        23.0
+      ]
+    },
+    "bounds_min_z": -0.019407933577895164
+  },
+  "fresh_lod1": {
+    "vertices": 1592,
+    "triangles": 2909,
+    "uv_layers": 1,
+    "material_slots": [
+      "M_SuicideCapsid_Lower",
+      "M_SuicideCapsid_Upper"
+    ],
+    "max_weights": 1,
+    "bone_count": 21,
+    "bone_names": [
+      "root",
+      "body",
+      "upper",
+      "leg_L_Front_01",
+      "leg_L_Front_02",
+      "leg_L_Front_03",
+      "leg_R_Front_01",
+      "leg_R_Front_02",
+      "leg_R_Front_03",
+      "leg_L_Mid_01",
+      "leg_L_Mid_02",
+      "leg_L_Mid_03",
+      "leg_R_Mid_01",
+      "leg_R_Mid_02",
+      "leg_R_Mid_03",
+      "leg_L_Rear_01",
+      "leg_L_Rear_02",
+      "leg_L_Rear_03",
+      "leg_R_Rear_01",
+      "leg_R_Rear_02",
+      "leg_R_Rear_03"
+    ],
+    "leg_chain_count": 6,
+    "actions": {
+      "Idle": [
+        0.0,
+        59.0
+      ],
+      "Move_LegsOnly": [
+        0.0,
+        24.0
+      ],
+      "Warning_Explode": [
+        0.0,
+        23.0
+      ]
+    },
+    "raw_fbx_actions": {
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Idle": [
+        0.0,
+        59.0
+      ],
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Move_LegsOnly": [
+        0.0,
+        24.0
+      ],
+      "SuicideCapsid_Rig|SuicideCapsid_Rig|Warning_Explode": [
+        0.0,
+        23.0
+      ]
+    },
+    "bounds_min_z": -0.019407933577895164
+  }
+}

@@ -1,0 +1,532 @@
+{
+  "blender_version": "5.2.0 LTS",
+  "source": {
+    "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\MeshySource\\RangedMaw_Meshy6_Source.fbx",
+    "triangles": 137328,
+    "dimensions_xyz": [
+      1.675623,
+      0.518035,
+      1.89901
+    ],
+    "material_split": {
+      "body_faces": 97418,
+      "head_faces": 39910
+    }
+  },
+  "build": {
+    "master_blend": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\RangedMaw_Master.blend",
+    "LOD0": {
+      "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\RangedMaw_LOD0.fbx",
+      "triangles": 5810,
+      "weights": {
+        "vertices": 2907,
+        "max_influences": 4
+      },
+      "weight_groups": {
+        "Hips": {
+          "weighted_vertices": 622,
+          "max_weight": 0.910072,
+          "weight_sum": 160.812795
+        },
+        "LeftUpLeg": {
+          "weighted_vertices": 472,
+          "max_weight": 0.843581,
+          "weight_sum": 141.294676
+        },
+        "LeftLeg": {
+          "weighted_vertices": 472,
+          "max_weight": 0.832179,
+          "weight_sum": 123.598161
+        },
+        "LeftFoot": {
+          "weighted_vertices": 472,
+          "max_weight": 0.568433,
+          "weight_sum": 89.454776
+        },
+        "LeftToeBase": {
+          "weighted_vertices": 244,
+          "max_weight": 0.517336,
+          "weight_sum": 53.066366
+        },
+        "RightUpLeg": {
+          "weighted_vertices": 462,
+          "max_weight": 0.850084,
+          "weight_sum": 136.124479
+        },
+        "RightLeg": {
+          "weighted_vertices": 462,
+          "max_weight": 0.841624,
+          "weight_sum": 121.899792
+        },
+        "RightFoot": {
+          "weighted_vertices": 462,
+          "max_weight": 0.555033,
+          "weight_sum": 87.149161
+        },
+        "RightToeBase": {
+          "weighted_vertices": 235,
+          "max_weight": 0.521136,
+          "weight_sum": 51.679093
+        },
+        "Spine02": {
+          "weighted_vertices": 470,
+          "max_weight": 0.331149,
+          "weight_sum": 76.820537
+        },
+        "Spine01": {
+          "weighted_vertices": 865,
+          "max_weight": 0.385067,
+          "weight_sum": 151.670716
+        },
+        "Spine": {
+          "weighted_vertices": 1419,
+          "max_weight": 0.437791,
+          "weight_sum": 277.437442
+        },
+        "LeftShoulder": {
+          "weighted_vertices": 370,
+          "max_weight": 0.763509,
+          "weight_sum": 47.186507
+        },
+        "LeftArm": {
+          "weighted_vertices": 370,
+          "max_weight": 0.786347,
+          "weight_sum": 107.328881
+        },
+        "LeftForeArm": {
+          "weighted_vertices": 370,
+          "max_weight": 0.734927,
+          "weight_sum": 139.906413
+        },
+        "LeftHand": {
+          "weighted_vertices": 276,
+          "max_weight": 0.485002,
+          "weight_sum": 69.031742
+        },
+        "RightShoulder": {
+          "weighted_vertices": 374,
+          "max_weight": 0.716176,
+          "weight_sum": 48.497772
+        },
+        "RightArm": {
+          "weighted_vertices": 374,
+          "max_weight": 0.786502,
+          "weight_sum": 109.987091
+        },
+        "RightForeArm": {
+          "weighted_vertices": 374,
+          "max_weight": 0.736933,
+          "weight_sum": 139.743841
+        },
+        "RightHand": {
+          "weighted_vertices": 278,
+          "max_weight": 0.485898,
+          "weight_sum": 69.094461
+        },
+        "neck": {
+          "weighted_vertices": 1062,
+          "max_weight": 0.43807,
+          "weight_sum": 257.433776
+        },
+        "Head": {
+          "weighted_vertices": 759,
+          "max_weight": 0.920573,
+          "weight_sum": 257.637205
+        },
+        "Jaw": {
+          "weighted_vertices": 364,
+          "max_weight": 0.886214,
+          "weight_sum": 190.144318
+        }
+      },
+      "material_split": {
+        "body_faces": 4181,
+        "head_faces": 1629
+      }
+    },
+    "LOD1": {
+      "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\RangedMaw_LOD1.fbx",
+      "triangles": 2954,
+      "weights": {
+        "vertices": 1479,
+        "max_influences": 4
+      },
+      "weight_groups": {
+        "Hips": {
+          "weighted_vertices": 305,
+          "max_weight": 0.863588,
+          "weight_sum": 77.302023
+        },
+        "LeftUpLeg": {
+          "weighted_vertices": 233,
+          "max_weight": 0.825031,
+          "weight_sum": 69.509574
+        },
+        "LeftLeg": {
+          "weighted_vertices": 233,
+          "max_weight": 0.836822,
+          "weight_sum": 61.573647
+        },
+        "LeftFoot": {
+          "weighted_vertices": 233,
+          "max_weight": 0.562212,
+          "weight_sum": 45.221868
+        },
+        "LeftToeBase": {
+          "weighted_vertices": 123,
+          "max_weight": 0.507885,
+          "weight_sum": 27.013281
+        },
+        "RightUpLeg": {
+          "weighted_vertices": 237,
+          "max_weight": 0.848952,
+          "weight_sum": 68.804721
+        },
+        "RightLeg": {
+          "weighted_vertices": 237,
+          "max_weight": 0.841624,
+          "weight_sum": 62.307339
+        },
+        "RightFoot": {
+          "weighted_vertices": 237,
+          "max_weight": 0.539583,
+          "weight_sum": 45.698394
+        },
+        "RightToeBase": {
+          "weighted_vertices": 124,
+          "max_weight": 0.521136,
+          "weight_sum": 27.52118
+        },
+        "Spine02": {
+          "weighted_vertices": 241,
+          "max_weight": 0.333711,
+          "weight_sum": 38.610253
+        },
+        "Spine01": {
+          "weighted_vertices": 448,
+          "max_weight": 0.383795,
+          "weight_sum": 77.960979
+        },
+        "Spine": {
+          "weighted_vertices": 738,
+          "max_weight": 0.434228,
+          "weight_sum": 145.18793
+        },
+        "LeftShoulder": {
+          "weighted_vertices": 187,
+          "max_weight": 0.608995,
+          "weight_sum": 23.977125
+        },
+        "LeftArm": {
+          "weighted_vertices": 187,
+          "max_weight": 0.770638,
+          "weight_sum": 54.30098
+        },
+        "LeftForeArm": {
+          "weighted_vertices": 187,
+          "max_weight": 0.728869,
+          "weight_sum": 70.469098
+        },
+        "LeftHand": {
+          "weighted_vertices": 139,
+          "max_weight": 0.486422,
+          "weight_sum": 34.947628
+        },
+        "RightShoulder": {
+          "weighted_vertices": 179,
+          "max_weight": 0.530734,
+          "weight_sum": 22.744185
+        },
+        "RightArm": {
+          "weighted_vertices": 179,
+          "max_weight": 0.796361,
+          "weight_sum": 51.875143
+        },
+        "RightForeArm": {
+          "weighted_vertices": 179,
+          "max_weight": 0.729941,
+          "weight_sum": 67.564046
+        },
+        "RightHand": {
+          "weighted_vertices": 132,
+          "max_weight": 0.486888,
+          "weight_sum": 33.484353
+        },
+        "neck": {
+          "weighted_vertices": 561,
+          "max_weight": 0.435747,
+          "weight_sum": 136.164717
+        },
+        "Head": {
+          "weighted_vertices": 402,
+          "max_weight": 0.922472,
+          "weight_sum": 135.345442
+        },
+        "Jaw": {
+          "weighted_vertices": 195,
+          "max_weight": 0.883914,
+          "weight_sum": 101.416094
+        }
+      },
+      "material_split": {
+        "body_faces": 2096,
+        "head_faces": 858
+      }
+    },
+    "textures": {
+      "base": {
+        "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Textures\\T_RangedMaw_BaseColor_1K.png",
+        "size": [
+          1024,
+          1024
+        ],
+        "colorspace": "sRGB"
+      },
+      "normal": {
+        "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Textures\\T_RangedMaw_Normal_1K.png",
+        "size": [
+          1024,
+          1024
+        ],
+        "colorspace": "Non-Color"
+      },
+      "emission": {
+        "path": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Textures\\T_RangedMaw_Emission_1K.png",
+        "size": [
+          1024,
+          1024
+        ],
+        "colorspace": "sRGB"
+      }
+    },
+    "bone_count": 26,
+    "actions": {
+      "Idle": [
+        0,
+        29
+      ],
+      "Walk_Heavy_Ranged": [
+        0,
+        31
+      ],
+      "Attack_Ranged_MawDischarge": [
+        0,
+        32
+      ],
+      "Hit_FullBody": [
+        0,
+        6
+      ],
+      "Death_Backward": [
+        0,
+        35
+      ]
+    },
+    "action_authorship_and_release_evidence": {
+      "Idle": {
+        "frame_range": [
+          0,
+          29
+        ],
+        "authored_new_for_ranged_maw": true,
+        "source_animation_imported_or_copied": false
+      },
+      "Walk_Heavy_Ranged": {
+        "frame_range": [
+          0,
+          31
+        ],
+        "authored_new_for_ranged_maw": true,
+        "source_animation_imported_or_copied": false
+      },
+      "Attack_Ranged_MawDischarge": {
+        "frame_range": [
+          0,
+          32
+        ],
+        "authored_new_for_ranged_maw": true,
+        "source_animation_imported_or_copied": false,
+        "frame21": {
+          "release_marker": 21,
+          "jaw_open_delta_degrees": 38.0,
+          "spine_recoil_delta_degrees": 16.0
+        }
+      },
+      "Hit_FullBody": {
+        "frame_range": [
+          0,
+          6
+        ],
+        "authored_new_for_ranged_maw": true,
+        "source_animation_imported_or_copied": false
+      },
+      "Death_Backward": {
+        "frame_range": [
+          0,
+          35
+        ],
+        "authored_new_for_ranged_maw": true,
+        "source_animation_imported_or_copied": false
+      }
+    },
+    "videos": [
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\RangedMaw_Turntable.mp4",
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\Action_Idle.mp4",
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\Action_Walk_Heavy_Ranged.mp4",
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\Action_Attack_Ranged_MawDischarge.mp4",
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\Action_Hit_FullBody.mp4",
+      "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\Action_Death_Backward.mp4"
+    ],
+    "contact_sheet": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\Renders\\RangedMaw_ActionContactSheet.png"
+  },
+  "fresh_import": {
+    "LOD0": {
+      "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\RangedMaw_LOD0.fbx",
+      "triangles": 5810,
+      "vertices": 2907,
+      "bone_count": 26,
+      "bones": [
+        "Hips",
+        "LeftUpLeg",
+        "LeftLeg",
+        "LeftFoot",
+        "LeftToeBase",
+        "RightUpLeg",
+        "RightLeg",
+        "RightFoot",
+        "RightToeBase",
+        "Spine02",
+        "Spine01",
+        "Spine",
+        "LeftShoulder",
+        "LeftArm",
+        "LeftForeArm",
+        "LeftHand",
+        "RightShoulder",
+        "RightArm",
+        "RightForeArm",
+        "RightHand",
+        "neck",
+        "Head",
+        "head_end",
+        "headfront",
+        "Jaw",
+        "ProjectileOrigin_Mouth"
+      ],
+      "max_vertex_influences": 4,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "M_RangedMaw_Body",
+        "M_RangedMaw_Head"
+      ],
+      "actions": {
+        "Attack_Ranged_MawDischarge": [
+          0,
+          32
+        ],
+        "Death_Backward": [
+          0,
+          35
+        ],
+        "Hit_FullBody": [
+          0,
+          6
+        ],
+        "Idle": [
+          0,
+          29
+        ],
+        "Walk_Heavy_Ranged": [
+          0,
+          31
+        ]
+      },
+      "import_anim_offset": 0.0,
+      "packed_images": {
+        "T_RangedMaw_BaseColor_1K.png": true,
+        "T_RangedMaw_Emission_1K.png": true,
+        "T_RangedMaw_Normal_1K.png": true
+      },
+      "status": "PASS"
+    },
+    "LOD1": {
+      "fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\RangedMaw\\Generated\\RangedMaw_LOD1.fbx",
+      "triangles": 2954,
+      "vertices": 1479,
+      "bone_count": 26,
+      "bones": [
+        "Hips",
+        "LeftUpLeg",
+        "LeftLeg",
+        "LeftFoot",
+        "LeftToeBase",
+        "RightUpLeg",
+        "RightLeg",
+        "RightFoot",
+        "RightToeBase",
+        "Spine02",
+        "Spine01",
+        "Spine",
+        "LeftShoulder",
+        "LeftArm",
+        "LeftForeArm",
+        "LeftHand",
+        "RightShoulder",
+        "RightArm",
+        "RightForeArm",
+        "RightHand",
+        "neck",
+        "Head",
+        "head_end",
+        "headfront",
+        "Jaw",
+        "ProjectileOrigin_Mouth"
+      ],
+      "max_vertex_influences": 4,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "M_RangedMaw_Body",
+        "M_RangedMaw_Head"
+      ],
+      "actions": {
+        "Attack_Ranged_MawDischarge": [
+          0,
+          32
+        ],
+        "Death_Backward": [
+          0,
+          35
+        ],
+        "Hit_FullBody": [
+          0,
+          6
+        ],
+        "Idle": [
+          0,
+          29
+        ],
+        "Walk_Heavy_Ranged": [
+          0,
+          31
+        ]
+      },
+      "import_anim_offset": 0.0,
+      "packed_images": {
+        "T_RangedMaw_BaseColor_1K.png": true,
+        "T_RangedMaw_Emission_1K.png": true,
+        "T_RangedMaw_Normal_1K.png": true
+      },
+      "status": "PASS"
+    }
+  },
+  "prohibited_steps_not_run": [
+    "Meshy remesh",
+    "Meshy rig",
+    "Unity import",
+    "prefab/code modification"
+  ]
+}

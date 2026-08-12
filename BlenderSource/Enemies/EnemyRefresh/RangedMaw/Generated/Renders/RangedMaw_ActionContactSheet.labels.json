@@ -1,0 +1,47 @@
+[
+  {
+    "tile": "00.png",
+    "action": "Idle",
+    "frame": 0
+  },
+  {
+    "tile": "01.png",
+    "action": "Walk_Heavy_Ranged",
+    "frame": 0
+  },
+  {
+    "tile": "02.png",
+    "action": "Walk_Heavy_Ranged",
+    "frame": 16
+  },
+  {
+    "tile": "03.png",
+    "action": "Attack_Ranged_MawDischarge",
+    "frame": 15
+  },
+  {
+    "tile": "04.png",
+    "action": "Attack_Ranged_MawDischarge",
+    "frame": 21
+  },
+  {
+    "tile": "05.png",
+    "action": "Attack_Ranged_MawDischarge",
+    "frame": 32
+  },
+  {
+    "tile": "06.png",
+    "action": "Hit_FullBody",
+    "frame": 2
+  },
+  {
+    "tile": "07.png",
+    "action": "Death_Backward",
+    "frame": 16
+  },
+  {
+    "tile": "08.png",
+    "action": "Death_Backward",
+    "frame": 35
+  }
+]

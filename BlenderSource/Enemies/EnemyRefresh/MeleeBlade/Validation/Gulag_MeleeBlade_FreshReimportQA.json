@@ -1,0 +1,230 @@
+{
+  "blender_version": "5.2.0 LTS",
+  "factory_fresh_reimport": true,
+  "source_unchanged": true,
+  "source_fbx": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\MeshySource\\Gulag_MeleeBlade_Meshy6.fbx",
+  "source_triangles": 117608,
+  "expected_bones": 26,
+  "expected_actions": {
+    "Idle": [
+      0,
+      29
+    ],
+    "Run_Fast_Melee": [
+      0,
+      19
+    ],
+    "Attack_Melee_OverheadSmash": [
+      0,
+      20
+    ],
+    "Hit_FullBody": [
+      0,
+      6
+    ],
+    "Death_Backward": [
+      0,
+      35
+    ]
+  },
+  "lod0": {
+    "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\Exports\\Gulag_MeleeBlade_LOD0.fbx",
+    "bytes": 1208140,
+    "mesh_count": 1,
+    "triangles": 5750,
+    "vertices": 2952,
+    "bones": 26,
+    "bone_names": [
+      "Head",
+      "Hips",
+      "Jaw",
+      "LeftArm",
+      "LeftFoot",
+      "LeftForeArm",
+      "LeftHand",
+      "LeftLeg",
+      "LeftShoulder",
+      "LeftToeBase",
+      "LeftUpLeg",
+      "ProjectileOrigin_Mouth",
+      "RightArm",
+      "RightFoot",
+      "RightForeArm",
+      "RightHand",
+      "RightLeg",
+      "RightShoulder",
+      "RightToeBase",
+      "RightUpLeg",
+      "Spine",
+      "Spine01",
+      "Spine02",
+      "head_end",
+      "headfront",
+      "neck"
+    ],
+    "max_weights": 2,
+    "uv_layers": 1,
+    "material_slots": 2,
+    "materials": [
+      "Body",
+      "Head"
+    ],
+    "fbx_import_raw_action_ranges": {
+      "Attack_Melee_OverheadSmash": [
+        0.0,
+        20.0
+      ],
+      "Death_Backward": [
+        0.0,
+        35.0
+      ],
+      "Hit_FullBody": [
+        0.0,
+        6.0
+      ],
+      "Idle": [
+        0.0,
+        29.0
+      ],
+      "Run_Fast_Melee": [
+        0.0,
+        19.0
+      ]
+    },
+    "actions": {
+      "Attack_Melee_OverheadSmash": [
+        0.0,
+        20.0
+      ],
+      "Death_Backward": [
+        0.0,
+        35.0
+      ],
+      "Hit_FullBody": [
+        0.0,
+        6.0
+      ],
+      "Idle": [
+        0.0,
+        29.0
+      ],
+      "Run_Fast_Melee": [
+        0.0,
+        19.0
+      ]
+    },
+    "dimensions": [
+      1.807384,
+      0.336878,
+      1.898726
+    ],
+    "checks": {
+      "26_bones": true,
+      "max_4_weights": true,
+      "has_uv": true,
+      "two_material_slots": true,
+      "actions_and_ranges": true,
+      "triangles_at_most_6000": true
+    }
+  },
+  "lod1": {
+    "file": "C:\\Users\\kang9\\Documents\\ChatGPT\\Gulag-project\\BlenderSource\\Enemies\\EnemyRefresh\\MeleeBlade\\Exports\\Gulag_MeleeBlade_LOD1.fbx",
+    "bytes": 1100556,
+    "mesh_count": 1,
+    "triangles": 2999,
+    "vertices": 1575,
+    "bones": 26,
+    "bone_names": [
+      "Head",
+      "Hips",
+      "Jaw",
+      "LeftArm",
+      "LeftFoot",
+      "LeftForeArm",
+      "LeftHand",
+      "LeftLeg",
+      "LeftShoulder",
+      "LeftToeBase",
+      "LeftUpLeg",
+      "ProjectileOrigin_Mouth",
+      "RightArm",
+      "RightFoot",
+      "RightForeArm",
+      "RightHand",
+      "RightLeg",
+      "RightShoulder",
+      "RightToeBase",
+      "RightUpLeg",
+      "Spine",
+      "Spine01",
+      "Spine02",
+      "head_end",
+      "headfront",
+      "neck"
+    ],
+    "max_weights": 2,
+    "uv_layers": 1,
+    "material_slots": 2,
+    "materials": [
+      "Body",
+      "Head"
+    ],
+    "fbx_import_raw_action_ranges": {
+      "Attack_Melee_OverheadSmash": [
+        0.0,
+        20.0
+      ],
+      "Death_Backward": [
+        0.0,
+        35.0
+      ],
+      "Hit_FullBody": [
+        0.0,
+        6.0
+      ],
+      "Idle": [
+        0.0,
+        29.0
+      ],
+      "Run_Fast_Melee": [
+        0.0,
+        19.0
+      ]
+    },
+    "actions": {
+      "Attack_Melee_OverheadSmash": [
+        0.0,
+        20.0
+      ],
+      "Death_Backward": [
+        0.0,
+        35.0
+      ],
+      "Hit_FullBody": [
+        0.0,
+        6.0
+      ],
+      "Idle": [
+        0.0,
+        29.0
+      ],
+      "Run_Fast_Melee": [
+        0.0,
+        19.0
+      ]
+    },
+    "dimensions": [
+      1.807384,
+      0.337513,
+      1.899503
+    ],
+    "checks": {
+      "26_bones": true,
+      "max_4_weights": true,
+      "has_uv": true,
+      "two_material_slots": true,
+      "actions_and_ranges": true,
+      "triangles_about_3000": true
+    }
+  }
+}

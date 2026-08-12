@@ -1,0 +1,103 @@
+{
+  "task": {
+    "id": "019ff515-2c96-7a28-8800-bebea0581f97",
+    "type": "multi-image-to-3d",
+    "status": "SUCCEEDED",
+    "progress": 100,
+    "consumed_credits": 30,
+    "ai_model": "meshy-6",
+    "model_type": "standard",
+    "pose_mode": "t-pose",
+    "should_texture": true,
+    "enable_pbr": true,
+    "should_remesh": false,
+    "hd_texture": false,
+    "image_enhancement": false,
+    "remove_lighting": true,
+    "origin_at": "bottom",
+    "target_formats": [
+      "fbx"
+    ]
+  },
+  "inputs": [
+    "Assets/Art/Concept/Enemies/EnemyRefresh/MeshyInputs/RangedMaw_FRONT.png",
+    "Assets/Art/Concept/Enemies/EnemyRefresh/MeshyInputs/RangedMaw_BACK.png",
+    "Assets/Art/Concept/Enemies/EnemyRefresh/MeshyInputs/RangedMaw_LEFT.png",
+    "Assets/Art/Concept/Enemies/EnemyRefresh/MeshyInputs/RangedMaw_RIGHT.png"
+  ],
+  "outputs": [
+    {
+      "path": "RangedMaw_Meshy6_Source.fbx",
+      "bytes": 21494460,
+      "sha256": "DC9CCD3948E5626978332A495C4999792D49898F6DAE974352FFADD018F5047D"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Source_textures/base_color.png",
+      "bytes": 8947723,
+      "resolution": "2048x2048",
+      "sha256": "16E0526CC860BF747C480D082FED1EAC2F0A3AAFD04FE98C54A717A921B929C2"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Source_textures/metallic.png",
+      "bytes": 56713,
+      "resolution": "2048x2048",
+      "sha256": "C1D2C171C05174B11C260E80BAA6F29F0F1D1F75299FC139F154AD1C9715AC7D"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Source_textures/roughness.png",
+      "bytes": 1241336,
+      "resolution": "2048x2048",
+      "sha256": "A3492CA74A026EA93903199842F1C6475C85BFBE69CD1B29DA1D0540F677AF60"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Source_textures/normal.png",
+      "bytes": 6212091,
+      "resolution": "2048x2048",
+      "sha256": "D0EFA41F2E8D1A7744A4FDDF50DCFDA1305548BCC440FE32CA6FD55BF6B9D29F"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Source_textures/emission.png",
+      "bytes": 74982,
+      "resolution": "2048x2048",
+      "sha256": "ADD9B0E96E164C1295E56B6B0F4E36017157A2A6F13633D7ECF5A1FFE2B32D72"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Preview.png",
+      "bytes": 83282,
+      "sha256": "C35A091FF46BC36B56C9E2718DD16EBC57C527EF477E65FF7DB75D501906CECB"
+    },
+    {
+      "path": "RangedMaw_Meshy6_Blender52_QA.png",
+      "bytes": 455339,
+      "sha256": "F64FB8A4ED65E5BD29B61BB73EF5F7D2AB86B6F855AD1BA673B58325732009EA"
+    }
+  ],
+  "blender_fresh_import_qa": {
+    "version": "5.2.0 LTS",
+    "mesh_count": 1,
+    "armature_count": 0,
+    "vertices": 68666,
+    "triangles": 137328,
+    "material_count": 1,
+    "uv_layer_count": 1,
+    "texture_image_count": 5,
+    "textures_packed_in_fbx": true,
+    "dimensions_xyz": [
+      1.675623,
+      0.518035,
+      1.89901
+    ],
+    "form_review": "PASS_WITH_NOTES",
+    "notes": [
+      "Human-proportioned neutral T-pose and dominant open cranial maw are preserved.",
+      "The generated base appearance is lighter and pinker than the requested dark reddish-brown tissue, and black tendon contrast is weak.",
+      "The 137328-triangle source is not yet WebGL-optimized; remesh was intentionally not performed in this step."
+    ]
+  },
+  "prohibited_steps_not_run": [
+    "remesh",
+    "rig",
+    "animation",
+    "Unity import or modification"
+  ]
+}
