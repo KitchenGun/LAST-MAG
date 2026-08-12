@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public sealed class StartMenuController : MonoBehaviour
 {
+    private const int k_BuildIdLength = 8;
+
     private static readonly PlayerClassId[] Classes =
     {
         PlayerClassId.Grenadier,
@@ -28,6 +30,7 @@ public sealed class StartMenuController : MonoBehaviour
     private void Awake()
     {
         RunResultStore.Clear();
+        InitializeBuildVersion();
         m_playButton = FindPlayButton();
         if (m_playButton == null)
         {
@@ -76,6 +79,59 @@ public sealed class StartMenuController : MonoBehaviour
         }
 
         UpdateSelectionVisuals(PlayerClassId.Unknown);
+    }
+
+    private void InitializeBuildVersion()
+    {
+        GameObject versionObject = new(
+            "BuildVersionText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+        versionObject.transform.SetParent(transform, false);
+
+        TextMeshProUGUI versionText = versionObject.GetComponent<TextMeshProUGUI>();
+        TMP_Text fontSource = FindFirstFontSource();
+        if (fontSource != null)
+        {
+            versionText.font = fontSource.font;
+        }
+        versionText.text = FormatBuildVersion(Application.version, Application.buildGUID, Application.isEditor);
+        versionText.fontSize = 14f;
+        versionText.color = new Color(0.68f, 0.78f, 0.8f, 0.65f);
+        versionText.alignment = TextAlignmentOptions.BottomLeft;
+        versionText.raycastTarget = false;
+        versionText.overflowMode = TextOverflowModes.Overflow;
+
+        RectTransform rect = versionText.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.zero;
+        rect.pivot = Vector2.zero;
+        rect.anchoredPosition = new Vector2(20f, 14f);
+        rect.sizeDelta = new Vector2(520f, 28f);
+    }
+
+    private TMP_Text FindFirstFontSource()
+    {
+        foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (text.font != null)
+            {
+                return text;
+            }
+        }
+        return null;
+    }
+
+    internal static string FormatBuildVersion(string version, string buildGuid, bool isEditor)
+    {
+        string normalizedVersion = string.IsNullOrWhiteSpace(version) ? "0.0.0" : version.Trim();
+        string compactGuid = string.IsNullOrWhiteSpace(buildGuid)
+            ? string.Empty
+            : buildGuid.Replace("-", string.Empty).ToUpperInvariant();
+        string buildId = isEditor
+            ? "EDITOR"
+            : compactGuid.Length >= k_BuildIdLength
+                ? compactGuid[..k_BuildIdLength]
+                : "UNKNOWN";
+        return $"v{normalizedVersion} · WEB-{buildId}";
     }
 
     private Button FindButton(string objectName)
@@ -255,5 +311,8 @@ public sealed class StartMenuController : MonoBehaviour
         Debug.Assert(RunResultStore.GetPlayerClassName(PlayerClassId.Engineer) == "ENGINEER");
         Debug.Assert(RunResultStore.GetPlayerClassName(PlayerClassId.Sniper) == "SNIPER");
         Debug.Assert(RunResultStore.GetPlayerClassName(PlayerClassId.Unknown) == "UNKNOWN");
+        Debug.Assert(FormatBuildVersion("0.1.0", "01234567-89ab-cdef", false)
+            == "v0.1.0 · WEB-01234567");
+        Debug.Assert(FormatBuildVersion("0.1.0", string.Empty, true) == "v0.1.0 · WEB-EDITOR");
     }
 }
