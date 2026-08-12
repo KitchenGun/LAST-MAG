@@ -180,7 +180,6 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_vfxEmitter?.EmitExplosion(transform.position, m_radius, !m_usesGravity);
         SpatialAudio.PlayRandomOneShot(m_explosionClips, transform.position,
             m_explosionMaxDistance, m_explosionVolume);
-        int comboSnapshot = m_scoreSystem != null ? m_scoreSystem.ComboLevel : 0;
         m_damagedEnemies.Clear();
         m_killedEnemies.Clear();
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, m_radius, s_ExplosionHits,
@@ -195,13 +194,13 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             }
         }
 
-        if (m_player != null && Vector3.Distance(transform.position, m_player.transform.position) <= m_radius)
-        {
-            m_player.ApplyDamage(m_selfDamage, m_selfDeathCause);
-        }
-        m_scoreSystem?.RegisterSkillBatch(m_killedEnemies, comboSnapshot);
+        PlayerHealth playerInBlast = m_player != null
+            && Vector3.Distance(transform.position, m_player.transform.position) <= m_radius
+                ? m_player : null;
+        m_scoreSystem?.RegisterSkillBatch(m_killedEnemies);
         Hide();
         m_owner?.NotifyProjectileExploded();
+        playerInBlast?.ApplyDamage(m_selfDamage, m_selfDeathCause);
     }
 
     public void Hide()

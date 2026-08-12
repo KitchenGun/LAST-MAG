@@ -29,7 +29,7 @@ public sealed class RunResultSnapshot
         int rangedKills,
         int headshotKills,
         int chainKills,
-        int maxComboLevel,
+        int maxComboCount,
         int pistolKills,
         int shotgunKills,
         int rifleKills,
@@ -48,7 +48,7 @@ public sealed class RunResultSnapshot
         RangedKills = rangedKills;
         HeadshotKills = headshotKills;
         ChainKills = chainKills;
-        MaxComboLevel = maxComboLevel;
+        MaxComboCount = maxComboCount;
         PistolKills = pistolKills;
         ShotgunKills = shotgunKills;
         RifleKills = rifleKills;
@@ -68,7 +68,7 @@ public sealed class RunResultSnapshot
     public int RangedKills { get; }
     public int HeadshotKills { get; }
     public int ChainKills { get; }
-    public int MaxComboLevel { get; }
+    public int MaxComboCount { get; }
     public int PistolKills { get; }
     public int ShotgunKills { get; }
     public int RifleKills { get; }

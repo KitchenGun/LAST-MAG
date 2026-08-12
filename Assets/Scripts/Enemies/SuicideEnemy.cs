@@ -10,6 +10,8 @@ public sealed class SuicideEnemy : MonoBehaviour
     private const float k_MinWarningEmission = 0.25f;
     private const float k_MaxWarningEmission = 4f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
+    private static readonly int s_Warning = Animator.StringToHash("Warning");
+    private static readonly int s_WarningSpeed = Animator.StringToHash("WarningSpeed");
     private static readonly int s_BaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly int s_EmissionColor = Shader.PropertyToID("_EmissionColor");
 
@@ -85,6 +87,8 @@ public sealed class SuicideEnemy : MonoBehaviour
         if (m_animator != null)
         {
             m_animator.SetBool(s_IsMoving, false);
+            m_animator.ResetTrigger(s_Warning);
+            m_animator.SetFloat(s_WarningSpeed, 1f);
         }
         if (m_agent != null && m_agent.isOnNavMesh)
         {
@@ -171,21 +175,28 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_agent.isStopped = true;
         m_explosionTime = Time.time + m_warningDuration;
         SetMoving(false);
+        PlayWarningAnimation(1f);
         UpdateWarningMaterial();
     }
 
     private void StartDeathExplosion(KillContext context)
     {
         m_isDying = true;
+        if (m_scoreSystem == null)
+        {
+            m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+        }
         m_sourceWeapon = context.Weapon;
         m_hasPlayerAttribution = context.IsPlayerAttributed;
-        m_hasClassSkillAttribution = context.IsClassSkillAttributed;
+        m_hasClassSkillAttribution = ResolveClassSkillAttribution(
+            context, m_scoreSystem != null && m_scoreSystem.IsBulletTimeActive);
         if (m_agent.isOnNavMesh)
         {
             m_agent.isStopped = true;
         }
         m_explosionTime = Time.time + m_deathExplosionDelay;
         SetMoving(false);
+        PlayWarningAnimation(4f);
         UpdateWarningMaterial();
     }
 
@@ -211,18 +222,18 @@ public sealed class SuicideEnemy : MonoBehaviour
         {
             m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
         }
-        int comboLevelSnapshot = m_scoreSystem != null ? m_scoreSystem.ComboLevel : 0;
         List<EnemyType> chainKills = new();
         KillContext explosionContext = KillContext.Chain(
             sourceWeapon, m_hasPlayerAttribution, m_hasClassSkillAttribution);
         m_damagedPlayers.Clear();
         m_damagedEnemies.Clear();
+        PlayerHealth playerToDamage = null;
         foreach (Collider hit in Physics.OverlapSphere(transform.position, m_explosionRadius, Physics.AllLayers, QueryTriggerInteraction.Ignore))
         {
             PlayerHealth player = hit.GetComponentInParent<PlayerHealth>();
             if (player != null && m_damagedPlayers.Add(player))
             {
-                player.ApplyDamage(m_explosionDamage, PlayerDeathCause.SuicideBacteriophage);
+                playerToDamage ??= player;
             }
 
             EnemyHealth enemy = hit.GetComponentInParent<EnemyHealth>();
@@ -238,11 +249,18 @@ public sealed class SuicideEnemy : MonoBehaviour
         if (m_hasPlayerAttribution)
         {
             m_scoreSystem?.RegisterChainBatch(
-                chainKills, comboLevelSnapshot, sourceWeapon, m_hasClassSkillAttribution);
+                chainKills, sourceWeapon, m_hasClassSkillAttribution);
         }
 
         m_health.DropAmmo(transform.position);
         m_health.ReturnToPool();
+        playerToDamage?.ApplyDamage(m_explosionDamage, PlayerDeathCause.SuicideBacteriophage);
+    }
+
+    private static bool ResolveClassSkillAttribution(KillContext context, bool bulletTimeActive)
+    {
+        return context.IsClassSkillAttributed
+            || (context.Source == DamageSource.DirectWeapon && bulletTimeActive);
     }
 
     private WeaponId ResolveSourceWeapon()
@@ -308,6 +326,17 @@ public sealed class SuicideEnemy : MonoBehaviour
         return 0.5f - 0.5f * Mathf.Cos(5f * Mathf.PI * progress * progress);
     }
 
+    private void PlayWarningAnimation(float speed)
+    {
+        if (m_animator == null || m_animator.runtimeAnimatorController == null)
+        {
+            return;
+        }
+
+        m_animator.SetFloat(s_WarningSpeed, speed);
+        m_animator.SetTrigger(s_Warning);
+    }
+
     private void SetMoving(bool isMoving)
     {
         if (m_isMoving == isMoving)
@@ -330,6 +359,11 @@ public sealed class SuicideEnemy : MonoBehaviour
         Debug.Assert(!m_hasExploded || m_isDying || m_isWarning);
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(0f), 0f));
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(1f), 1f));
+        Debug.Assert(!ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), false));
+        Debug.Assert(ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), true));
+        Debug.Assert(!ResolveClassSkillAttribution(KillContext.Chain(WeaponId.DMR, true), true));
+        Debug.Assert(ResolveClassSkillAttribution(KillContext.Skill(WeaponId.Rifle), false));
+        Debug.Assert(ResolveClassSkillAttribution(KillContext.Chain(WeaponId.Rifle, true, true), false));
     }
 
     private void OnValidate()

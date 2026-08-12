@@ -7,6 +7,8 @@ public sealed class GameplayHUD : MonoBehaviour
     private const int k_WeaponSlotCount = 2;
     private const int k_HudRowCount = 3;
     private const int k_PickupPopupPoolSize = 4;
+    private const int k_ScoreFeedbackPoolSize = 6;
+    private const int k_ComboBulletCount = 5;
     private const float k_EmptyAmmoFeedbackDuration = 0.2f;
     private const float k_InactiveWeaponAlpha = 0.4f;
     private const float k_ActiveWeaponFontSize = 22f;
@@ -15,18 +17,32 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_PickupPopupFadeDuration = 0.3f;
     private const float k_PickupPopupSpacing = 38f;
     private const float k_PickupPopupMoveSpeed = 260f;
-    private const float k_ScoreFeedbackDuration = 1.1f;
-    private const float k_ScoreFeedbackFadeDuration = 0.25f;
+    private const float k_ScoreFeedbackDuration = 2.25f;
+    private const float k_ScoreFeedbackFadeDuration = 0.3f;
+    private const float k_ScoreFeedbackSpacing = 32f;
+    private const float k_ComboDuration = 5f;
     private const float k_HitMarkerDuration = 0.12f;
     private const float k_HitMarkerFadeDuration = 0.04f;
     private const float k_HitMarkerPulseDuration = 0.06f;
     private const float k_SkillReadyFlashDuration = 0.3f;
+    private const float k_ComboBulletPitch = 24.5f;
+    private const float k_ComboBulletVisibleHeight = 23.5f;
+    private const float k_ComboClipVisibleHeightRatio = 0.975f;
+    private const float k_ComboStackVisibleHeight =
+        k_ComboBulletVisibleHeight + (k_ComboBulletCount - 1) * k_ComboBulletPitch;
     private const float k_MaxDamageVignetteAlpha = 0.68f;
     private const float k_DamageVignetteIncreaseSpeed = 3.5f;
     private const float k_DamageVignetteRecoverySpeed = 1.2f;
     private const float k_DmrScopeVignetteAlpha = 0.68f;
     private const float k_DmrScopeTransitionDuration = 0.12f;
     private static readonly Vector2 k_PickupPopupBasePosition = new(-170f, 48f);
+    private static readonly Vector2 k_ScoreFeedbackBasePosition = new(0f, -72f);
+    private static readonly Vector2 k_ComboBulletStartPosition = new(86f, -55f);
+    private static readonly Vector2 k_ComboBulletSize = new(128f, 32f);
+    private static readonly Vector2 k_ComboClipPosition = new(24f, -104f);
+    private static readonly Vector2 k_ComboClipSize =
+        new(25f, k_ComboStackVisibleHeight / k_ComboClipVisibleHeightRatio);
+    private static readonly Color k_MaxComboColor = new Color32(234, 64, 71, 255);
     private static readonly Vector2 k_WeaponBorderSize = new(500f, 54f);
     private static readonly Vector2 k_WeaponBackgroundSize = new(496f, 50f);
     private static readonly Color k_ActiveBorderColor = new(1f, 1f, 1f, 0.65f);
@@ -49,6 +65,8 @@ public sealed class GameplayHUD : MonoBehaviour
     [SerializeField] private Sprite m_grenadeSkillSilhouette;
     [SerializeField] private Sprite m_rocketSkillSilhouette;
     [SerializeField] private Sprite m_bulletTimeSkillSilhouette;
+    [SerializeField] private Sprite m_comboBulletSprite;
+    [SerializeField] private Sprite m_comboClipSprite;
 
     private readonly TextMeshProUGUI[] m_weaponNumberTexts = new TextMeshProUGUI[k_HudRowCount];
     private readonly TextMeshProUGUI[] m_weaponNameTexts = new TextMeshProUGUI[k_HudRowCount];
@@ -59,11 +77,14 @@ public sealed class GameplayHUD : MonoBehaviour
     private readonly Sprite[] m_weaponSprites = new Sprite[4];
     private readonly TextMeshProUGUI[] m_pickupPopups = new TextMeshProUGUI[k_PickupPopupPoolSize];
     private readonly float[] m_pickupPopupExpiry = new float[k_PickupPopupPoolSize];
+    private readonly TextMeshProUGUI[] m_scoreFeedbackTexts = new TextMeshProUGUI[k_ScoreFeedbackPoolSize];
+    private readonly float[] m_scoreFeedbackExpiry = new float[k_ScoreFeedbackPoolSize];
+    private readonly Image[] m_comboBulletImages = new Image[k_ComboBulletCount];
     private TextMeshProUGUI m_activeWeaponText;
     private TextMeshProUGUI m_scoreText;
     private TextMeshProUGUI m_comboText;
-    private TextMeshProUGUI m_scoreFeedbackText;
-    private Image m_comboGaugeFill;
+    private RectTransform m_comboPanel;
+    private Image m_comboClipImage;
     private Image m_skillCooldownFill;
     private Image m_hitMarkerImage;
     private Image m_damageVignetteImage;
@@ -75,15 +96,15 @@ public sealed class GameplayHUD : MonoBehaviour
     private Color m_activeWeaponBaseColor = Color.white;
     private Color m_hitMarkerBaseColor = Color.white;
     private float m_emptyAmmoFeedbackUntil;
-    private float m_scoreFeedbackUntil;
     private float m_hitMarkerUntil;
     private float m_hitMarkerPulseScale = 1f;
     private float m_skillReadyFlashUntil;
     private float m_damageVignetteTargetAlpha;
     private float m_dmrScopeVignetteTargetAlpha;
     private int m_pickupPopupCount;
-    private int m_lastComboLevel = -1;
-    private float m_lastComboMultiplier = -1f;
+    private int m_scoreFeedbackCount;
+    private int m_lastComboCount = -1;
+    private int m_lastVisibleComboBullets = -1;
     private string m_lastSkillName;
     private string m_lastSkillStatus;
     private bool m_lastSkillHighlighted;
@@ -153,6 +174,7 @@ public sealed class GameplayHUD : MonoBehaviour
         InitializePickupPopupPool();
         InitializeScoreHud();
         InitializeHitMarker();
+        InitializeScoreFeedbackPool();
         InitializeDamageVignette();
         InitializeDmrScopeVignette();
 
@@ -169,7 +191,7 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         UpdatePickupPopups();
-        UpdateScoreFeedback();
+        UpdateScoreFeedbacks();
         UpdateHitMarker();
         UpdateDamageVignette();
         UpdateDmrScopeVignette();
@@ -337,36 +359,75 @@ public sealed class GameplayHUD : MonoBehaviour
         }
     }
 
-    public void RefreshCombo(int level, float multiplier, float remainingNormalized)
+    public void RefreshCombo(int comboCount, float remainingSeconds)
     {
-        int clampedLevel = Mathf.Clamp(level, 0, 10);
-        float clampedMultiplier = Mathf.Max(1f, multiplier);
-        if (m_comboText != null && (m_lastComboLevel != clampedLevel
-            || !Mathf.Approximately(m_lastComboMultiplier, clampedMultiplier)))
+        int safeCount = Mathf.Max(0, comboCount);
+        int visibleBullets = GetVisibleComboBulletCount(remainingSeconds);
+        bool isVisible = safeCount > 0 && remainingSeconds > 0f;
+        if (m_comboPanel != null)
         {
-            m_lastComboLevel = clampedLevel;
-            m_lastComboMultiplier = clampedMultiplier;
-            m_comboText.text = $"COMBO  {clampedLevel}  x{clampedMultiplier:0.0}";
+            m_comboPanel.gameObject.SetActive(isVisible);
         }
-        if (m_comboGaugeFill != null)
+        if (!isVisible)
         {
-            m_comboGaugeFill.fillAmount = Mathf.Clamp01(remainingNormalized);
+            m_lastComboCount = safeCount;
+            m_lastVisibleComboBullets = visibleBullets;
+            return;
         }
-    }
 
-    public void ShowScoreFeedback(int points, string reason)
-    {
-        if (m_scoreFeedbackText == null || points <= 0)
+        if (m_comboText != null && m_lastComboCount != safeCount)
+        {
+            Color countColor = GetComboCountColor(safeCount);
+            m_comboText.text = $"COMBO  <color=#{ColorUtility.ToHtmlStringRGB(countColor)}>x{safeCount}</color>";
+            m_lastComboCount = safeCount;
+        }
+        if (m_lastVisibleComboBullets == visibleBullets)
         {
             return;
         }
 
-        m_scoreFeedbackText.text = $"+{points}  {reason}";
-        m_scoreFeedbackText.color = reason.StartsWith("PERFECT")
-            ? new Color32(255, 210, 72, 255)
-            : reason.StartsWith("CHAIN") ? new Color32(255, 112, 72, 255) : Color.white;
-        m_scoreFeedbackText.gameObject.SetActive(true);
-        m_scoreFeedbackUntil = Time.unscaledTime + k_ScoreFeedbackDuration;
+        m_lastVisibleComboBullets = visibleBullets;
+        for (int index = 0; index < m_comboBulletImages.Length; index++)
+        {
+            Image bullet = m_comboBulletImages[index];
+            if (bullet != null)
+            {
+                bullet.enabled = m_comboBulletSprite != null && index < visibleBullets;
+            }
+        }
+    }
+
+    public void ShowScoreFeedback(int points, string label)
+    {
+        if (points <= 0 || m_scoreFeedbackTexts[0] == null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI recycled = m_scoreFeedbackCount < k_ScoreFeedbackPoolSize
+            ? m_scoreFeedbackTexts[m_scoreFeedbackCount]
+            : m_scoreFeedbackTexts[k_ScoreFeedbackPoolSize - 1];
+        int newCount = Mathf.Min(m_scoreFeedbackCount + 1, k_ScoreFeedbackPoolSize);
+        for (int index = newCount - 1; index > 0; index--)
+        {
+            m_scoreFeedbackTexts[index] = m_scoreFeedbackTexts[index - 1];
+            m_scoreFeedbackExpiry[index] = m_scoreFeedbackExpiry[index - 1];
+        }
+
+        m_scoreFeedbackCount = newCount;
+        m_scoreFeedbackTexts[0] = recycled;
+        m_scoreFeedbackExpiry[0] = Time.unscaledTime + k_ScoreFeedbackDuration + k_ScoreFeedbackFadeDuration;
+        string trimmedLabel = label?.Trim();
+        recycled.text = string.IsNullOrEmpty(trimmedLabel)
+            ? $"<b>+{points}</b>"
+            : $"{trimmedLabel}  <b>+{points}</b>";
+        recycled.color = Color.white;
+        recycled.gameObject.SetActive(true);
+        for (int index = 0; index < m_scoreFeedbackCount; index++)
+        {
+            m_scoreFeedbackTexts[index].rectTransform.anchoredPosition =
+                GetScoreFeedbackTargetPosition(index);
+        }
     }
 
     public void ShowHitMarker(bool isHeadshot, bool isKill)
@@ -494,6 +555,53 @@ public sealed class GameplayHUD : MonoBehaviour
             && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, k_DmrScopeVignetteAlpha));
         SetDmrAimState(false, false);
         Debug.Assert(m_crosshairImage.enabled && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, 0f));
+        Debug.Assert(GetVisibleComboBulletCount(5f) == 5);
+        Debug.Assert(GetVisibleComboBulletCount(4.999f) == 5);
+        Debug.Assert(GetVisibleComboBulletCount(4f) == 4);
+        Debug.Assert(GetVisibleComboBulletCount(1f) == 1);
+        Debug.Assert(GetVisibleComboBulletCount(0f) == 0);
+        Debug.Assert(GetComboCountColor(1) == Color.white);
+        Debug.Assert(GetComboCountColor(10) == k_MaxComboColor);
+        Debug.Assert(GetComboCountColor(11) == k_MaxComboColor);
+        RefreshCombo(11, 5f);
+        Debug.Assert(m_comboPanel.gameObject.activeSelf && m_comboText.text.Contains("x11"));
+        for (int index = 0; index < m_comboBulletImages.Length; index++)
+        {
+            Debug.Assert(m_comboBulletImages[index].sprite == m_comboBulletSprite);
+            Debug.Assert(m_comboBulletImages[index].preserveAspect);
+            Debug.Assert(m_comboBulletImages[index].color == Color.white);
+            Debug.Assert(m_comboBulletImages[index].enabled == (m_comboBulletSprite != null));
+            if (index > 0)
+            {
+                float pitch = m_comboBulletImages[index - 1].rectTransform.anchoredPosition.y
+                    - m_comboBulletImages[index].rectTransform.anchoredPosition.y;
+                Debug.Assert(Mathf.Approximately(pitch, k_ComboBulletPitch));
+            }
+        }
+        Debug.Assert(m_comboClipImage.sprite == m_comboClipSprite);
+        Debug.Assert(m_comboClipImage.preserveAspect);
+        Debug.Assert(m_comboClipImage.transform.GetSiblingIndex()
+            == m_comboClipImage.transform.parent.childCount - 1);
+        Debug.Assert(Mathf.Abs(
+            k_ComboClipSize.y * k_ComboClipVisibleHeightRatio - k_ComboStackVisibleHeight) < 0.01f);
+        RefreshCombo(11, 4f);
+        Debug.Assert(!m_comboBulletImages[4].enabled);
+        int pickupCountBeforeScoreFeedback = m_pickupPopupCount;
+        for (int index = 1; index <= 7; index++)
+        {
+            ShowScoreFeedback(index, $"TEST {index}");
+        }
+        Debug.Assert(m_scoreFeedbackCount == k_ScoreFeedbackPoolSize);
+        Debug.Assert(m_scoreFeedbackTexts[0].text == "TEST 7  <b>+7</b>");
+        Debug.Assert(m_scoreFeedbackTexts[5].rectTransform.anchoredPosition
+            == GetScoreFeedbackTargetPosition(5));
+        Debug.Assert(GetScoreFeedbackTargetPosition(0).y > GetScoreFeedbackTargetPosition(1).y);
+        Debug.Assert(Mathf.Approximately(GetScoreFeedbackAlpha(2.55f, 0f), 1f));
+        Debug.Assert(Mathf.Abs(GetScoreFeedbackAlpha(2.55f, 2.4f) - 0.5f) < 0.001f);
+        Debug.Assert(Mathf.Approximately(GetScoreFeedbackAlpha(2.55f, 2.55f), 0f));
+        Debug.Assert(m_pickupPopupCount == pickupCountBeforeScoreFeedback);
+        ClearScoreFeedbacks();
+        RefreshCombo(0, 0f);
         m_hitMarkerImage.gameObject.SetActive(false);
         m_hitMarkerImage.rectTransform.localScale = Vector3.one;
         m_hitMarkerUntil = 0f;
@@ -704,34 +812,116 @@ public sealed class GameplayHUD : MonoBehaviour
             return;
         }
 
-        GetOrCreateImage(layer, "ComboGaugeBackground", new Vector2(-48f, -108f), new Vector2(360f, 8f), new Color32(35, 45, 52, 220));
-        m_comboGaugeFill = GetOrCreateImage(layer, "ComboGaugeFill", new Vector2(-48f, -108f), new Vector2(360f, 8f), new Color32(92, 220, 255, 255));
-        m_comboGaugeFill.type = Image.Type.Filled;
-        m_comboGaugeFill.fillMethod = Image.FillMethod.Horizontal;
-        m_comboGaugeFill.fillOrigin = 0;
-
-        Transform existingFeedback = layer.Find("ScoreFeedbackText");
-        if (existingFeedback == null)
-        {
-            GameObject feedbackObject = new("ScoreFeedbackText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-            feedbackObject.transform.SetParent(layer, false);
-            existingFeedback = feedbackObject.transform;
-        }
-        m_scoreFeedbackText = existingFeedback.GetComponent<TextMeshProUGUI>();
-        RectTransform feedbackRect = m_scoreFeedbackText.rectTransform;
-        feedbackRect.anchorMin = Vector2.one;
-        feedbackRect.anchorMax = Vector2.one;
-        feedbackRect.pivot = Vector2.one;
-        feedbackRect.anchoredPosition = new Vector2(-48f, -122f);
-        feedbackRect.sizeDelta = new Vector2(360f, 30f);
-        m_scoreFeedbackText.font = m_font;
-        m_scoreFeedbackText.fontSize = 20f;
-        m_scoreFeedbackText.alignment = TextAlignmentOptions.MidlineRight;
-        m_scoreFeedbackText.raycastTarget = false;
-        m_scoreFeedbackText.gameObject.SetActive(false);
+        DisableLegacyScoreObject(layer, "ComboGaugeBackground");
+        DisableLegacyScoreObject(layer, "ComboGaugeFill");
+        DisableLegacyScoreObject(layer, "ScoreFeedbackText");
+        InitializeComboPanel(layer);
 
         RefreshScore(0);
-        RefreshCombo(0, 1f, 0f);
+        RefreshCombo(0, 0f);
+    }
+
+    private void InitializeComboPanel(Transform layer)
+    {
+        Transform existingPanel = layer.Find("ComboPanel");
+        if (existingPanel == null)
+        {
+            GameObject panelObject = new("ComboPanel", typeof(RectTransform));
+            panelObject.transform.SetParent(layer, false);
+            existingPanel = panelObject.transform;
+        }
+
+        m_comboPanel = (RectTransform)existingPanel;
+        m_comboPanel.anchorMin = new Vector2(0f, 0.5f);
+        m_comboPanel.anchorMax = new Vector2(0f, 0.5f);
+        m_comboPanel.pivot = new Vector2(0f, 0.5f);
+        m_comboPanel.anchoredPosition = new Vector2(52f, 0f);
+        m_comboPanel.sizeDelta = new Vector2(330f, 190f);
+
+        m_comboText.transform.SetParent(m_comboPanel, false);
+        RectTransform comboTextRect = m_comboText.rectTransform;
+        comboTextRect.anchorMin = new Vector2(0f, 1f);
+        comboTextRect.anchorMax = new Vector2(0f, 1f);
+        comboTextRect.pivot = new Vector2(0f, 1f);
+        comboTextRect.anchoredPosition = Vector2.zero;
+        comboTextRect.sizeDelta = new Vector2(320f, 42f);
+        m_comboText.fontSize = 30f;
+        m_comboText.alignment = TextAlignmentOptions.MidlineLeft;
+        m_comboText.richText = true;
+
+        for (int index = 0; index < k_ComboBulletCount; index++)
+        {
+            Image bullet = GetOrCreateImage(
+                m_comboPanel, $"ComboBullet{index}",
+                k_ComboBulletStartPosition + Vector2.down * index * k_ComboBulletPitch,
+                k_ComboBulletSize, Color.white);
+            RectTransform bulletRect = bullet.rectTransform;
+            bulletRect.anchorMin = new Vector2(0f, 1f);
+            bulletRect.anchorMax = new Vector2(0f, 1f);
+            bulletRect.pivot = new Vector2(0.5f, 0.5f);
+            bullet.sprite = m_comboBulletSprite;
+            bullet.type = Image.Type.Simple;
+            bullet.preserveAspect = true;
+            bullet.enabled = false;
+            m_comboBulletImages[index] = bullet;
+        }
+
+        m_comboClipImage = GetOrCreateImage(
+            m_comboPanel, "ComboClip", k_ComboClipPosition, k_ComboClipSize, Color.white);
+        RectTransform clipRect = m_comboClipImage.rectTransform;
+        clipRect.anchorMin = new Vector2(0f, 1f);
+        clipRect.anchorMax = new Vector2(0f, 1f);
+        clipRect.pivot = new Vector2(0.5f, 0.5f);
+        m_comboClipImage.sprite = m_comboClipSprite;
+        m_comboClipImage.type = Image.Type.Simple;
+        m_comboClipImage.preserveAspect = true;
+        m_comboClipImage.enabled = m_comboClipSprite != null;
+        m_comboClipImage.transform.SetAsLastSibling();
+
+        m_comboPanel.gameObject.SetActive(false);
+    }
+
+    private void InitializeScoreFeedbackPool()
+    {
+        Transform crosshair = transform.Find("Crosshair");
+        Debug.Assert(crosshair != null, "Missing HUD Transform: Crosshair");
+        if (crosshair == null)
+        {
+            return;
+        }
+
+        for (int index = 0; index < k_ScoreFeedbackPoolSize; index++)
+        {
+            string objectName = $"ScoreFeedback{index}";
+            Transform existing = crosshair.Find(objectName);
+            TextMeshProUGUI feedback = existing != null ? existing.GetComponent<TextMeshProUGUI>() : null;
+            if (feedback == null)
+            {
+                GameObject feedbackObject = new(
+                    objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+                feedbackObject.transform.SetParent(crosshair, false);
+                feedback = feedbackObject.GetComponent<TextMeshProUGUI>();
+            }
+
+            RectTransform rectTransform = feedback.rectTransform;
+            rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            rectTransform.anchoredPosition = GetScoreFeedbackTargetPosition(index);
+            rectTransform.sizeDelta = new Vector2(560f, 32f);
+            feedback.font = m_font;
+            feedback.fontSize = 24f;
+            feedback.alignment = TextAlignmentOptions.Center;
+            feedback.enableAutoSizing = false;
+            feedback.richText = true;
+            feedback.textWrappingMode = TextWrappingModes.NoWrap;
+            feedback.overflowMode = TextOverflowModes.Overflow;
+            feedback.color = Color.white;
+            feedback.raycastTarget = false;
+            feedback.text = string.Empty;
+            feedback.gameObject.SetActive(false);
+            m_scoreFeedbackTexts[index] = feedback;
+        }
     }
 
     private void InitializeSkillCooldownFill()
@@ -814,22 +1004,29 @@ public sealed class GameplayHUD : MonoBehaviour
         SetBorderState(border, m_lastSkillState is PlayerSkillState.Ready or PlayerSkillState.Armed);
     }
 
-    private void UpdateScoreFeedback()
+    private void UpdateScoreFeedbacks()
     {
-        if (m_scoreFeedbackText == null || !m_scoreFeedbackText.gameObject.activeSelf)
+        while (m_scoreFeedbackCount > 0
+            && m_scoreFeedbackExpiry[m_scoreFeedbackCount - 1] <= Time.unscaledTime)
         {
-            return;
+            RemoveOldestScoreFeedback();
         }
 
-        if (Time.unscaledTime >= m_scoreFeedbackUntil)
+        for (int index = 0; index < m_scoreFeedbackCount; index++)
         {
-            m_scoreFeedbackText.gameObject.SetActive(false);
-            return;
+            TextMeshProUGUI feedback = m_scoreFeedbackTexts[index];
+            Color color = Color.white;
+            color.a = GetScoreFeedbackAlpha(m_scoreFeedbackExpiry[index], Time.unscaledTime);
+            feedback.color = color;
         }
+    }
 
-        Color color = m_scoreFeedbackText.color;
-        color.a = Mathf.Clamp01((m_scoreFeedbackUntil - Time.unscaledTime) / k_ScoreFeedbackFadeDuration);
-        m_scoreFeedbackText.color = color;
+    private void RemoveOldestScoreFeedback()
+    {
+        int oldestIndex = m_scoreFeedbackCount - 1;
+        m_scoreFeedbackTexts[oldestIndex].gameObject.SetActive(false);
+        m_scoreFeedbackExpiry[oldestIndex] = 0f;
+        m_scoreFeedbackCount--;
     }
 
     private void UpdateHitMarker()
@@ -891,6 +1088,49 @@ public sealed class GameplayHUD : MonoBehaviour
         m_pickupPopupCount--;
         m_pickupPopups[m_pickupPopupCount] = recycled;
         m_pickupPopupExpiry[m_pickupPopupCount] = 0f;
+    }
+
+    private void ClearScoreFeedbacks()
+    {
+        for (int index = 0; index < m_scoreFeedbackTexts.Length; index++)
+        {
+            if (m_scoreFeedbackTexts[index] != null)
+            {
+                m_scoreFeedbackTexts[index].gameObject.SetActive(false);
+            }
+            m_scoreFeedbackExpiry[index] = 0f;
+        }
+        m_scoreFeedbackCount = 0;
+    }
+
+    private static int GetVisibleComboBulletCount(float remainingSeconds)
+    {
+        return Mathf.Clamp(Mathf.CeilToInt(Mathf.Clamp(remainingSeconds, 0f, k_ComboDuration)), 0, k_ComboBulletCount);
+    }
+
+    private static Color GetComboCountColor(int comboCount)
+    {
+        float progress = Mathf.InverseLerp(1f, 10f, Mathf.Max(1, comboCount));
+        return Color.Lerp(Color.white, k_MaxComboColor, progress);
+    }
+
+    private static Vector2 GetScoreFeedbackTargetPosition(int index)
+    {
+        return k_ScoreFeedbackBasePosition + Vector2.down * index * k_ScoreFeedbackSpacing;
+    }
+
+    private static float GetScoreFeedbackAlpha(float expiryTime, float now)
+    {
+        return Mathf.Clamp01((expiryTime - now) / k_ScoreFeedbackFadeDuration);
+    }
+
+    private static void DisableLegacyScoreObject(Transform layer, string objectName)
+    {
+        Transform legacy = layer.Find(objectName);
+        if (legacy != null)
+        {
+            legacy.gameObject.SetActive(false);
+        }
     }
 
     private static Color GetWeaponColor(WeaponId weapon)

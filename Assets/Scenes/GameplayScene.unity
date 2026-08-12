@@ -5372,7 +5372,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 128, y: 128}
+  m_SizeDelta: {x: 64, y: 64}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &176661551
 MonoBehaviour:
@@ -5387,14 +5387,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 439018c4a78fa4e4eb1bda328f9754ea, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 55df54371181d1e45bb685605cd0233e, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -30990,6 +30990,8 @@ MonoBehaviour:
   m_grenadeSkillSilhouette: {fileID: 21300000, guid: 583e21c7fb1c2c24f875ecd8518bf598, type: 3}
   m_rocketSkillSilhouette: {fileID: 21300000, guid: 7af4b4d1563388147b62b0f8ed634959, type: 3}
   m_bulletTimeSkillSilhouette: {fileID: 21300000, guid: 973c163b27c32a74e9450ab1c83290f0, type: 3}
+  m_comboBulletSprite: {fileID: 21300000, guid: 2fd92c7d6e2547a0a351137425b5267c, type: 3}
+  m_comboClipSprite: {fileID: 21300000, guid: bc7d7208f11f4fa0b649199205234eb8, type: 3}
 --- !u!1001 &929354306
 PrefabInstance:
   m_ObjectHideFlags: 0

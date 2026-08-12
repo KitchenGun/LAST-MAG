@@ -54,13 +54,12 @@ public readonly struct KillContext
 [DisallowMultipleComponent]
 public sealed class ScoreSystem : MonoBehaviour
 {
-    private const int k_MaxComboLevel = 10;
-    private const float k_ComboMultiplierStep = 0.2f;
-    private const float k_MaxComboDuration = 3f;
-    private const float k_MinComboDuration = 1.5f;
-    private const float k_BasicCoefficient = 0.7f;
-    private const float k_SingleConditionCoefficient = 1f;
-    private const float k_PerfectCoefficient = 1.5f;
+    private const int k_WeaponMatchBonus = 30;
+    private const int k_HeadshotBonus = 30;
+    private const int k_SwapKillBonus = 70;
+    private const int k_ComboBonusStep = 10;
+    private const float k_ComboDuration = 5f;
+    private const float k_SwapKillWindow = 2f;
 
     private GameplayHUD m_hud;
     private float m_survivalAccumulator;
@@ -71,21 +70,26 @@ public sealed class ScoreSystem : MonoBehaviour
     private int m_headshotKills;
     private int m_chainKills;
     private int m_skillKills;
-    private int m_maxComboLevel;
+    private int m_maxComboCount;
     private readonly int[] m_enemyKills = new int[3];
     private readonly int[] m_weaponKills = new int[4];
     private bool m_bulletTimeActive;
     private bool m_runComplete;
+    private WeaponId m_lastDirectKillWeapon = WeaponId.Unknown;
+    private float m_lastDirectKillTime = float.NegativeInfinity;
 
-    public int ComboLevel { get; private set; }
+    public int ComboCount { get; private set; }
     public int TotalScore => m_combatScore + m_survivalScore;
-    public float ComboMultiplier => GetComboMultiplier(ComboLevel);
+    public bool IsBulletTimeActive => m_bulletTimeActive;
 
     public void Initialize(GameplayHUD hud)
     {
         RunResultStore.ClearResult();
         m_hud = hud;
         m_bulletTimeActive = false;
+        ComboCount = 0;
+        m_comboExpiresAt = 0f;
+        ResetSwapCandidate();
         RefreshHud();
     }
 
@@ -110,63 +114,84 @@ public sealed class ScoreSystem : MonoBehaviour
             m_hud?.RefreshScore(TotalScore);
         }
 
-        if (ComboLevel > 0 && Time.unscaledTime >= m_comboExpiresAt)
-        {
-            ComboLevel = 0;
-            m_comboExpiresAt = 0f;
-        }
-
-        float remaining = ComboLevel > 0 ? Mathf.Max(0f, m_comboExpiresAt - Time.unscaledTime) : 0f;
-        float duration = GetComboDuration(ComboLevel);
-        m_hud?.RefreshCombo(ComboLevel, ComboMultiplier, duration > 0f ? remaining / duration : 0f);
+        ExpireCombo(Time.unscaledTime);
+        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(Time.unscaledTime));
     }
 
     public void RegisterDirectKill(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
     {
-        ComboLevel = Mathf.Min(k_MaxComboLevel, ComboLevel + 1);
-        m_maxComboLevel = Mathf.Max(m_maxComboLevel, ComboLevel);
-        RegisterKillStats(enemyType, weapon, isHeadshot, false, false);
-        float coefficient = GetDirectKillCoefficient(enemyType, weapon, isHeadshot);
-        int points = CalculateKillScore(enemyType, coefficient, ComboLevel);
+        float now = Time.unscaledTime;
+        ExpireCombo(now);
+        bool isSwapKill = IsSwapKill(m_lastDirectKillWeapon, weapon, now - m_lastDirectKillTime);
+        bool isSkillKill = m_bulletTimeActive;
+        AdvanceCombo(now);
+        bool weaponMatches = WeaponMatches(enemyType, weapon);
+        int points = CalculateKillScore(
+            enemyType, ComboCount, weaponMatches, isHeadshot, isSwapKill, isSkillKill);
+        RegisterKillStats(enemyType, weapon, isHeadshot, false, isSkillKill);
         m_combatScore += points;
-        m_comboExpiresAt = Time.unscaledTime + GetComboDuration(ComboLevel);
-        m_hud?.ShowScoreFeedback(points, GetFeedbackReason(enemyType, weapon, isHeadshot));
+        m_lastDirectKillWeapon = weapon;
+        m_lastDirectKillTime = now;
+        int baseScore = GetBaseScore(enemyType);
+        if (isSkillKill)
+        {
+            m_hud?.ShowScoreFeedback(baseScore * 2, "SKILL KILL");
+        }
+        if (ComboCount > 1)
+        {
+            m_hud?.ShowScoreFeedback((ComboCount - 1) * k_ComboBonusStep, $"COMBO x{ComboCount}");
+        }
+        if (isSwapKill)
+        {
+            m_hud?.ShowScoreFeedback(k_SwapKillBonus, "SWAP KILL");
+        }
+        if (weaponMatches)
+        {
+            m_hud?.ShowScoreFeedback(k_WeaponMatchBonus, "WEAPON MATCH");
+        }
+        if (isHeadshot)
+        {
+            m_hud?.ShowScoreFeedback(k_HeadshotBonus, "HEADSHOT");
+        }
+        m_hud?.ShowScoreFeedback(baseScore, "ENEMY KILLED");
         RefreshHud();
     }
 
-    public void RegisterSkillBatch(IReadOnlyList<EnemyType> killedEnemies, int comboLevelSnapshot)
+    public void RegisterSkillBatch(IReadOnlyList<EnemyType> killedEnemies)
     {
-        RegisterBatch(killedEnemies, comboLevelSnapshot, WeaponId.Unknown, k_SingleConditionCoefficient, false, true);
+        RegisterBatch(killedEnemies, WeaponId.Unknown, false, true);
     }
 
-    public void RegisterChainBatch(IReadOnlyList<EnemyType> killedEnemies, int comboLevelSnapshot,
+    public void RegisterChainBatch(IReadOnlyList<EnemyType> killedEnemies,
         WeaponId sourceWeapon, bool isClassSkillAttributed = false)
     {
-        RegisterBatch(killedEnemies, comboLevelSnapshot, sourceWeapon, k_BasicCoefficient, true, isClassSkillAttributed);
+        RegisterBatch(killedEnemies, sourceWeapon, true, isClassSkillAttributed);
     }
 
-    private void RegisterBatch(IReadOnlyList<EnemyType> killedEnemies, int comboLevelSnapshot,
-        WeaponId weapon, float coefficient, bool isChain, bool isClassSkillAttributed)
+    private void RegisterBatch(IReadOnlyList<EnemyType> killedEnemies,
+        WeaponId weapon, bool isChain, bool isClassSkillAttributed)
     {
         if (killedEnemies == null || killedEnemies.Count == 0)
         {
             return;
         }
 
-        int scoringLevel = Mathf.Clamp(comboLevelSnapshot, 0, k_MaxComboLevel);
+        float now = Time.unscaledTime;
+        ExpireCombo(now);
+        ResetSwapCandidate();
         int points = 0;
         for (int index = 0; index < killedEnemies.Count; index++)
         {
-            points += CalculateKillScore(killedEnemies[index], coefficient, scoringLevel);
+            AdvanceCombo(now);
+            points += CalculateKillScore(
+                killedEnemies[index], ComboCount, false, false, false, isClassSkillAttributed);
             RegisterKillStats(killedEnemies[index], weapon, false, isChain, isClassSkillAttributed);
         }
 
         m_combatScore += points;
-        ComboLevel = Mathf.Min(k_MaxComboLevel, scoringLevel + killedEnemies.Count);
-        m_maxComboLevel = Mathf.Max(m_maxComboLevel, ComboLevel);
-        m_comboExpiresAt = Time.unscaledTime + GetComboDuration(ComboLevel);
-        string reason = isChain ? (killedEnemies.Count > 1 ? $"CHAIN x{killedEnemies.Count}" : "CHAIN") : "SKILL";
-        m_hud?.ShowScoreFeedback(points, reason);
+        string label = GetBatchFeedbackLabel(
+            killedEnemies.Count, isChain, isClassSkillAttributed);
+        m_hud?.ShowScoreFeedback(points, label);
         RefreshHud();
     }
 
@@ -194,7 +219,7 @@ public sealed class ScoreSystem : MonoBehaviour
             m_enemyKills[(int)EnemyType.Ranged],
             m_headshotKills,
             m_chainKills,
-            m_maxComboLevel,
+            m_maxComboCount,
             m_weaponKills[(int)WeaponId.Pistol - 1],
             m_weaponKills[(int)WeaponId.Shotgun - 1],
             m_weaponKills[(int)WeaponId.Rifle - 1],
@@ -206,40 +231,32 @@ public sealed class ScoreSystem : MonoBehaviour
             m_skillKills));
     }
 
-    public static float GetDirectKillCoefficient(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
+    public static int CalculateKillScore(
+        EnemyType enemyType,
+        int comboCount,
+        bool weaponMatches,
+        bool isHeadshot,
+        bool isSwapKill,
+        bool isSkillKill)
     {
-        bool weaponMatches = WeaponMatches(enemyType, weapon);
-        if (weaponMatches && isHeadshot)
+        int baseScore = GetBaseScore(enemyType);
+        return baseScore
+            + (weaponMatches ? k_WeaponMatchBonus : 0)
+            + (isHeadshot ? k_HeadshotBonus : 0)
+            + (isSwapKill ? k_SwapKillBonus : 0)
+            + Mathf.Max(0, comboCount - 1) * k_ComboBonusStep
+            + (isSkillKill ? baseScore * 2 : 0);
+    }
+
+    public static int GetBaseScore(EnemyType enemyType)
+    {
+        return enemyType switch
         {
-            return k_PerfectCoefficient;
-        }
-        return weaponMatches || isHeadshot ? k_SingleConditionCoefficient : k_BasicCoefficient;
-    }
-
-    public static int CalculateKillScore(EnemyType enemyType, float coefficient, int comboLevel)
-    {
-        return Mathf.RoundToInt(GetBaseScore(enemyType) * coefficient * GetComboMultiplier(comboLevel));
-    }
-
-    public static float GetComboMultiplier(int comboLevel)
-    {
-        return comboLevel <= 0 ? 1f : 1f + (Mathf.Clamp(comboLevel, 1, k_MaxComboLevel) - 1) * k_ComboMultiplierStep;
-    }
-
-    public static float GetComboDuration(int comboLevel)
-    {
-        if (comboLevel <= 0)
-        {
-            return 0f;
-        }
-
-        float progress = (Mathf.Clamp(comboLevel, 1, k_MaxComboLevel) - 1f) / (k_MaxComboLevel - 1f);
-        return Mathf.Lerp(k_MaxComboDuration, k_MinComboDuration, progress);
-    }
-
-    private static int GetBaseScore(EnemyType enemyType)
-    {
-        return enemyType == EnemyType.Ranged ? 150 : 100;
+            EnemyType.Suicide => 50,
+            EnemyType.Melee => 70,
+            EnemyType.Ranged => 100,
+            _ => 0
+        };
     }
 
     private static bool WeaponMatches(EnemyType enemyType, WeaponId weapon)
@@ -253,18 +270,37 @@ public sealed class ScoreSystem : MonoBehaviour
         };
     }
 
-    private static string GetFeedbackReason(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
+    private static bool IsSwapKill(WeaponId previousWeapon, WeaponId currentWeapon, float elapsedSeconds)
     {
-        bool weaponMatches = WeaponMatches(enemyType, weapon);
-        if (weaponMatches && isHeadshot)
+        return IsScoringWeapon(previousWeapon)
+            && IsScoringWeapon(currentWeapon)
+            && previousWeapon != currentWeapon
+            && elapsedSeconds >= 0f
+            && elapsedSeconds <= k_SwapKillWindow;
+    }
+
+    private static bool IsScoringWeapon(WeaponId weapon)
+    {
+        return weapon is >= WeaponId.Pistol and <= WeaponId.DMR;
+    }
+
+    private static string GetBatchFeedbackLabel(
+        int killCount, bool isChain, bool isSkillKill)
+    {
+        string suffix = killCount > 1 ? $" x{killCount}" : string.Empty;
+        if (isSkillKill && isChain)
         {
-            return "PERFECT";
+            return $"SKILL CHAIN{suffix}";
         }
-        if (isHeadshot)
+        if (isSkillKill)
         {
-            return "HEADSHOT";
+            return $"SKILL KILL{suffix}";
         }
-        return weaponMatches ? "WEAPON MATCH" : "BASIC";
+        if (isChain)
+        {
+            return $"CHAIN KILL{suffix}";
+        }
+        return $"ENEMY KILLED{suffix}";
     }
 
     private void RegisterKillStats(EnemyType enemyType, WeaponId weapon, bool isHeadshot, bool isChain, bool isSkill)
@@ -284,32 +320,85 @@ public sealed class ScoreSystem : MonoBehaviour
         {
             m_chainKills++;
         }
-        if (isSkill || m_bulletTimeActive)
+        if (isSkill)
         {
             m_skillKills++;
         }
     }
 
+    private void AdvanceCombo(float now)
+    {
+        ComboCount++;
+        m_maxComboCount = Mathf.Max(m_maxComboCount, ComboCount);
+        m_comboExpiresAt = now + k_ComboDuration;
+    }
+
+    private void ExpireCombo(float now)
+    {
+        if (!HasComboExpired(ComboCount, m_comboExpiresAt, now))
+        {
+            return;
+        }
+
+        ComboCount = 0;
+        m_comboExpiresAt = 0f;
+        ResetSwapCandidate();
+    }
+
+    private static bool HasComboExpired(int comboCount, float expiryTime, float now)
+    {
+        return comboCount > 0 && now >= expiryTime;
+    }
+
+    private float GetComboRemainingSeconds(float now)
+    {
+        return ComboCount > 0 ? Mathf.Max(0f, m_comboExpiresAt - now) : 0f;
+    }
+
+    private void ResetSwapCandidate()
+    {
+        m_lastDirectKillWeapon = WeaponId.Unknown;
+        m_lastDirectKillTime = float.NegativeInfinity;
+    }
+
     private void RefreshHud()
     {
         m_hud?.RefreshScore(TotalScore);
-        float remaining = ComboLevel > 0 ? Mathf.Max(0f, m_comboExpiresAt - Time.unscaledTime) : 0f;
-        float duration = GetComboDuration(ComboLevel);
-        m_hud?.RefreshCombo(ComboLevel, ComboMultiplier, duration > 0f ? remaining / duration : 0f);
+        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(Time.unscaledTime));
     }
 
     [ContextMenu("Run Score System Self Check")]
     private void RunSelfCheck()
     {
-        Debug.Assert(Mathf.Approximately(GetDirectKillCoefficient(EnemyType.Suicide, WeaponId.Pistol, true), 1.5f));
-        Debug.Assert(Mathf.Approximately(GetDirectKillCoefficient(EnemyType.Melee, WeaponId.Shotgun, false), 1f));
-        Debug.Assert(Mathf.Approximately(GetDirectKillCoefficient(EnemyType.Ranged, WeaponId.DMR, false), 1f));
-        Debug.Assert(Mathf.Approximately(GetDirectKillCoefficient(EnemyType.Ranged, WeaponId.Pistol, false), 0.7f));
-        Debug.Assert(CalculateKillScore(EnemyType.Suicide, 1.5f, 1) == 150);
-        Debug.Assert(Mathf.Approximately(GetComboMultiplier(10), 2.8f));
-        Debug.Assert(Mathf.Approximately(GetComboDuration(10), 1.5f));
+        Debug.Assert(GetBaseScore(EnemyType.Suicide) == 50);
+        Debug.Assert(GetBaseScore(EnemyType.Melee) == 70);
+        Debug.Assert(GetBaseScore(EnemyType.Ranged) == 100);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false, false) == 100);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, true, false) == 240);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false, true) == 300);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, true, true) == 440);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 100, false, false, false, false) == 1090);
+        int skillBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, false, true)
+            + CalculateKillScore(EnemyType.Melee, 2, false, false, false, true)
+            + CalculateKillScore(EnemyType.Ranged, 3, false, false, false, true);
+        int regularChainBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, false, false)
+            + CalculateKillScore(EnemyType.Melee, 2, false, false, false, false)
+            + CalculateKillScore(EnemyType.Ranged, 3, false, false, false, false);
+        Debug.Assert(skillBatch == 690);
+        Debug.Assert(regularChainBatch == 250);
+        Debug.Assert(WeaponMatches(EnemyType.Ranged, WeaponId.DMR));
+        Debug.Assert(IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 1.999f));
+        Debug.Assert(IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 2f));
+        Debug.Assert(!IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 2.001f));
+        Debug.Assert(!IsSwapKill(WeaponId.Pistol, WeaponId.Pistol, 1f));
+        Debug.Assert(!IsSwapKill(WeaponId.Unknown, WeaponId.Pistol, 1f));
+        Debug.Assert(!HasComboExpired(1, 5f, 4.999f));
+        Debug.Assert(HasComboExpired(1, 5f, 5f));
         Debug.Assert(KillContext.Skill(WeaponId.Rifle).IsClassSkillAttributed);
         Debug.Assert(KillContext.Chain(WeaponId.Rifle, true, true).IsClassSkillAttributed);
         Debug.Assert(!KillContext.Chain(WeaponId.Rifle, true).IsClassSkillAttributed);
+        Debug.Assert(!KillContext.Chain(WeaponId.Rifle, false).IsPlayerAttributed);
+        Debug.Assert(GetBatchFeedbackLabel(3, true, false) == "CHAIN KILL x3");
+        Debug.Assert(GetBatchFeedbackLabel(3, true, true) == "SKILL CHAIN x3");
     }
 }

@@ -468,8 +468,8 @@ public sealed class ResultSceneController : MonoBehaviour
             SetText(m_runValues[1], $"{result?.TotalKills ?? 0} / {result?.SuicideKills ?? 0} / {result?.MeleeKills ?? 0} / {result?.RangedKills ?? 0}");
             SetText(m_headshotKillsLabel, "HEADSHOT / CHAIN");
             SetText(m_runValues[3], $"{result?.HeadshotKills ?? 0} / {result?.ChainKills ?? 0}");
-            int combo = result?.MaxComboLevel ?? 0;
-            SetText(m_runValues[5], $"x{combo} / x{ScoreSystem.GetComboMultiplier(combo):0.0}");
+            int combo = result?.MaxComboCount ?? 0;
+            SetText(m_runValues[5], $"x{combo}");
         }
 
         RenderLoadoutKills(result);
