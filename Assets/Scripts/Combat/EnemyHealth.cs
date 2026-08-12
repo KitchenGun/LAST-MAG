@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(Collider))]
 public sealed class EnemyHealth : MonoBehaviour
 {
-    private const float k_AmmoDropChance = 0.3f;
+    private const float k_AmmoDropChance = 0.5f;
     private static readonly int s_Hit = Animator.StringToHash("Hit");
     private static readonly int s_Die = Animator.StringToHash("Die");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
