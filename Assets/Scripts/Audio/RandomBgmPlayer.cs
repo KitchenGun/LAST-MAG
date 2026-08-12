@@ -3,6 +3,8 @@ using UnityEngine;
 
 public sealed class RandomBgmPlayer : MonoBehaviour
 {
+    private const float k_MinPlaybackPitch = 0.01f;
+
     [SerializeField] private AudioClip[] m_clips;
     [SerializeField, Range(0f, 1f)] private float m_volume = 0.45f;
 
@@ -21,6 +23,11 @@ public sealed class RandomBgmPlayer : MonoBehaviour
     private void Start()
     {
         StartCoroutine(PlayRandomLoop());
+    }
+
+    private void Update()
+    {
+        m_audioSource.pitch = Mathf.Max(k_MinPlaybackPitch, Time.timeScale);
     }
 
     private IEnumerator PlayRandomLoop()

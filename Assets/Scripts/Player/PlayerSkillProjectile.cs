@@ -31,6 +31,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
     private PlayerSkillController m_owner;
     private PlayerHealth m_player;
     private ScoreSystem m_scoreSystem;
+    private PlayerSkillVfxEmitter m_vfxEmitter;
     private Rigidbody m_body;
     private SphereCollider m_collider;
     private Transform m_homeParent;
@@ -40,6 +41,8 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
     private float m_explodeAt;
     private WeaponId m_sourceWeapon;
     private PlayerDeathCause m_selfDeathCause;
+    private Vector3 m_lastTrailPosition;
+    private bool m_usesGravity;
     private bool m_isLaunched;
 
     public void Initialize(PlayerSkillController owner, PlayerHealth player, ScoreSystem scoreSystem)
@@ -47,6 +50,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_owner = owner;
         m_player = player;
         m_scoreSystem = scoreSystem;
+        m_vfxEmitter = owner != null ? owner.GetComponent<PlayerSkillVfxEmitter>() : null;
         m_body ??= GetComponent<Rigidbody>();
         m_collider ??= GetComponent<SphereCollider>();
         m_homeParent ??= transform.parent;
@@ -80,6 +84,8 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_radius = radius;
         m_sourceWeapon = sourceWeapon;
         m_selfDeathCause = selfDeathCause;
+        m_usesGravity = useGravity;
+        m_lastTrailPosition = position;
         m_explodeAt = Time.time + lifetime;
         m_isLaunched = true;
         m_collider.enabled = true;
@@ -90,15 +96,49 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         if (useGravity)
         {
             SpatialAudio.PlayRandomOneShot(m_throwClips, position, m_throwMaxDistance, m_throwVolume);
+            m_vfxEmitter?.EmitGrenadeTrail(position);
         }
         else
         {
             SpatialAudio.PlayRandomOneShot(m_launchClips, position, m_launchMaxDistance, m_launchVolume);
+            m_vfxEmitter?.EmitRocketLaunch(position, direction);
         }
     }
 
     private void Update()
     {
+        if (m_isLaunched && m_vfxEmitter != null)
+        {
+            float spacing = m_usesGravity ? m_vfxEmitter.GrenadeTrailSpacing : m_vfxEmitter.RocketTrailSpacing;
+            Vector3 trailSegment = transform.position - m_lastTrailPosition;
+            float trailDistance = trailSegment.magnitude;
+            if (!m_usesGravity)
+            {
+                m_vfxEmitter.UpdateRocketFlight(transform.position, m_body.linearVelocity);
+            }
+
+            if (trailDistance >= spacing)
+            {
+                if (m_usesGravity)
+                {
+                    m_vfxEmitter.EmitGrenadeTrail(transform.position);
+                    m_lastTrailPosition = transform.position;
+                }
+                else
+                {
+                    Vector3 trailDirection = trailSegment / trailDistance;
+                    int sampleCount = Mathf.Min(Mathf.FloorToInt(trailDistance / spacing), 8);
+                    for (int sampleIndex = 1; sampleIndex <= sampleCount; sampleIndex++)
+                    {
+                        m_vfxEmitter.EmitRocketTrail(
+                            m_lastTrailPosition + trailDirection * spacing * sampleIndex,
+                            m_body.linearVelocity);
+                    }
+                    m_lastTrailPosition += trailDirection * spacing * sampleCount;
+                }
+            }
+        }
+
         if (m_isLaunched && Time.time >= m_explodeAt)
         {
             Explode();
@@ -133,6 +173,11 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         }
 
         m_isLaunched = false;
+        if (!m_usesGravity)
+        {
+            m_vfxEmitter?.EndRocketFlight();
+        }
+        m_vfxEmitter?.EmitExplosion(transform.position, m_radius, !m_usesGravity);
         SpatialAudio.PlayRandomOneShot(m_explosionClips, transform.position,
             m_explosionMaxDistance, m_explosionVolume);
         int comboSnapshot = m_scoreSystem != null ? m_scoreSystem.ComboLevel : 0;
@@ -162,6 +207,10 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
     public void Hide()
     {
         m_isLaunched = false;
+        if (!m_usesGravity)
+        {
+            m_vfxEmitter?.EndRocketFlight();
+        }
         if (m_body == null || m_collider == null)
         {
             return;

@@ -9,11 +9,17 @@ public sealed class PlayerSkillController : MonoBehaviour
     private const float k_BulletTimeDuration = 5f;
     private const float k_BulletTimeSaturation = -100f;
     private const float k_BulletTimeVisualTransition = 0.15f;
-    private const float k_RocketRecoilKickDuration = 0.1f;
-    private const float k_RocketRecoilReturnDuration = 0.2f;
-    private const float k_RocketCameraRecoil = 2.3f;
-    private const float k_RocketViewmodelRecoilDistance = 0.1f;
-    private const float k_RocketViewmodelRecoilPitch = 4f;
+    private const float k_RocketViewmodelRecoilDistance = 0.14f;
+    private const float k_RocketViewmodelRecoilLateralDistance = 0.04f;
+    private const float k_RocketViewmodelRecoilPitch = 9f;
+    private const float k_RocketViewmodelRecoilYaw = 2.2f;
+    private const float k_RocketViewmodelRecoilRoll = 3f;
+    private const float k_RocketPositionSpringFrequency = 32f;
+    private const float k_RocketPositionSpringDamping = 0.7f;
+    private const float k_RocketRotationSpringFrequency = 24f;
+    private const float k_RocketRotationSpringDamping = 0.65f;
+    private const float k_RocketSpringImpulseScale = 2f;
+    private const float k_MaxRocketSpringScale = 1.5f;
 
     [SerializeField] private PlayerSkillProjectile m_grenadeProjectile;
     [SerializeField] private PlayerSkillProjectile m_rocketProjectile;
@@ -42,8 +48,13 @@ public sealed class PlayerSkillController : MonoBehaviour
     private bool m_defaultSaturationOverride;
     private Vector3 m_rocketLauncherRestPosition;
     private Quaternion m_rocketLauncherRestRotation;
+    private RecoilSample m_rocketRecoilSample;
     private float m_rocketRecoilStartedAt;
     private bool m_rocketRecoilActive;
+    private Vector3 m_rocketPositionOffset;
+    private Vector3 m_rocketPositionVelocity;
+    private Vector3 m_rocketRotationOffset;
+    private Vector3 m_rocketRotationVelocity;
 
     public PlayerSkillState State => m_state;
     internal bool IsWeaponInputLocked => m_rocketRecoilActive;
@@ -229,9 +240,33 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void BeginRocketRecoil()
     {
+        FirstPersonController controller = FirstPersonController.CurrentInstance;
+        if (controller == null)
+        {
+            Debug.LogError("PF_Player is missing FirstPersonController for rocket recoil.");
+            FinishRocketRecoil();
+            return;
+        }
+
+        m_rocketRecoilSample = controller.ApplyRocketRecoil();
+        float horizontal = m_rocketRecoilSample.HorizontalScale
+            * m_rocketRecoilSample.HorizontalDirection;
+        Vector3 positionImpulse = new(
+            k_RocketViewmodelRecoilLateralDistance * horizontal,
+            0f,
+            -k_RocketViewmodelRecoilDistance * m_rocketRecoilSample.VerticalScale);
+        Vector3 rotationImpulse = new(
+            -k_RocketViewmodelRecoilPitch * m_rocketRecoilSample.VerticalScale,
+            k_RocketViewmodelRecoilYaw * horizontal,
+            k_RocketViewmodelRecoilRoll * horizontal);
+        m_rocketPositionOffset = Vector3.zero;
+        m_rocketRotationOffset = Vector3.zero;
+        m_rocketPositionVelocity = positionImpulse
+            * (k_RocketPositionSpringFrequency * k_RocketSpringImpulseScale);
+        m_rocketRotationVelocity = rotationImpulse
+            * (k_RocketRotationSpringFrequency * k_RocketSpringImpulseScale);
         m_rocketRecoilActive = true;
-        m_rocketRecoilStartedAt = Time.unscaledTime;
-        FirstPersonController.CurrentInstance?.ApplyCameraRecoil(k_RocketCameraRecoil, 0f);
+        m_rocketRecoilStartedAt = Time.time;
     }
 
     private void UpdateRocketRecoil()
@@ -241,30 +276,51 @@ public sealed class PlayerSkillController : MonoBehaviour
             return;
         }
 
-        float elapsed = Time.unscaledTime - m_rocketRecoilStartedAt;
-        float amount = elapsed < k_RocketRecoilKickDuration
-            ? Mathf.SmoothStep(0f, 1f, elapsed / k_RocketRecoilKickDuration)
-            : 1f - Mathf.SmoothStep(0f, 1f,
-                (elapsed - k_RocketRecoilKickDuration) / k_RocketRecoilReturnDuration);
-        if (elapsed >= k_RocketRecoilKickDuration + k_RocketRecoilReturnDuration)
+        float elapsed = Time.time - m_rocketRecoilStartedAt;
+        if (elapsed >= m_rocketRecoilSample.RecoveryDelay + m_rocketRecoilSample.ReturnDuration)
         {
             FinishRocketRecoil();
             return;
         }
 
+        WeaponViewmodelController.StepSpring(ref m_rocketPositionOffset, ref m_rocketPositionVelocity,
+            k_RocketPositionSpringFrequency, k_RocketPositionSpringDamping, Time.deltaTime);
+        WeaponViewmodelController.StepSpring(ref m_rocketRotationOffset, ref m_rocketRotationVelocity,
+            k_RocketRotationSpringFrequency, k_RocketRotationSpringDamping, Time.deltaTime);
+        ClampRocketSpring();
+
         if (m_rocketLauncherViewmodel != null)
         {
             Transform launcher = m_rocketLauncherViewmodel.transform;
-            launcher.localPosition = m_rocketLauncherRestPosition
-                + Vector3.back * (k_RocketViewmodelRecoilDistance * amount);
+            launcher.localPosition = m_rocketLauncherRestPosition + m_rocketPositionOffset;
             launcher.localRotation = m_rocketLauncherRestRotation
-                * Quaternion.Euler(-k_RocketViewmodelRecoilPitch * amount, 0f, 0f);
+                * Quaternion.Euler(m_rocketRotationOffset);
         }
+    }
+
+    private void ClampRocketSpring()
+    {
+        WeaponViewmodelController.ClampSpringAxis(ref m_rocketPositionOffset.x,
+            ref m_rocketPositionVelocity.x,
+            k_RocketViewmodelRecoilLateralDistance * k_MaxRocketSpringScale);
+        WeaponViewmodelController.ClampSpringAxis(ref m_rocketPositionOffset.z,
+            ref m_rocketPositionVelocity.z,
+            k_RocketViewmodelRecoilDistance * k_MaxRocketSpringScale);
+        WeaponViewmodelController.ClampSpringAxis(ref m_rocketRotationOffset.x,
+            ref m_rocketRotationVelocity.x,
+            k_RocketViewmodelRecoilPitch * k_MaxRocketSpringScale);
+        WeaponViewmodelController.ClampSpringAxis(ref m_rocketRotationOffset.y,
+            ref m_rocketRotationVelocity.y,
+            k_RocketViewmodelRecoilYaw * k_MaxRocketSpringScale);
+        WeaponViewmodelController.ClampSpringAxis(ref m_rocketRotationOffset.z,
+            ref m_rocketRotationVelocity.z,
+            k_RocketViewmodelRecoilRoll * k_MaxRocketSpringScale);
     }
 
     private void FinishRocketRecoil()
     {
         m_rocketRecoilActive = false;
+        m_rocketRecoilSample = default;
         ResetRocketLauncherPresentation();
         m_viewmodel?.SetSkillArmed(false);
     }
@@ -280,6 +336,10 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void ResetRocketLauncherPose()
     {
+        m_rocketPositionOffset = Vector3.zero;
+        m_rocketPositionVelocity = Vector3.zero;
+        m_rocketRotationOffset = Vector3.zero;
+        m_rocketRotationVelocity = Vector3.zero;
         if (m_rocketLauncherViewmodel == null)
         {
             return;
@@ -315,6 +375,7 @@ public sealed class PlayerSkillController : MonoBehaviour
         m_grenadeProjectile?.Hide();
         m_rocketProjectile?.Hide();
         m_rocketRecoilActive = false;
+        m_rocketRecoilSample = default;
         ResetRocketLauncherPresentation();
         m_viewmodel?.SetSkillArmed(false);
         m_projectile = null;
@@ -405,8 +466,9 @@ public sealed class PlayerSkillController : MonoBehaviour
         Debug.Assert(Mathf.Approximately(k_BulletTimeDuration, 5f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeSaturation, -100f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeVisualTransition, 0.15f));
-        Debug.Assert(Mathf.Approximately(k_RocketCameraRecoil, 2.3f));
-        Debug.Assert(Mathf.Approximately(k_RocketRecoilKickDuration + k_RocketRecoilReturnDuration, 0.3f));
+        Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilDistance, 0.14f));
+        Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilLateralDistance, 0.04f));
+        Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilPitch, 9f));
         Debug.Assert(m_state is >= PlayerSkillState.Ready and <= PlayerSkillState.Cooldown);
     }
 }

@@ -5,22 +5,28 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
 {
     [SerializeField] private float m_lightDuration = 0.04f;
     [SerializeField] private Material[] m_variations;
+    [SerializeField] private ParticleSystem m_smokeParticles;
+    [SerializeField] private int m_smokeParticleCount;
+    [SerializeField] private int m_smokeEveryShots = 1;
 
     private ParticleSystem m_particles;
     private ParticleSystemRenderer m_particleRenderer;
     private Light m_light;
     private float m_lightOffTime;
     private int m_lastVariationIndex = -1;
+    private int m_smokeShotCounter;
 
     private void Awake()
     {
         CacheComponents();
+        UseScaledTime(m_particles);
+        UseScaledTime(m_smokeParticles);
         StopEffect();
     }
 
     private void Update()
     {
-        if (m_light != null && m_light.enabled && Time.unscaledTime >= m_lightOffTime)
+        if (m_light != null && m_light.enabled && Time.time >= m_lightOffTime)
         {
             m_light.enabled = false;
         }
@@ -37,8 +43,9 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
         m_particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         ApplyRandomVariation();
         m_particles.Play(true);
+        EmitMuzzleSmoke();
         m_light.enabled = true;
-        m_lightOffTime = Time.unscaledTime + m_lightDuration;
+        m_lightOffTime = Time.time + m_lightDuration;
     }
 
     public void StopEffect()
@@ -46,6 +53,71 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
         CacheComponents();
         m_particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         m_light.enabled = false;
+    }
+
+    private void EmitMuzzleSmoke()
+    {
+        if (m_smokeParticles == null || m_smokeParticleCount <= 0)
+        {
+            return;
+        }
+
+        m_smokeShotCounter++;
+        if ((m_smokeShotCounter - 1) % Mathf.Max(1, m_smokeEveryShots) != 0)
+        {
+            return;
+        }
+
+        if (!m_smokeParticles.isPlaying)
+        {
+            m_smokeParticles.Play(true);
+        }
+
+        Vector3 direction = transform.right;
+        GetSmokeRanges(out Vector2 lifetime, out Vector2 size, out Vector2 speed);
+        for (int index = 0; index < m_smokeParticleCount; index++)
+        {
+            Vector3 spreadDirection = (direction + UnityEngine.Random.insideUnitSphere * 0.3f).normalized;
+            ParticleSystem.EmitParams smoke = new()
+            {
+                position = transform.position + direction * 0.035f,
+                velocity = spreadDirection * UnityEngine.Random.Range(speed.x, speed.y) + Vector3.up * 0.18f,
+                startLifetime = UnityEngine.Random.Range(lifetime.x, lifetime.y),
+                startSize = UnityEngine.Random.Range(size.x, size.y),
+                rotation = UnityEngine.Random.Range(0f, 360f),
+                startColor = new Color(0.62f, 0.64f, 0.66f, UnityEngine.Random.Range(0.18f, 0.28f))
+            };
+            m_smokeParticles.Emit(smoke, 1);
+        }
+    }
+
+    private void GetSmokeRanges(out Vector2 lifetime, out Vector2 size, out Vector2 speed)
+    {
+        if (m_smokeParticleCount >= 6)
+        {
+            lifetime = new Vector2(0.3f, 0.5f);
+            size = new Vector2(0.14f, 0.24f);
+            speed = new Vector2(0.7f, 1.3f);
+            return;
+        }
+        if (m_smokeParticleCount >= 4)
+        {
+            lifetime = new Vector2(0.22f, 0.38f);
+            size = new Vector2(0.12f, 0.2f);
+            speed = new Vector2(0.8f, 1.5f);
+            return;
+        }
+        if (m_smokeEveryShots >= 3)
+        {
+            lifetime = new Vector2(0.12f, 0.22f);
+            size = new Vector2(0.05f, 0.09f);
+            speed = new Vector2(0.8f, 1.4f);
+            return;
+        }
+
+        lifetime = new Vector2(0.18f, 0.3f);
+        size = new Vector2(0.06f, 0.11f);
+        speed = new Vector2(0.8f, 1.4f);
     }
 
     private void CacheComponents()
@@ -64,6 +136,17 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
         {
             m_light = GetComponent<Light>();
         }
+    }
+
+    private static void UseScaledTime(ParticleSystem particles)
+    {
+        if (particles == null)
+        {
+            return;
+        }
+
+        ParticleSystem.MainModule main = particles.main;
+        main.useUnscaledTime = false;
     }
 
     private void ApplyRandomVariation()
@@ -86,6 +169,8 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
     private void OnValidate()
     {
         m_lightDuration = Mathf.Max(0.01f, m_lightDuration);
+        m_smokeParticleCount = Mathf.Max(0, m_smokeParticleCount);
+        m_smokeEveryShots = Mathf.Max(1, m_smokeEveryShots);
     }
 
     private void OnDrawGizmosSelected()

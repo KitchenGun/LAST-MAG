@@ -5014,6 +5014,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3b9b083a9adf130468bb2e0d7f7a07bb, type: 2}
   - {fileID: 2100000, guid: b9e039d08bc3476449c4f9f546821773, type: 2}
   - {fileID: 2100000, guid: 1c86fad4e9f469a4d88864eadcc2bb51, type: 2}
+  m_smokeParticles: {fileID: 8998166419365905696}
+  m_smokeParticleCount: 2
+  m_smokeEveryShots: 1
 --- !u!114 &2057933605235134457
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10024,6 +10027,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3b9b083a9adf130468bb2e0d7f7a07bb, type: 2}
   - {fileID: 2100000, guid: b9e039d08bc3476449c4f9f546821773, type: 2}
   - {fileID: 2100000, guid: 1c86fad4e9f469a4d88864eadcc2bb51, type: 2}
+  m_smokeParticles: {fileID: 8998166419365905696}
+  m_smokeParticleCount: 4
+  m_smokeEveryShots: 1
 --- !u!114 &960329570469233469
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10098,7 +10104,7 @@ GameObject:
   - component: {fileID: 8998166419365905696}
   - component: {fileID: 2362970259325526449}
   m_Layer: 0
-  m_Name: DmrMuzzleSmokeFX
+  m_Name: SharedMuzzleSmokeFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10117,7 +10123,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1316806393587131701}
+  m_Father: {fileID: 6236479432322048262}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &8998166419365905696
 ParticleSystem:
@@ -10137,7 +10143,7 @@ ParticleSystem:
   looping: 0
   prewarm: 0
   playOnAwake: 0
-  useUnscaledTime: 1
+  useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
     serializedVersion: 2
@@ -19822,7 +19828,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f7738300c3d9ea647bd23e8a6cc06391, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::DmrTracerEmitter
-  m_muzzleSmoke: {fileID: 8998166419365905696}
 --- !u!1 &2960730012732401111
 GameObject:
   m_ObjectHideFlags: 0
@@ -19837,6 +19842,8 @@ GameObject:
   - component: {fileID: 2702695578857044237}
   - component: {fileID: 2047791567455902376}
   - component: {fileID: 1346270074541074614}
+  - component: {fileID: 9200000000000000001}
+  - component: {fileID: 9200000000000000002}
   - component: {fileID: 4129861529006526517}
   m_Layer: 2
   m_Name: MainCamera
@@ -19863,6 +19870,7 @@ Transform:
   - {fileID: 762717790778784742}
   - {fileID: 4441217820149341365}
   - {fileID: 9100000000000000002}
+  - {fileID: 5668282139237766141}
   m_Father: {fileID: 4950799209568171302}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &4655963793153242559
@@ -19945,7 +19953,9 @@ MonoBehaviour:
   m_rifleMuzzleFlash: {fileID: 844586886539891032}
   m_dmrMuzzleFlash: {fileID: 4795482080235068012}
   m_dmrTracer: {fileID: 3766151889360653501}
-  m_weaponAudioSource: {fileID: 1346270074541074614}
+  m_weaponAudioSources:
+  - {fileID: 9200000000000000001}
+  - {fileID: 9200000000000000002}
   m_pistolFireClips:
   - {fileID: 8300000, guid: f9ab20b4342184a46921955b3300481d, type: 3}
   - {fileID: 8300000, guid: fc96ad27ad7acc246bc0bf45b3ffd5c8, type: 3}
@@ -19970,8 +19980,6 @@ MonoBehaviour:
   - 1
   - 1
   m_emptyAmmoVolume: 0.7
-  m_recoilDistance: 0.06
-  m_recoilDuration: 0.1
   m_strafeSwayDistance: 0.025
   m_forwardSwayDistance: 0.018
   m_strafeSwayRoll: 2
@@ -20045,6 +20053,200 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &9200000000000000001
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2960730012732401111}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &9200000000000000002
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2960730012732401111}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 0
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
@@ -20205,7 +20407,6 @@ Transform:
   m_Children:
   - {fileID: 786162865246395984}
   - {fileID: 2766970151623064043}
-  - {fileID: 5668282139237766141}
   m_Father: {fileID: 4441217820149341365}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5106232385044627144
@@ -25189,6 +25390,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3b9b083a9adf130468bb2e0d7f7a07bb, type: 2}
   - {fileID: 2100000, guid: b9e039d08bc3476449c4f9f546821773, type: 2}
   - {fileID: 2100000, guid: 1c86fad4e9f469a4d88864eadcc2bb51, type: 2}
+  m_smokeParticles: {fileID: 8998166419365905696}
+  m_smokeParticleCount: 1
+  m_smokeEveryShots: 3
 --- !u!114 &7461920487049284164
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25264,6 +25468,7 @@ GameObject:
   - component: {fileID: 3668781440361344697}
   - component: {fileID: 831069756972417876}
   - component: {fileID: 894755626364540370}
+  - component: {fileID: 4087280345814074713}
   m_Layer: 2
   m_Name: PF_Player
   m_TagString: Untagged
@@ -25337,8 +25542,76 @@ MonoBehaviour:
   m_jumpHeight: 1.2
   m_gravity: -20
   m_lookSensitivity: 0.1
-  m_recoilKickSpeed: 18
-  m_recoilReturnSpeed: 10
+  m_pistolRecoil:
+    m_pitch: 2.2
+    m_yaw: 0.35
+    m_randomRange: 0.1
+    m_softCap: 3.5
+    m_hardCap: 4.5
+    m_continuousResidualRatio: 0.2
+    m_kickDuration: 0.055
+    m_recoveryDelay: 0.1
+    m_returnDuration: 0.12
+    m_fireImpulsePitch: 0.35
+    m_fireImpulseYaw: 0.05
+    m_fireImpulseRoll: 0.12
+    m_fireImpulseDuration: 0.08
+  m_shotgunRecoil:
+    m_pitch: 4.6
+    m_yaw: 0.85
+    m_randomRange: 0.15
+    m_softCap: 4.5
+    m_hardCap: 5.5
+    m_continuousResidualRatio: 0.3
+    m_kickDuration: 0.075
+    m_recoveryDelay: 0.28
+    m_returnDuration: 0.29
+    m_fireImpulsePitch: 0.75
+    m_fireImpulseYaw: 0.15
+    m_fireImpulseRoll: 0.28
+    m_fireImpulseDuration: 0.13
+  m_rifleRecoil:
+    m_pitch: 2
+    m_yaw: 0.32
+    m_randomRange: 0.12
+    m_softCap: 6
+    m_hardCap: 7
+    m_continuousResidualRatio: 0.35
+    m_kickDuration: 0.045
+    m_recoveryDelay: 0.14
+    m_returnDuration: 0.15
+    m_fireImpulsePitch: 0.25
+    m_fireImpulseYaw: 0.05
+    m_fireImpulseRoll: 0.12
+    m_fireImpulseDuration: 0.06
+  m_dmrRecoil:
+    m_pitch: 3.2
+    m_yaw: 0.45
+    m_randomRange: 0.1
+    m_softCap: 4.8
+    m_hardCap: 6
+    m_continuousResidualRatio: 0.25
+    m_kickDuration: 0.065
+    m_recoveryDelay: 0.18
+    m_returnDuration: 0.2
+    m_fireImpulsePitch: 0.5
+    m_fireImpulseYaw: 0.1
+    m_fireImpulseRoll: 0.18
+    m_fireImpulseDuration: 0.1
+  m_rocketRecoil:
+    m_pitch: 5.6
+    m_yaw: 1.1
+    m_randomRange: 0.15
+    m_softCap: 5.5
+    m_hardCap: 6.5
+    m_continuousResidualRatio: 0
+    m_kickDuration: 0.1
+    m_recoveryDelay: 0.28
+    m_returnDuration: 0.42
+    m_fireImpulsePitch: 1
+    m_fireImpulseYaw: 0.2
+    m_fireImpulseRoll: 0.35
+    m_fireImpulseDuration: 0.16
   m_wallImpactClip: {fileID: 8300000, guid: 75adfe9a619833445a701305b983e548, type: 3}
   m_wallImpactMaxDistance: 20
   m_wallImpactVolume: 0.7
@@ -25388,6 +25661,20 @@ MonoBehaviour:
   m_maxHealth: 100
   m_regenerationDelay: 5
   m_regenerationPerSecond: 20
+--- !u!114 &4087280345814074713
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6696012230733846485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bba8883c5ee12c45a83bebccae557a8, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillVfxEmitter
+  m_fireMaterial: {fileID: 2100000, guid: 40dd14b1925ff4a49a85e2a395b34683, type: 2}
+  m_smokeMaterial: {fileID: 2100000, guid: 8ddd4228ec73e5641a86339b6d949544, type: 2}
 --- !u!1 &7128414405091619502
 GameObject:
   m_ObjectHideFlags: 0
@@ -30368,6 +30655,9 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 3b9b083a9adf130468bb2e0d7f7a07bb, type: 2}
   - {fileID: 2100000, guid: b9e039d08bc3476449c4f9f546821773, type: 2}
   - {fileID: 2100000, guid: 1c86fad4e9f469a4d88864eadcc2bb51, type: 2}
+  m_smokeParticles: {fileID: 8998166419365905696}
+  m_smokeParticleCount: 6
+  m_smokeEveryShots: 1
 --- !u!1 &7252066840194438433
 GameObject:
   m_ObjectHideFlags: 0
@@ -35352,6 +35642,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45df1096dcd04b04ea62f349c818516e, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::ImpactSparkEmitter
+  m_biologicalParticles: {fileID: 8998166419365905696}
 --- !u!1 &9070806695495092989
 GameObject:
   m_ObjectHideFlags: 0
@@ -35634,9 +35925,9 @@ MonoBehaviour:
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillProjectile
   m_explosionClips:
-  - {fileID: 8300000, guid: 620dad4bb8e4b98429963b3bbe39c191, type: 3}
-  - {fileID: 8300000, guid: 2b3af6f5cc0c8cd489aac13d80976c7f, type: 3}
-  - {fileID: 8300000, guid: fc9e7990dd282524fbe739169cc92b2b, type: 3}
+  - {fileID: 8300000, guid: 8524588a69a4f3e40bb597b6221138f1, type: 3}
+  - {fileID: 8300000, guid: fd706038486fee041947a774223dc22e, type: 3}
+  - {fileID: 8300000, guid: c1f8c36ebdb20024ea8a59ec457d582c, type: 3}
   m_explosionMaxDistance: 35
   m_explosionVolume: 1
   m_collisionClips: []

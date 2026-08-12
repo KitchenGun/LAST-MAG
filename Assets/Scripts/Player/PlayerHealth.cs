@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,6 +7,9 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(ScoreSystem))]
 public sealed class PlayerHealth : MonoBehaviour
 {
+    private const float k_CriticalTraumaThreshold = 0.3f;
+    private const float k_CriticalTraumaRearmThreshold = 0.55f;
+
     [SerializeField] private float m_maxHealth = 100f;
     [SerializeField] private float m_regenerationDelay = 5f;
     [SerializeField] private float m_regenerationPerSecond = 20f;
@@ -17,11 +21,19 @@ public sealed class PlayerHealth : MonoBehaviour
     private float m_regenerationStartTime;
     private bool m_isDead;
     private ScoreSystem m_scoreSystem;
+    private FirstPersonController m_firstPersonController;
+    private AudioSource m_systemVoiceSource;
+    private AudioClip m_criticalTraumaBuzzClip;
+    private AudioClip m_criticalTraumaClip;
+    private bool m_criticalTraumaAnnounced;
 
     private void Awake()
     {
         m_scoreSystem = GetComponent<ScoreSystem>();
+        m_firstPersonController = GetComponent<FirstPersonController>();
+        Debug.Assert(m_firstPersonController != null, "PF_Player is missing FirstPersonController.");
         CurrentHealth = m_maxHealth;
+        InitializeSystemVoice();
     }
 
     private void Update()
@@ -37,6 +49,10 @@ public sealed class PlayerHealth : MonoBehaviour
         {
             NotifyHealthChanged();
         }
+        if (CurrentHealth / m_maxHealth >= k_CriticalTraumaRearmThreshold)
+        {
+            m_criticalTraumaAnnounced = false;
+        }
     }
 
     public void ApplyDamage(float damage, PlayerDeathCause deathCause)
@@ -48,9 +64,11 @@ public sealed class PlayerHealth : MonoBehaviour
 
         CurrentHealth = Mathf.Max(0f, CurrentHealth - damage);
         NotifyHealthChanged();
+        m_firstPersonController?.ApplyDamageAimPunch(deathCause);
         m_regenerationStartTime = Time.unscaledTime + m_regenerationDelay;
         if (CurrentHealth > 0f)
         {
+            PlayCriticalTraumaWarning();
             return;
         }
 
@@ -62,6 +80,42 @@ public sealed class PlayerHealth : MonoBehaviour
     private void NotifyHealthChanged()
     {
         HealthNormalizedChanged?.Invoke(CurrentHealth / m_maxHealth);
+    }
+
+    private void InitializeSystemVoice()
+    {
+        m_criticalTraumaBuzzClip = Resources.Load<AudioClip>("Audio/SystemVoice/SFX_Error_Buzz_01");
+        m_criticalTraumaClip = Resources.Load<AudioClip>("Audio/SystemVoice/SFX_CriticalTraumaDetected");
+        if (m_criticalTraumaBuzzClip == null || m_criticalTraumaClip == null)
+        {
+            Debug.LogWarning("Critical trauma warning audio is missing.");
+            return;
+        }
+
+        m_systemVoiceSource = gameObject.AddComponent<AudioSource>();
+        m_systemVoiceSource.playOnAwake = false;
+        m_systemVoiceSource.loop = false;
+        m_systemVoiceSource.spatialBlend = 0f;
+        m_systemVoiceSource.volume = 0.85f;
+    }
+
+    private void PlayCriticalTraumaWarning()
+    {
+        if (m_criticalTraumaAnnounced || m_systemVoiceSource == null
+            || CurrentHealth / m_maxHealth > k_CriticalTraumaThreshold)
+        {
+            return;
+        }
+
+        m_criticalTraumaAnnounced = true;
+        StartCoroutine(PlayCriticalTraumaSequence());
+    }
+
+    private IEnumerator PlayCriticalTraumaSequence()
+    {
+        m_systemVoiceSource.PlayOneShot(m_criticalTraumaBuzzClip);
+        yield return new WaitForSecondsRealtime(m_criticalTraumaBuzzClip.length);
+        m_systemVoiceSource.PlayOneShot(m_criticalTraumaClip);
     }
 
     [ContextMenu("Run Health Self Check")]

@@ -3,7 +3,20 @@ using UnityEngine;
 public sealed class WeaponViewmodelController : MonoBehaviour
 {
     private const float k_ReferenceMoveSpeed = 6f;
+    private const float k_MaxAccumulatedModelRecoil = 1.5f;
+    private const float k_PositionSpringFrequency = 32f;
+    private const float k_PositionSpringDamping = 0.7f;
+    private const float k_RotationSpringFrequency = 24f;
+    private const float k_RotationSpringDamping = 0.65f;
+    private const float k_SpringImpulseScale = 2f;
+    private const float k_MaxSpringStep = 1f / 120f;
+    private const int k_MaxSpringStepsPerFrame = 8;
     private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f, 0.75f };
+    private static readonly float[] s_RecoilDistances = { 0.065f, 0.15f, 0.06f, 0.095f };
+    private static readonly float[] s_RecoilLateralDistances = { 0.018f, 0.04f, 0.013f, 0.027f };
+    private static readonly float[] s_RecoilPitches = { 5f, 11f, 4f, 6.5f };
+    private static readonly float[] s_RecoilYaws = { 0.8f, 2f, 0.9f, 1.2f };
+    private static readonly float[] s_RecoilRolls = { 1.2f, 2.5f, 1.3f, 1.6f };
 
     [SerializeField] private GameObject m_pistolRoot;
     [SerializeField] private GameObject m_shotgunRoot;
@@ -15,7 +28,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     [SerializeField] private MuzzleFlashEffect m_dmrMuzzleFlash;
     [SerializeField] private DmrTracerEmitter m_dmrTracer;
     [Header("Weapon Audio")]
-    [SerializeField] private AudioSource m_weaponAudioSource;
+    [SerializeField] private AudioSource[] m_weaponAudioSources;
     [SerializeField] private AudioClip[] m_pistolFireClips;
     [SerializeField] private AudioClip[] m_shotgunFireClips;
     [SerializeField] private AudioClip[] m_rifleFireClips;
@@ -24,8 +37,6 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     [SerializeField] private FootstepAudio m_playerFootsteps;
     [SerializeField] private float[] m_weaponFireVolumes = { 1f, 1f, 1f, 1f };
     [SerializeField] private float m_emptyAmmoVolume = 0.7f;
-    [SerializeField] private float m_recoilDistance = 0.06f;
-    [SerializeField] private float m_recoilDuration = 0.1f;
     [Header("Movement Motion")]
     [SerializeField] private float m_strafeSwayDistance = 0.025f;
     [SerializeField] private float m_forwardSwayDistance = 0.018f;
@@ -43,19 +54,21 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private Vector3 m_movementPositionOffset;
     private Vector3 m_movementRotationOffset;
     private float m_bobPhase;
-    private float m_fireRecoilAmount;
+    private Vector3 m_firePositionOffset;
+    private Vector3 m_firePositionVelocity;
+    private Vector3 m_fireRotationOffset;
+    private Vector3 m_fireRotationVelocity;
     private WeaponId m_activeWeapon;
     private int m_lastEmptyAmmoClipIndex = -1;
+    private int m_nextWeaponAudioSourceIndex;
     private bool m_waitingForLanding;
-    private bool m_fireAnimationActive;
-    private float m_fireAnimationStartedAt;
 
     private void Awake()
     {
         m_characterController = GetComponentInParent<CharacterController>();
         ConfigureAudioSource();
         Debug.Assert(IsFireAudioConfigurationValid(), "Each weapon needs 2 or 3 assigned fire clips.");
-        Debug.Assert(m_characterController != null && m_dmrRoot != null && m_weaponAudioSource != null,
+        Debug.Assert(m_characterController != null && m_dmrRoot != null && HasTwoWeaponAudioSources(),
             "PF_Player viewmodel references are incomplete.");
         CacheRestTransforms();
         SelectWeapon(WeaponId.Pistol);
@@ -99,7 +112,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         SetActive(m_dmrRoot, weapon == WeaponId.DMR);
     }
 
-    public void PlayFireFeedback()
+    internal void PlayFireFeedback(RecoilSample recoil)
     {
         Transform root = GetActiveRoot();
         if (root == null)
@@ -107,11 +120,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             return;
         }
 
-        StopFireAnimation();
-        GetActiveMuzzleFlash()?.Play();
         PlayRandomClip(GetActiveFireClips(), ref m_lastFireClipIndices[(int)m_activeWeapon - 1], GetActiveFireVolume());
-        m_fireAnimationStartedAt = Time.time;
-        m_fireAnimationActive = true;
+        GetActiveMuzzleFlash()?.Play();
+        StartFireRecoil(recoil);
     }
 
     public void PlayEmptyAmmoFeedback()
@@ -152,6 +163,24 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         Debug.Assert(m_activeWeapon == WeaponId.Shotgun);
         Debug.Assert(m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 4);
         Debug.Assert(IsFireAudioConfigurationValid());
+        Debug.Assert(Mathf.Approximately(s_RecoilDistances[0], 0.065f)
+            && Mathf.Approximately(s_RecoilDistances[1], 0.15f)
+            && Mathf.Approximately(s_RecoilDistances[2], 0.06f)
+            && Mathf.Approximately(s_RecoilDistances[3], 0.095f));
+        Debug.Assert(Mathf.Approximately(s_RecoilLateralDistances[1], 0.04f));
+        Debug.Assert(Mathf.Approximately(s_RecoilPitches[2], 4f)
+            && Mathf.Approximately(s_RecoilYaws[2], 0.9f)
+            && Mathf.Approximately(s_RecoilRolls[2], 1.3f));
+        Vector3 springOffset = Vector3.zero;
+        Vector3 springVelocity = Vector3.back;
+        bool crossedRest = false;
+        for (int step = 0; step < 240; step++)
+        {
+            StepSpring(ref springOffset, ref springVelocity,
+                k_RotationSpringFrequency, k_RotationSpringDamping, k_MaxSpringStep);
+            crossedRest |= springOffset.z > 0f;
+        }
+        Debug.Assert(crossedRest && springOffset.sqrMagnitude < 0.000001f);
         Debug.Assert(s_MovementScales[0] > s_MovementScales[2] && s_MovementScales[2] > s_MovementScales[1]);
         Debug.Assert(CrossedPhase(1f, 2f, Mathf.PI * 0.5f));
         Debug.Assert(CrossedPhase(4f, 5f, Mathf.PI * 1.5f));
@@ -161,7 +190,8 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private bool IsFireAudioConfigurationValid()
     {
-        return HasTwoOrThreeClips(m_pistolFireClips)
+        return HasTwoWeaponAudioSources()
+            && HasTwoOrThreeClips(m_pistolFireClips)
             && HasTwoOrThreeClips(m_shotgunFireClips)
             && HasTwoOrThreeClips(m_rifleFireClips)
             && HasTwoOrThreeClips(m_dmrFireClips);
@@ -187,15 +217,24 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private void ConfigureAudioSource()
     {
-        if (m_weaponAudioSource == null)
+        if (!HasTwoWeaponAudioSources())
         {
-            Debug.LogError("PF_Player MainCamera is missing its weapon AudioSource.");
+            Debug.LogError("PF_Player MainCamera needs exactly two weapon AudioSources.");
             return;
         }
 
-        m_weaponAudioSource.playOnAwake = false;
-        m_weaponAudioSource.loop = false;
-        m_weaponAudioSource.spatialBlend = 0f;
+        foreach (AudioSource source in m_weaponAudioSources)
+        {
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0f;
+        }
+    }
+
+    private bool HasTwoWeaponAudioSources()
+    {
+        return m_weaponAudioSources != null && m_weaponAudioSources.Length == 2
+            && m_weaponAudioSources[0] != null && m_weaponAudioSources[1] != null;
     }
 
     private AudioClip[] GetActiveFireClips()
@@ -219,7 +258,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private void PlayRandomClip(AudioClip[] clips, ref int lastIndex, float volume)
     {
-        if (m_weaponAudioSource == null || clips == null || clips.Length == 0)
+        if (!HasTwoWeaponAudioSources() || clips == null || clips.Length == 0)
         {
             return;
         }
@@ -250,7 +289,12 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         }
 
         lastIndex = selectedIndex;
-        m_weaponAudioSource.PlayOneShot(clips[selectedIndex], Mathf.Clamp01(volume));
+        AudioSource source = m_weaponAudioSources[m_nextWeaponAudioSourceIndex];
+        m_nextWeaponAudioSourceIndex = (m_nextWeaponAudioSourceIndex + 1) % m_weaponAudioSources.Length;
+        source.clip = clips[selectedIndex];
+        source.volume = Mathf.Clamp01(volume);
+        source.pitch = UnityEngine.Random.Range(0.98f, 1.02f);
+        source.Play();
     }
 
     private void OnValidate()
@@ -266,8 +310,6 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         }
 
         m_emptyAmmoVolume = Mathf.Clamp01(m_emptyAmmoVolume);
-        m_recoilDistance = Mathf.Max(0f, m_recoilDistance);
-        m_recoilDuration = Mathf.Max(0.01f, m_recoilDuration);
         m_strafeSwayDistance = Mathf.Max(0f, m_strafeSwayDistance);
         m_forwardSwayDistance = Mathf.Max(0f, m_forwardSwayDistance);
         m_strafeSwayRoll = Mathf.Max(0f, m_strafeSwayRoll);
@@ -276,35 +318,90 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         m_bobVerticalDistance = Mathf.Max(0f, m_bobVerticalDistance);
         m_bobFrequency = Mathf.Max(0f, m_bobFrequency);
         m_movementLerpSpeed = Mathf.Max(0.1f, m_movementLerpSpeed);
-        if (m_weaponAudioSource != null)
+        if (m_weaponAudioSources != null)
         {
-            m_weaponAudioSource.playOnAwake = false;
-            m_weaponAudioSource.loop = false;
-            m_weaponAudioSource.spatialBlend = 0f;
+            foreach (AudioSource source in m_weaponAudioSources)
+            {
+                if (source == null)
+                {
+                    continue;
+                }
+                source.playOnAwake = false;
+                source.loop = false;
+                source.spatialBlend = 0f;
+            }
         }
     }
 
     private void UpdateFireAnimation()
     {
-        if (!m_fireAnimationActive)
-        {
-            return;
-        }
+        StepSpring(ref m_firePositionOffset, ref m_firePositionVelocity,
+            k_PositionSpringFrequency, k_PositionSpringDamping, Time.deltaTime);
+        StepSpring(ref m_fireRotationOffset, ref m_fireRotationVelocity,
+            k_RotationSpringFrequency, k_RotationSpringDamping, Time.deltaTime);
+        ClampFireSpring();
 
-        float halfDuration = m_recoilDuration * 0.5f;
-        float elapsed = Time.time - m_fireAnimationStartedAt;
-        if (elapsed < halfDuration)
+        if (m_firePositionOffset.sqrMagnitude + m_firePositionVelocity.sqrMagnitude
+            + m_fireRotationOffset.sqrMagnitude + m_fireRotationVelocity.sqrMagnitude < 0.000001f)
         {
-            m_fireRecoilAmount = Mathf.Clamp01(elapsed / halfDuration);
-            return;
+            StopFireAnimation();
         }
-        if (elapsed < m_recoilDuration)
+    }
+
+    private void StartFireRecoil(RecoilSample recoil)
+    {
+        float horizontal = recoil.HorizontalScale * recoil.HorizontalDirection;
+        Vector3 positionImpulse = new(
+            GetWeaponValue(s_RecoilLateralDistances) * horizontal,
+            0f,
+            -GetWeaponValue(s_RecoilDistances) * recoil.VerticalScale);
+        Vector3 rotationImpulse = new(
+            -GetWeaponValue(s_RecoilPitches) * recoil.VerticalScale,
+            GetWeaponValue(s_RecoilYaws) * horizontal,
+            GetWeaponValue(s_RecoilRolls) * horizontal);
+        m_firePositionVelocity += positionImpulse * (k_PositionSpringFrequency * k_SpringImpulseScale);
+        m_fireRotationVelocity += rotationImpulse * (k_RotationSpringFrequency * k_SpringImpulseScale);
+        ClampFireSpring();
+    }
+
+    internal static void StepSpring(ref Vector3 offset, ref Vector3 velocity,
+        float frequency, float damping, float deltaTime)
+    {
+        float remaining = Mathf.Min(Mathf.Max(0f, deltaTime), k_MaxSpringStep * k_MaxSpringStepsPerFrame);
+        while (remaining > 0f)
         {
-            m_fireRecoilAmount = 1f - Mathf.Clamp01((elapsed - halfDuration) / halfDuration);
-            return;
+            float step = Mathf.Min(k_MaxSpringStep, remaining);
+            velocity += (-frequency * frequency * offset - 2f * damping * frequency * velocity) * step;
+            offset += velocity * step;
+            remaining -= step;
         }
-        m_fireRecoilAmount = 0f;
-        m_fireAnimationActive = false;
+    }
+
+    private void ClampFireSpring()
+    {
+        ClampSpringAxis(ref m_firePositionOffset.x, ref m_firePositionVelocity.x,
+            GetWeaponValue(s_RecoilLateralDistances) * k_MaxAccumulatedModelRecoil);
+        ClampSpringAxis(ref m_firePositionOffset.z, ref m_firePositionVelocity.z,
+            GetWeaponValue(s_RecoilDistances) * k_MaxAccumulatedModelRecoil);
+        ClampSpringAxis(ref m_fireRotationOffset.x, ref m_fireRotationVelocity.x,
+            GetWeaponValue(s_RecoilPitches) * k_MaxAccumulatedModelRecoil);
+        ClampSpringAxis(ref m_fireRotationOffset.y, ref m_fireRotationVelocity.y,
+            GetWeaponValue(s_RecoilYaws) * k_MaxAccumulatedModelRecoil);
+        ClampSpringAxis(ref m_fireRotationOffset.z, ref m_fireRotationVelocity.z,
+            GetWeaponValue(s_RecoilRolls) * k_MaxAccumulatedModelRecoil);
+    }
+
+    internal static void ClampSpringAxis(ref float offset, ref float velocity, float limit)
+    {
+        float clamped = Mathf.Clamp(offset, -limit, limit);
+        if (!Mathf.Approximately(clamped, offset) && Mathf.Sign(velocity) == Mathf.Sign(offset))
+        {
+            velocity = 0f;
+        }
+        offset = clamped;
+        velocity = Mathf.Clamp(velocity,
+            -limit * k_PositionSpringFrequency * k_SpringImpulseScale,
+            limit * k_PositionSpringFrequency * k_SpringImpulseScale);
     }
 
     private void UpdateMovementPose()
@@ -398,8 +495,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
         root.localPosition = GetRootRestPosition(m_activeWeapon)
             + m_movementPositionOffset
-            + Vector3.back * (m_recoilDistance * m_fireRecoilAmount);
-        root.localRotation = Quaternion.Euler(m_movementRotationOffset) * GetRootRestRotation(m_activeWeapon);
+            + m_firePositionOffset;
+        Vector3 rotationOffset = m_movementRotationOffset + m_fireRotationOffset;
+        root.localRotation = Quaternion.Euler(rotationOffset) * GetRootRestRotation(m_activeWeapon);
     }
 
     private void CacheRestTransforms()
@@ -424,8 +522,16 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private void StopFireAnimation()
     {
-        m_fireAnimationActive = false;
-        m_fireRecoilAmount = 0f;
+        m_firePositionOffset = Vector3.zero;
+        m_firePositionVelocity = Vector3.zero;
+        m_fireRotationOffset = Vector3.zero;
+        m_fireRotationVelocity = Vector3.zero;
+    }
+
+    internal void ResetRecoil()
+    {
+        StopFireAnimation();
+        RestoreRestPose();
     }
 
     private void ResetMovementPose()
@@ -484,6 +590,12 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     {
         int index = (int)m_activeWeapon - 1;
         return index >= 0 && index < s_MovementScales.Length ? s_MovementScales[index] : 0f;
+    }
+
+    private float GetWeaponValue(float[] values)
+    {
+        int index = (int)m_activeWeapon - 1;
+        return index >= 0 && index < values.Length ? values[index] : 0f;
     }
 
     private void RestoreRootTransform(GameObject root, int slot)

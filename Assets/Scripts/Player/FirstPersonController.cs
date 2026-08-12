@@ -3,6 +3,138 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[Serializable]
+internal struct RecoilProfile
+{
+    [SerializeField] private float m_pitch;
+    [SerializeField] private float m_yaw;
+    [SerializeField, Range(0f, 1f)] private float m_randomRange;
+    [SerializeField] private float m_softCap;
+    [SerializeField] private float m_hardCap;
+    [SerializeField, Range(0f, 1f)] private float m_continuousResidualRatio;
+    [SerializeField] private float m_kickDuration;
+    [SerializeField] private float m_recoveryDelay;
+    [SerializeField] private float m_returnDuration;
+    [SerializeField] private float m_fireImpulsePitch;
+    [SerializeField] private float m_fireImpulseYaw;
+    [SerializeField] private float m_fireImpulseRoll;
+    [SerializeField] private float m_fireImpulseDuration;
+
+    internal RecoilProfile(float pitch, float yaw, float randomRange, float softCap, float hardCap,
+        float continuousResidualRatio, float kickDuration, float recoveryDelay, float returnDuration,
+        float fireImpulsePitch, float fireImpulseYaw, float fireImpulseRoll, float fireImpulseDuration)
+    {
+        m_pitch = pitch;
+        m_yaw = yaw;
+        m_randomRange = randomRange;
+        m_softCap = softCap;
+        m_hardCap = hardCap;
+        m_continuousResidualRatio = continuousResidualRatio;
+        m_kickDuration = kickDuration;
+        m_recoveryDelay = recoveryDelay;
+        m_returnDuration = returnDuration;
+        m_fireImpulsePitch = fireImpulsePitch;
+        m_fireImpulseYaw = fireImpulseYaw;
+        m_fireImpulseRoll = fireImpulseRoll;
+        m_fireImpulseDuration = fireImpulseDuration;
+    }
+
+    internal RecoilSample CreateSample(float yawDirection = 0f)
+    {
+        float randomRange = Mathf.Clamp01(m_randomRange);
+        float basePitch = Mathf.Max(0f, m_pitch);
+        float pitch = basePitch * UnityEngine.Random.Range(1f - randomRange, 1f + randomRange);
+        float horizontalScale = UnityEngine.Random.Range(0.75f, 1f);
+        float direction = yawDirection == 0f ? (UnityEngine.Random.value < 0.5f ? -1f : 1f) : Mathf.Sign(yawDirection);
+        float yaw = Mathf.Min(Mathf.Max(0f, m_yaw) * horizontalScale, pitch * 0.4f) * direction;
+        return new RecoilSample(
+            pitch,
+            yaw,
+            basePitch > 0f ? pitch / basePitch : 0f,
+            horizontalScale,
+            Mathf.Max(0.001f, m_softCap),
+            Mathf.Max(m_softCap, m_hardCap),
+            Mathf.Clamp01(m_continuousResidualRatio),
+            Mathf.Max(0.001f, m_kickDuration),
+            Mathf.Max(0f, m_recoveryDelay),
+            Mathf.Max(0.001f, m_returnDuration),
+            Mathf.Max(0f, m_fireImpulsePitch),
+            Mathf.Max(0f, m_fireImpulseYaw) * horizontalScale * direction,
+            Mathf.Max(0f, m_fireImpulseRoll) * horizontalScale * direction,
+            Mathf.Max(0.001f, m_fireImpulseDuration));
+    }
+
+    internal bool IsValid()
+    {
+        return m_pitch > 0f && m_yaw >= 0f && m_randomRange >= 0f && m_randomRange <= 1f
+            && m_softCap > 0f && m_hardCap >= m_softCap
+            && m_continuousResidualRatio >= 0f && m_continuousResidualRatio <= 1f && m_kickDuration > 0f
+            && m_recoveryDelay >= m_kickDuration && m_returnDuration > 0f
+            && m_fireImpulsePitch >= 0f && m_fireImpulseYaw >= 0f && m_fireImpulseRoll >= 0f
+            && m_fireImpulseDuration > 0f;
+    }
+}
+
+internal readonly struct RecoilSample
+{
+    internal RecoilSample(float pitch, float yaw, float verticalScale, float horizontalScale,
+        float softCap, float hardCap, float continuousResidualRatio, float kickDuration,
+        float recoveryDelay, float returnDuration, float fireImpulsePitch, float fireImpulseYaw,
+        float fireImpulseRoll, float fireImpulseDuration)
+    {
+        Pitch = pitch;
+        Yaw = yaw;
+        VerticalScale = verticalScale;
+        HorizontalScale = horizontalScale;
+        SoftCap = softCap;
+        HardCap = hardCap;
+        ContinuousResidualRatio = continuousResidualRatio;
+        KickDuration = kickDuration;
+        RecoveryDelay = recoveryDelay;
+        ReturnDuration = returnDuration;
+        FireImpulsePitch = fireImpulsePitch;
+        FireImpulseYaw = fireImpulseYaw;
+        FireImpulseRoll = fireImpulseRoll;
+        FireImpulseDuration = fireImpulseDuration;
+    }
+
+    internal float Pitch { get; }
+    internal float Yaw { get; }
+    internal float VerticalScale { get; }
+    internal float HorizontalScale { get; }
+    internal float HorizontalDirection => Mathf.Sign(Yaw);
+    internal float SoftCap { get; }
+    internal float HardCap { get; }
+    internal float ContinuousResidualRatio { get; }
+    internal float KickDuration { get; }
+    internal float RecoveryDelay { get; }
+    internal float ReturnDuration { get; }
+    internal float FireImpulsePitch { get; }
+    internal float FireImpulseYaw { get; }
+    internal float FireImpulseRoll { get; }
+    internal float FireImpulseDuration { get; }
+
+    internal static float EaseOutCubic(float value)
+    {
+        float inverse = 1f - Mathf.Clamp01(value);
+        return 1f - inverse * inverse * inverse;
+    }
+
+    internal static float EaseOutQuad(float value)
+    {
+        float inverse = 1f - Mathf.Clamp01(value);
+        return 1f - inverse * inverse;
+    }
+}
+
+internal enum RecoilPhase
+{
+    Idle,
+    Kick,
+    Hold,
+    Return
+}
+
 [RequireComponent(typeof(CharacterController), typeof(PlayerHealth), typeof(ScoreSystem))]
 [RequireComponent(typeof(PlayerSkillController))]
 public sealed class FirstPersonController : MonoBehaviour
@@ -13,6 +145,19 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_HeadshotDamageMultiplier = 2f;
     private const float k_RaycastDistance = 100f;
     private const float k_MaxPitch = 80f;
+    private const float k_DmrZoomFieldOfView = 45f;
+    private const float k_DmrZoomTransitionDuration = 0.12f;
+    private const float k_DmrZoomSensitivityMultiplier = 0.5f;
+    private const float k_DamageAimPunchKickSpeed = 30f;
+    private const float k_DamageAimPunchReturnSpeed = 8f;
+    private const float k_DamageAimPunchSoftCap = 3f;
+    private const float k_DamageAimPunchHardCapPitch = 4f;
+    private const float k_DamageAimPunchHardCapYaw = 2f;
+    private const float k_RifleBurstResetTime = 0.25f;
+    private const int k_RifleYawDirectionShots = 4;
+    private const float k_PistolContinuousWindow = 0.24f;
+    private const float k_RifleContinuousWindow = 0.32f;
+    private const float k_DmrContinuousWindow = 0.42f;
     // ponytail: fixed buffer avoids WebGL GC; raise only if one shot can cross 64 solid colliders.
     private const int k_DmrRaycastBufferSize = 64;
     private static readonly int[] s_StartingAmmo = { 15, 6, 30, 12 };
@@ -29,8 +174,17 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
-    [SerializeField] private float m_recoilKickSpeed = 18f;
-    [SerializeField] private float m_recoilReturnSpeed = 10f;
+    [Header("Weapon Recoil")]
+    [SerializeField] private RecoilProfile m_pistolRecoil = new(2.2f, 0.35f, 0.1f, 3.5f, 4.5f,
+        0.2f, 0.055f, 0.1f, 0.12f, 0.35f, 0.05f, 0.12f, 0.08f);
+    [SerializeField] private RecoilProfile m_shotgunRecoil = new(4.6f, 0.85f, 0.15f, 4.5f, 5.5f,
+        0.3f, 0.075f, 0.28f, 0.29f, 0.75f, 0.15f, 0.28f, 0.13f);
+    [SerializeField] private RecoilProfile m_rifleRecoil = new(2f, 0.32f, 0.12f, 6f, 7f,
+        0.35f, 0.045f, 0.14f, 0.15f, 0.25f, 0.05f, 0.12f, 0.06f);
+    [SerializeField] private RecoilProfile m_dmrRecoil = new(3.2f, 0.45f, 0.1f, 4.8f, 6f,
+        0.25f, 0.065f, 0.18f, 0.2f, 0.5f, 0.1f, 0.18f, 0.1f);
+    [SerializeField] private RecoilProfile m_rocketRecoil = new(5.6f, 1.1f, 0.15f, 5.5f, 6.5f,
+        0f, 0.1f, 0.28f, 0.42f, 1f, 0.2f, 0.35f, 0.16f);
     [Header("World Audio")]
     [SerializeField] private AudioClip m_wallImpactClip;
     [SerializeField] private float m_wallImpactMaxDistance = 20f;
@@ -55,13 +209,36 @@ public sealed class FirstPersonController : MonoBehaviour
     private ScoreSystem m_scoreSystem;
     private float m_verticalVelocity;
     private float m_pitch;
+    private float m_defaultCameraFieldOfView;
     private float m_cameraRecoilPitch;
-    private float m_cameraRecoilTargetPitch;
     private float m_cameraRecoilYaw;
-    private float m_cameraRecoilTargetYaw;
+    private Vector2 m_cameraRecoilStart;
+    private Vector2 m_cameraRecoilTarget;
+    private Vector2 m_cameraRecoilReturnStart;
+    private Vector2 m_cameraRecoilReturnTarget;
+    private RecoilSample m_activeRecoilSample;
+    private RecoilPhase m_cameraRecoilPhase;
+    private float m_cameraRecoilPhaseStartedAt;
+    private float m_cameraRecoilLastShotAt;
+    private Vector3 m_fireImpulse;
+    private Vector3 m_fireImpulseStart;
+    private float m_fireImpulseStartedAt;
+    private float m_fireImpulseDuration;
+    private float m_damageAimPunchPitch;
+    private float m_damageAimPunchTargetPitch;
+    private float m_damageAimPunchYaw;
+    private float m_damageAimPunchTargetYaw;
     private float m_nextAllowedFireTime;
+    private float m_lastRifleShotTime = float.NegativeInfinity;
+    private float m_rifleYawDirection;
+    private int m_rifleBurstShots;
+    private WeaponId m_burstWeapon = WeaponId.Unknown;
+    private float m_lastSuccessfulShotAt = float.NegativeInfinity;
+    private int m_burstShotCount;
+    private bool m_commitResidualOnReturn;
     private int m_activeWeaponSlot = 1;
     private bool m_isRifleFiring;
+    private bool m_isDmrZoomed;
 
     public static FirstPersonController CurrentInstance { get; private set; }
     public int ActiveWeaponSlot => m_activeWeaponSlot;
@@ -94,6 +271,10 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         Debug.Assert(m_gameplayHUD != null && m_playerCamera != null && m_weaponViewmodel != null
             && IsAmmoConfigurationValid());
+        if (m_playerCamera != null)
+        {
+            m_defaultCameraFieldOfView = m_playerCamera.fieldOfView;
+        }
         m_gameplayHUD?.BindPlayerHealth(m_playerHealth);
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
@@ -138,6 +319,11 @@ public sealed class FirstPersonController : MonoBehaviour
     private void OnDisable()
     {
         m_isRifleFiring = false;
+        ResetCameraRecoil();
+        m_damageAimPunchPitch = 0f;
+        m_damageAimPunchTargetPitch = 0f;
+        m_damageAimPunchYaw = 0f;
+        m_damageAimPunchTargetYaw = 0f;
         if (m_playerMap != null)
         {
             m_attackAction.performed -= OnAttack;
@@ -168,6 +354,11 @@ public sealed class FirstPersonController : MonoBehaviour
         }
 
         HandleWeaponSelection();
+        if (m_playerMap != null && Cursor.lockState == CursorLockMode.Locked)
+        {
+            HandleDmrZoomInput();
+        }
+        UpdateDmrZoom();
         if (m_playerMap == null || Cursor.lockState != CursorLockMode.Locked)
         {
             return;
@@ -225,9 +416,47 @@ public sealed class FirstPersonController : MonoBehaviour
 
         m_skillController?.CancelArmedSkill();
         m_isRifleFiring = false;
+        m_isDmrZoomed = false;
         m_activeWeaponSlot = slot;
         m_weaponViewmodel?.SelectWeapon(CurrentWeapon);
+        m_gameplayHUD?.SetDmrAimState(CurrentWeapon == WeaponId.DMR, false);
         RefreshWeaponHud();
+    }
+
+    private void HandleDmrZoomInput()
+    {
+        if (Mouse.current == null || !Mouse.current.rightButton.wasPressedThisFrame
+            || CurrentWeapon != WeaponId.DMR)
+        {
+            return;
+        }
+
+        m_isDmrZoomed = !m_isDmrZoomed;
+        m_gameplayHUD?.SetDmrAimState(true, m_isDmrZoomed);
+    }
+
+    private void UpdateDmrZoom()
+    {
+        if (m_playerCamera == null || m_defaultCameraFieldOfView <= 0f)
+        {
+            return;
+        }
+
+        float targetFieldOfView = m_isDmrZoomed ? k_DmrZoomFieldOfView : m_defaultCameraFieldOfView;
+        float speed = Mathf.Abs(m_defaultCameraFieldOfView - k_DmrZoomFieldOfView)
+            / k_DmrZoomTransitionDuration;
+        m_playerCamera.fieldOfView = Mathf.MoveTowards(
+            m_playerCamera.fieldOfView, targetFieldOfView, speed * Time.unscaledDeltaTime);
+    }
+
+    private void ResetDmrZoom(bool immediate)
+    {
+        m_isDmrZoomed = false;
+        if (immediate && m_playerCamera != null && m_defaultCameraFieldOfView > 0f)
+        {
+            m_playerCamera.fieldOfView = m_defaultCameraFieldOfView;
+        }
+        m_gameplayHUD?.SetDmrAimState(CurrentWeapon == WeaponId.DMR, false);
     }
 
     private void RefreshWeaponHud()
@@ -260,41 +489,163 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void HandleLook()
     {
-        Vector2 look = m_lookAction.ReadValue<Vector2>() * m_lookSensitivity;
+        float sensitivity = m_lookSensitivity
+            * (m_isDmrZoomed ? k_DmrZoomSensitivityMultiplier : 1f);
+        Vector2 look = m_lookAction.ReadValue<Vector2>() * sensitivity;
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
         UpdateCameraRecoil();
-        m_playerCamera.transform.localRotation = Quaternion.Euler(m_pitch - m_cameraRecoilPitch, m_cameraRecoilYaw, 0f);
+        UpdateFireImpulse();
+        UpdateDamageAimPunch();
+        m_playerCamera.transform.localRotation = Quaternion.Euler(
+            m_pitch - m_cameraRecoilPitch - m_fireImpulse.x - m_damageAimPunchPitch,
+            m_cameraRecoilYaw + m_fireImpulse.y + m_damageAimPunchYaw,
+            m_fireImpulse.z);
         transform.Rotate(Vector3.up * look.x);
     }
 
     private void UpdateCameraRecoil()
     {
-        float deltaTime = Time.deltaTime;
-        if (m_cameraRecoilTargetPitch > 0f)
+        ClampCameraRecoilToPitchHeadroom();
+        float now = Time.unscaledTime;
+        switch (m_cameraRecoilPhase)
         {
-            m_cameraRecoilPitch = Mathf.Lerp(m_cameraRecoilPitch, m_cameraRecoilTargetPitch,
-                Mathf.Clamp01(m_recoilKickSpeed * deltaTime));
-            m_cameraRecoilYaw = Mathf.Lerp(m_cameraRecoilYaw, m_cameraRecoilTargetYaw,
-                Mathf.Clamp01(m_recoilKickSpeed * deltaTime));
-            if (Mathf.Abs(m_cameraRecoilPitch - m_cameraRecoilTargetPitch) < 0.01f)
+            case RecoilPhase.Kick:
+                float kick = RecoilSample.EaseOutQuad(
+                    (now - m_cameraRecoilPhaseStartedAt) / m_activeRecoilSample.KickDuration);
+                SetCameraRecoil(Vector2.LerpUnclamped(m_cameraRecoilStart, m_cameraRecoilTarget, kick));
+                if (kick >= 1f)
+                {
+                    m_cameraRecoilPhase = RecoilPhase.Hold;
+                }
+                break;
+            case RecoilPhase.Hold:
+                SetCameraRecoil(m_cameraRecoilTarget);
+                break;
+            case RecoilPhase.Return:
+                float recovery = RecoilSample.EaseOutCubic(
+                    (now - m_cameraRecoilPhaseStartedAt) / m_activeRecoilSample.ReturnDuration);
+                SetCameraRecoil(Vector2.LerpUnclamped(
+                    m_cameraRecoilReturnStart, m_cameraRecoilReturnTarget, recovery));
+                if (recovery >= 1f)
+                {
+                    CompleteCameraRecoilReturn();
+                }
+                break;
+        }
+
+        if ((m_cameraRecoilPhase == RecoilPhase.Kick || m_cameraRecoilPhase == RecoilPhase.Hold)
+            && now >= m_cameraRecoilLastShotAt + m_activeRecoilSample.RecoveryDelay
+            && now >= m_cameraRecoilLastShotAt + m_activeRecoilSample.KickDuration)
+        {
+            m_cameraRecoilReturnStart = new Vector2(m_cameraRecoilPitch, m_cameraRecoilYaw);
+            m_cameraRecoilReturnTarget = m_commitResidualOnReturn
+                ? m_cameraRecoilReturnStart * m_activeRecoilSample.ContinuousResidualRatio
+                : Vector2.zero;
+            m_cameraRecoilPhaseStartedAt = now;
+            m_cameraRecoilPhase = RecoilPhase.Return;
+        }
+        ClampCameraRecoilToPitchHeadroom();
+    }
+
+    private void ClampCameraRecoilToPitchHeadroom()
+    {
+        m_cameraRecoilPitch = ClampRecoilPitch(m_cameraRecoilPitch, m_pitch);
+        m_cameraRecoilStart.x = ClampRecoilPitch(m_cameraRecoilStart.x, m_pitch);
+        m_cameraRecoilTarget.x = ClampRecoilPitch(m_cameraRecoilTarget.x, m_pitch);
+        m_cameraRecoilReturnStart.x = ClampRecoilPitch(m_cameraRecoilReturnStart.x, m_pitch);
+        m_cameraRecoilReturnTarget.x = ClampRecoilPitch(m_cameraRecoilReturnTarget.x, m_pitch);
+    }
+
+    private static float ClampRecoilPitch(float recoilPitch, float aimPitch)
+    {
+        return Mathf.Clamp(recoilPitch, 0f, Mathf.Max(0f, aimPitch + k_MaxPitch));
+    }
+
+    private void SetCameraRecoil(Vector2 recoil)
+    {
+        m_cameraRecoilPitch = Mathf.Max(0f, recoil.x);
+        m_cameraRecoilYaw = recoil.y;
+    }
+
+    private void ResetCameraRecoil()
+    {
+        m_cameraRecoilPitch = 0f;
+        m_cameraRecoilYaw = 0f;
+        m_cameraRecoilStart = Vector2.zero;
+        m_cameraRecoilTarget = Vector2.zero;
+        m_cameraRecoilReturnStart = Vector2.zero;
+        m_cameraRecoilReturnTarget = Vector2.zero;
+        m_activeRecoilSample = default;
+        m_cameraRecoilPhase = RecoilPhase.Idle;
+        m_cameraRecoilPhaseStartedAt = 0f;
+        m_cameraRecoilLastShotAt = 0f;
+        m_fireImpulse = Vector3.zero;
+        m_fireImpulseStart = Vector3.zero;
+        m_fireImpulseStartedAt = 0f;
+        m_fireImpulseDuration = 0f;
+        m_lastRifleShotTime = float.NegativeInfinity;
+        m_rifleYawDirection = 0f;
+        m_rifleBurstShots = 0;
+        ResetBurstTracking();
+        m_commitResidualOnReturn = false;
+    }
+
+    private void CompleteCameraRecoilReturn()
+    {
+        if (m_commitResidualOnReturn)
+        {
+            Vector2 residual = m_cameraRecoilReturnTarget;
+            m_pitch = Mathf.Clamp(m_pitch - residual.x, -k_MaxPitch, k_MaxPitch);
+            transform.Rotate(Vector3.up * residual.y);
+        }
+        ResetCameraRecoil();
+    }
+
+    private void ResetBurstTracking()
+    {
+        m_burstWeapon = WeaponId.Unknown;
+        m_lastSuccessfulShotAt = float.NegativeInfinity;
+        m_burstShotCount = 0;
+    }
+
+    private void UpdateFireImpulse()
+    {
+        if (m_fireImpulseDuration <= 0f)
+        {
+            return;
+        }
+
+        float elapsed = Time.unscaledTime - m_fireImpulseStartedAt;
+        float amount = 1f - RecoilSample.EaseOutCubic(elapsed / m_fireImpulseDuration);
+        m_fireImpulse = m_fireImpulseStart * amount;
+        if (elapsed >= m_fireImpulseDuration)
+        {
+            m_fireImpulse = Vector3.zero;
+            m_fireImpulseStart = Vector3.zero;
+            m_fireImpulseDuration = 0f;
+        }
+    }
+
+    private void UpdateDamageAimPunch()
+    {
+        float deltaTime = Time.deltaTime;
+        if (m_damageAimPunchTargetPitch > 0f)
+        {
+            float kickBlend = Mathf.Clamp01(k_DamageAimPunchKickSpeed * deltaTime);
+            m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, m_damageAimPunchTargetPitch, kickBlend);
+            m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, m_damageAimPunchTargetYaw, kickBlend);
+            if (Mathf.Abs(m_damageAimPunchPitch - m_damageAimPunchTargetPitch) < 0.01f
+                && Mathf.Abs(m_damageAimPunchYaw - m_damageAimPunchTargetYaw) < 0.01f)
             {
-                if (m_isRifleFiring)
-                {
-                    float committedRecoil = Mathf.Min(m_cameraRecoilPitch, m_pitch + k_MaxPitch);
-                    m_pitch -= committedRecoil;
-                    m_cameraRecoilPitch -= committedRecoil;
-                    m_cameraRecoilTargetPitch = m_cameraRecoilPitch;
-                }
-                else
-                {
-                    m_cameraRecoilTargetPitch = 0f;
-                }
+                m_damageAimPunchTargetPitch = 0f;
+                m_damageAimPunchTargetYaw = 0f;
             }
             return;
         }
 
-        m_cameraRecoilPitch = Mathf.Lerp(m_cameraRecoilPitch, 0f, Mathf.Clamp01(m_recoilReturnSpeed * deltaTime));
-        m_cameraRecoilYaw = Mathf.Lerp(m_cameraRecoilYaw, 0f, Mathf.Clamp01(m_recoilReturnSpeed * deltaTime));
+        float returnBlend = Mathf.Clamp01(k_DamageAimPunchReturnSpeed * deltaTime);
+        m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, 0f, returnBlend);
+        m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, 0f, returnBlend);
     }
 
     private void HandleMovement()
@@ -373,8 +724,10 @@ public sealed class FirstPersonController : MonoBehaviour
         m_nextAllowedFireTime = Time.unscaledTime + GetFireInterval(CurrentWeapon);
         m_weaponAmmo[index]--;
         m_gameplayHUD?.RefreshWeapon(m_activeWeaponSlot, CurrentWeapon, m_weaponAmmo[index], true);
-        m_weaponViewmodel?.PlayFireFeedback();
-        ApplyCameraRecoil(GetVerticalRecoil(CurrentWeapon), GetHorizontalRecoil(CurrentWeapon));
+        RecoilSample recoil = GetRecoilProfile(CurrentWeapon).CreateSample(GetRecoilYawDirection(CurrentWeapon));
+        bool isContinuousFire = RegisterSuccessfulShot(CurrentWeapon);
+        m_weaponViewmodel?.PlayFireFeedback(recoil);
+        ApplyCameraRecoil(recoil, isContinuousFire);
 
         switch (CurrentWeapon)
         {
@@ -398,11 +751,11 @@ public sealed class FirstPersonController : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, k_RaycastDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
         {
             rayLength = hit.distance;
-            m_impactSparkEmitter?.EmitAt(hit.point, hit.normal);
             EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
+                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
                 float damage = GetDamage(weapon) * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
                 bool killed = enemy.ApplyDamage(damage, KillContext.Direct(weapon, isHeadshot));
                 if (killed)
@@ -413,6 +766,7 @@ public sealed class FirstPersonController : MonoBehaviour
             }
             else
             {
+                m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
                 SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
             }
         }
@@ -421,7 +775,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void FireDmr()
     {
-        Ray ray = new(m_playerCamera.transform.position, m_playerCamera.transform.forward);
+        Ray ray = new(m_playerCamera.transform.position, GetAimRotation() * Vector3.forward);
         int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
             Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
         Array.Sort(m_dmrHits, 0, hitCount, s_RaycastHitDistanceComparer);
@@ -453,6 +807,7 @@ public sealed class FirstPersonController : MonoBehaviour
             bool isHeadshot = enemy != null && enemy.IsHeadHit(ray, hit.distance + 0.5f);
             if (enemy != null)
             {
+                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
                 bool killed = enemy.ApplyDamage(damage * (isHeadshot ? k_HeadshotDamageMultiplier : 1f),
                     KillContext.Direct(WeaponId.DMR, isHeadshot));
                 if (killed)
@@ -464,11 +819,15 @@ public sealed class FirstPersonController : MonoBehaviour
             }
             else if (!playedWallImpact)
             {
+                m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
                 SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
                 playedWallImpact = true;
             }
+            else
+            {
+                m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
+            }
 
-            m_impactSparkEmitter?.EmitAt(hit.point, hit.normal);
             rayLength = hit.distance;
             collisionIndex++;
             if (collisionIndex == 3)
@@ -497,11 +856,11 @@ public sealed class FirstPersonController : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit, k_RaycastDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
             {
                 rayLength = hit.distance;
-                m_impactSparkEmitter?.EmitAt(hit.point, hit.normal);
                 EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
                 if (enemy != null)
                 {
                     bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
+                    m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
                     m_shotgunDamageByEnemy.TryGetValue(enemy, out float damage);
                     m_shotgunDamageByEnemy[enemy] = damage + 12f * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
                     if (isHeadshot)
@@ -511,8 +870,13 @@ public sealed class FirstPersonController : MonoBehaviour
                 }
                 else if (!playedWallImpact)
                 {
+                    m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
                     SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
                     playedWallImpact = true;
+                }
+                else
+                {
+                    m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
                 }
             }
             Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.yellow, 0.1f);
@@ -540,8 +904,9 @@ public sealed class FirstPersonController : MonoBehaviour
     private Vector3 CreateShotgunDirection()
     {
         Vector2 spread = UnityEngine.Random.insideUnitCircle * Mathf.Tan(k_ShotgunSpreadAngle * Mathf.Deg2Rad);
-        Transform cameraTransform = m_playerCamera.transform;
-        return (cameraTransform.forward + cameraTransform.right * spread.x + cameraTransform.up * spread.y).normalized;
+        Quaternion aimRotation = GetAimRotation();
+        return (aimRotation * Vector3.forward + aimRotation * Vector3.right * spread.x
+            + aimRotation * Vector3.up * spread.y).normalized;
     }
 
     private Vector3 CreateSingleRayDirection(WeaponId weapon)
@@ -553,8 +918,13 @@ public sealed class FirstPersonController : MonoBehaviour
             _ => 0f
         };
         float spread = UnityEngine.Random.Range(-spreadRange, spreadRange);
-        Transform cameraTransform = m_playerCamera.transform;
-        return Quaternion.AngleAxis(spread, cameraTransform.up) * cameraTransform.forward;
+        Quaternion aimRotation = GetAimRotation();
+        return Quaternion.AngleAxis(spread, aimRotation * Vector3.up) * (aimRotation * Vector3.forward);
+    }
+
+    private Quaternion GetAimRotation()
+    {
+        return transform.rotation * Quaternion.Euler(m_pitch - m_cameraRecoilPitch, m_cameraRecoilYaw, 0f);
     }
 
     private static float GetDamage(WeaponId weapon)
@@ -580,28 +950,122 @@ public sealed class FirstPersonController : MonoBehaviour
         };
     }
 
-    private static float GetVerticalRecoil(WeaponId weapon)
-    {
-        return weapon == WeaponId.Shotgun ? 1.5f : 0.65f;
-    }
-
-    private static float GetHorizontalRecoil(WeaponId weapon)
+    private RecoilProfile GetRecoilProfile(WeaponId weapon)
     {
         return weapon switch
         {
-            WeaponId.Pistol => 0.35f,
-            WeaponId.Rifle => 0.15f,
-            WeaponId.DMR => 0.2f,
-            _ => 0f
+            WeaponId.Pistol => m_pistolRecoil,
+            WeaponId.Shotgun => m_shotgunRecoil,
+            WeaponId.Rifle => m_rifleRecoil,
+            WeaponId.DMR => m_dmrRecoil,
+            _ => default
         };
     }
 
-    internal void ApplyCameraRecoil(float verticalRecoil, float horizontalRecoil)
+    private float GetRecoilYawDirection(WeaponId weapon)
     {
-        m_cameraRecoilTargetPitch = Mathf.Max(m_cameraRecoilPitch, m_cameraRecoilTargetPitch)
-            + Mathf.Max(0f, verticalRecoil);
-        float spread = Mathf.Max(0f, horizontalRecoil);
-        m_cameraRecoilTargetYaw = UnityEngine.Random.Range(-spread, spread);
+        if (weapon != WeaponId.Rifle)
+        {
+            return 0f;
+        }
+
+        float now = Time.unscaledTime;
+        if (now - m_lastRifleShotTime > k_RifleBurstResetTime || m_rifleBurstShots == 0)
+        {
+            m_rifleBurstShots = 0;
+            m_rifleYawDirection = UnityEngine.Random.value < 0.5f ? -1f : 1f;
+        }
+        else if (m_rifleBurstShots % k_RifleYawDirectionShots == 0)
+        {
+            m_rifleYawDirection = -m_rifleYawDirection;
+        }
+
+        m_rifleBurstShots++;
+        m_lastRifleShotTime = now;
+        return m_rifleYawDirection;
+    }
+
+    private bool RegisterSuccessfulShot(WeaponId weapon)
+    {
+        float now = Time.unscaledTime;
+        bool isContinuous = IsContinuousFire(
+            weapon, m_burstWeapon, m_burstShotCount, now - m_lastSuccessfulShotAt);
+        m_burstWeapon = weapon;
+        m_burstShotCount = isContinuous ? m_burstShotCount + 1 : 1;
+        m_lastSuccessfulShotAt = now;
+        return isContinuous;
+    }
+
+    private static bool IsContinuousFire(WeaponId weapon, WeaponId burstWeapon, int burstShotCount,
+        float elapsedSinceLastShot)
+    {
+        float window = weapon switch
+        {
+            WeaponId.Pistol => k_PistolContinuousWindow,
+            WeaponId.Rifle => k_RifleContinuousWindow,
+            WeaponId.DMR => k_DmrContinuousWindow,
+            _ => 0f
+        };
+        return window > 0f && burstWeapon == weapon && burstShotCount > 0
+            && elapsedSinceLastShot <= window;
+    }
+
+    private void ApplyCameraRecoil(RecoilSample recoil, bool isContinuousFire)
+    {
+        ClampCameraRecoilToPitchHeadroom();
+        m_cameraRecoilStart = new Vector2(m_cameraRecoilPitch, m_cameraRecoilYaw);
+        float capRatio = Mathf.Clamp01(m_cameraRecoilStart.x / recoil.SoftCap);
+        float pitchAddScale = Mathf.Lerp(1f, 0.25f, capRatio);
+        m_cameraRecoilTarget = m_cameraRecoilStart + new Vector2(recoil.Pitch * pitchAddScale, recoil.Yaw);
+        m_cameraRecoilTarget.x = Mathf.Min(m_cameraRecoilTarget.x, recoil.HardCap);
+        m_activeRecoilSample = recoil;
+        m_cameraRecoilPhaseStartedAt = Time.unscaledTime;
+        m_cameraRecoilLastShotAt = Time.unscaledTime;
+        m_cameraRecoilPhase = RecoilPhase.Kick;
+        m_cameraRecoilReturnTarget = Vector2.zero;
+        m_commitResidualOnReturn = isContinuousFire;
+        m_fireImpulseStart = new Vector3(recoil.FireImpulsePitch, recoil.FireImpulseYaw, recoil.FireImpulseRoll);
+        m_fireImpulse = m_fireImpulseStart;
+        m_fireImpulseStartedAt = Time.unscaledTime;
+        m_fireImpulseDuration = recoil.FireImpulseDuration;
+        ClampCameraRecoilToPitchHeadroom();
+    }
+
+    internal RecoilSample ApplyRocketRecoil()
+    {
+        RecoilSample recoil = m_rocketRecoil.CreateSample();
+        ResetBurstTracking();
+        ApplyCameraRecoil(recoil, false);
+        return recoil;
+    }
+
+    internal void ApplyDamageAimPunch(PlayerDeathCause deathCause)
+    {
+        Vector2 strength = GetDamageAimPunchStrength(deathCause);
+        if (strength.x <= 0f)
+        {
+            return;
+        }
+
+        float currentPitch = Mathf.Max(m_damageAimPunchPitch, m_damageAimPunchTargetPitch);
+        float addScale = Mathf.Lerp(1f, 0.25f,
+            Mathf.Clamp01(currentPitch / k_DamageAimPunchSoftCap));
+        m_damageAimPunchTargetPitch = Mathf.Min(k_DamageAimPunchHardCapPitch,
+            currentPitch + strength.x * addScale);
+        m_damageAimPunchTargetYaw = Mathf.Clamp(m_damageAimPunchTargetYaw
+            + UnityEngine.Random.Range(-strength.y, strength.y) * addScale,
+            -k_DamageAimPunchHardCapYaw, k_DamageAimPunchHardCapYaw);
+    }
+
+    private static Vector2 GetDamageAimPunchStrength(PlayerDeathCause deathCause)
+    {
+        return deathCause switch
+        {
+            PlayerDeathCause.SuicideBacteriophage => new Vector2(2.8f, 1.2f),
+            PlayerDeathCause.MeleeHumanoid => new Vector2(1.7f, 0.75f),
+            PlayerDeathCause.RangedHumanoid => new Vector2(0.8f, 0.35f),
+            _ => Vector2.zero
+        };
     }
 
     private static int GetStartingAmmo(WeaponId weapon)
@@ -618,12 +1082,47 @@ public sealed class FirstPersonController : MonoBehaviour
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Shotgun), 66f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Rifle), 660f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.DMR), 315f));
+        Debug.Assert(Mathf.Approximately(k_DmrZoomFieldOfView, 45f)
+            && Mathf.Approximately(k_DmrZoomTransitionDuration, 0.12f)
+            && Mathf.Approximately(k_DmrZoomSensitivityMultiplier, 0.5f));
+        Debug.Assert(!GameplayHUD.ShouldShowCrosshair(true, false)
+            && GameplayHUD.ShouldShowCrosshair(true, true)
+            && GameplayHUD.ShouldShowCrosshair(false, false));
         Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == 15 && GetStartingAmmo(WeaponId.Shotgun) == 6
             && GetStartingAmmo(WeaponId.Rifle) == 30 && GetStartingAmmo(WeaponId.DMR) == 12);
         Debug.Assert(RunResultStore.GetPrimaryWeapon(PlayerClassId.Grenadier) == WeaponId.Rifle
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Engineer) == WeaponId.Shotgun
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Sniper) == WeaponId.DMR);
         Debug.Assert(k_ShotgunPelletCount == 8 && Mathf.Approximately(k_ShotgunSpreadAngle, 5f));
+        Debug.Assert(m_pistolRecoil.IsValid() && m_shotgunRecoil.IsValid() && m_rifleRecoil.IsValid()
+            && m_dmrRecoil.IsValid() && m_rocketRecoil.IsValid());
+        RecoilSample pistolRecoil = m_pistolRecoil.CreateSample();
+        RecoilSample rifleRecoil = m_rifleRecoil.CreateSample();
+        RecoilSample dmrRecoil = m_dmrRecoil.CreateSample();
+        Debug.Assert(Mathf.Approximately(pistolRecoil.ContinuousResidualRatio, 0.2f)
+            && Mathf.Approximately(rifleRecoil.ContinuousResidualRatio, 0.35f)
+            && Mathf.Approximately(dmrRecoil.ContinuousResidualRatio, 0.25f));
+        Debug.Assert(IsContinuousFire(WeaponId.Pistol, WeaponId.Pistol, 1, 0.24f)
+            && !IsContinuousFire(WeaponId.Pistol, WeaponId.Pistol, 1, 0.241f)
+            && IsContinuousFire(WeaponId.Rifle, WeaponId.Rifle, 1, 0.32f)
+            && IsContinuousFire(WeaponId.DMR, WeaponId.DMR, 1, 0.42f)
+            && !IsContinuousFire(WeaponId.Shotgun, WeaponId.Shotgun, 1, 0.5f));
+        for (int sampleIndex = 0; sampleIndex < 64; sampleIndex++)
+        {
+            RecoilSample recoil = m_rocketRecoil.CreateSample();
+            Debug.Assert(recoil.Pitch > 0f && Mathf.Abs(recoil.Yaw) <= recoil.Pitch * 0.4f + 0.001f);
+            Debug.Assert(recoil.SoftCap > 0f && recoil.HardCap >= recoil.SoftCap
+                && recoil.FireImpulseDuration > 0f);
+        }
+        Debug.Assert(RecoilSample.EaseOutCubic(0.25f) > 0.25f
+            && RecoilSample.EaseOutCubic(0.75f) > 0.75f);
+        Debug.Assert(RecoilSample.EaseOutQuad(0.25f) < RecoilSample.EaseOutCubic(0.25f));
+        Debug.Assert(Mathf.Approximately(ClampRecoilPitch(12f, -75f), 5f));
+        Debug.Assert(Mathf.Approximately(ClampRecoilPitch(5f, -80f), 0f));
+        Vector2 suicidePunch = GetDamageAimPunchStrength(PlayerDeathCause.SuicideBacteriophage);
+        Vector2 meleePunch = GetDamageAimPunchStrength(PlayerDeathCause.MeleeHumanoid);
+        Vector2 rangedPunch = GetDamageAimPunchStrength(PlayerDeathCause.RangedHumanoid);
+        Debug.Assert(suicidePunch.x > meleePunch.x && meleePunch.x > rangedPunch.x && rangedPunch.x > 0f);
     }
 
     private void OnJump(InputAction.CallbackContext context)
@@ -652,6 +1151,9 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         m_isRifleFiring = false;
         m_skillController?.CancelArmedSkill();
+        ResetDmrZoom(true);
+        ResetCameraRecoil();
+        m_weaponViewmodel?.ResetRecoil();
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -660,8 +1162,6 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         m_moveSpeed = Mathf.Max(0f, m_moveSpeed);
         m_jumpHeight = Mathf.Max(0f, m_jumpHeight);
-        m_recoilKickSpeed = Mathf.Max(0.1f, m_recoilKickSpeed);
-        m_recoilReturnSpeed = Mathf.Max(0.1f, m_recoilReturnSpeed);
         m_wallImpactMaxDistance = Mathf.Max(0.1f, m_wallImpactMaxDistance);
     }
 

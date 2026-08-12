@@ -19,10 +19,13 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_ScoreFeedbackFadeDuration = 0.25f;
     private const float k_HitMarkerDuration = 0.12f;
     private const float k_HitMarkerFadeDuration = 0.04f;
+    private const float k_HitMarkerPulseDuration = 0.06f;
     private const float k_SkillReadyFlashDuration = 0.3f;
     private const float k_MaxDamageVignetteAlpha = 0.68f;
     private const float k_DamageVignetteIncreaseSpeed = 3.5f;
     private const float k_DamageVignetteRecoverySpeed = 1.2f;
+    private const float k_DmrScopeVignetteAlpha = 0.68f;
+    private const float k_DmrScopeTransitionDuration = 0.12f;
     private static readonly Vector2 k_PickupPopupBasePosition = new(-170f, 48f);
     private static readonly Vector2 k_WeaponBorderSize = new(500f, 54f);
     private static readonly Vector2 k_WeaponBackgroundSize = new(496f, 50f);
@@ -64,6 +67,8 @@ public sealed class GameplayHUD : MonoBehaviour
     private Image m_skillCooldownFill;
     private Image m_hitMarkerImage;
     private Image m_damageVignetteImage;
+    private Image m_crosshairImage;
+    private Image m_dmrScopeVignetteImage;
     private PlayerHealth m_playerHealth;
     private Texture2D m_damageVignetteTexture;
     private Sprite m_damageVignetteSprite;
@@ -72,8 +77,10 @@ public sealed class GameplayHUD : MonoBehaviour
     private float m_emptyAmmoFeedbackUntil;
     private float m_scoreFeedbackUntil;
     private float m_hitMarkerUntil;
+    private float m_hitMarkerPulseScale = 1f;
     private float m_skillReadyFlashUntil;
     private float m_damageVignetteTargetAlpha;
+    private float m_dmrScopeVignetteTargetAlpha;
     private int m_pickupPopupCount;
     private int m_lastComboLevel = -1;
     private float m_lastComboMultiplier = -1f;
@@ -147,6 +154,7 @@ public sealed class GameplayHUD : MonoBehaviour
         InitializeScoreHud();
         InitializeHitMarker();
         InitializeDamageVignette();
+        InitializeDmrScopeVignette();
 
         RefreshWeapon(1, WeaponId.Rifle, 0, false);
         RefreshWeapon(2, WeaponId.Pistol, 0, false);
@@ -164,6 +172,7 @@ public sealed class GameplayHUD : MonoBehaviour
         UpdateScoreFeedback();
         UpdateHitMarker();
         UpdateDamageVignette();
+        UpdateDmrScopeVignette();
         UpdateSkillReadyFlash();
     }
 
@@ -242,6 +251,20 @@ public sealed class GameplayHUD : MonoBehaviour
             m_activeWeaponText = ammoText;
             m_activeWeaponBaseColor = weaponColor;
         }
+    }
+
+    public void SetDmrAimState(bool dmrEquipped, bool zoomed)
+    {
+        if (m_crosshairImage != null)
+        {
+            m_crosshairImage.enabled = ShouldShowCrosshair(dmrEquipped, zoomed);
+        }
+        m_dmrScopeVignetteTargetAlpha = zoomed ? k_DmrScopeVignetteAlpha : 0f;
+    }
+
+    internal static bool ShouldShowCrosshair(bool dmrEquipped, bool zoomed)
+    {
+        return !dmrEquipped || zoomed;
     }
 
     public void RefreshSkill(string skillName, PlayerSkillState state, float cooldownNormalized)
@@ -360,6 +383,8 @@ public sealed class GameplayHUD : MonoBehaviour
             ? k_KillHitMarkerSize
             : isHeadshot ? k_HeadshotHitMarkerSize : k_NormalHitMarkerSize;
         m_hitMarkerImage.color = m_hitMarkerBaseColor;
+        m_hitMarkerPulseScale = isKill ? 1.35f : isHeadshot ? 1.25f : 1.15f;
+        m_hitMarkerImage.rectTransform.localScale = Vector3.one * m_hitMarkerPulseScale;
         m_hitMarkerImage.gameObject.SetActive(true);
         m_hitMarkerUntil = Time.unscaledTime + k_HitMarkerDuration;
     }
@@ -460,14 +485,26 @@ public sealed class GameplayHUD : MonoBehaviour
         ShowHitMarker(true, true);
         Debug.Assert(m_hitMarkerImage.color == k_KillHitMarkerColor);
         Debug.Assert(m_hitMarkerImage.rectTransform.sizeDelta == k_KillHitMarkerSize);
+        Debug.Assert(Mathf.Approximately(m_hitMarkerPulseScale, 1.35f));
         Debug.Assert(m_hitMarkerUntil > Time.unscaledTime);
+        SetDmrAimState(true, false);
+        Debug.Assert(!m_crosshairImage.enabled && m_hitMarkerImage.gameObject.activeSelf);
+        SetDmrAimState(true, true);
+        Debug.Assert(m_crosshairImage.enabled
+            && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, k_DmrScopeVignetteAlpha));
+        SetDmrAimState(false, false);
+        Debug.Assert(m_crosshairImage.enabled && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, 0f));
         m_hitMarkerImage.gameObject.SetActive(false);
+        m_hitMarkerImage.rectTransform.localScale = Vector3.one;
         m_hitMarkerUntil = 0f;
     }
 
     private void InitializeHitMarker()
     {
-        Transform marker = transform.Find("Crosshair/HitMarker");
+        Transform crosshair = transform.Find("Crosshair");
+        m_crosshairImage = crosshair != null ? crosshair.GetComponent<Image>() : null;
+        Debug.Assert(m_crosshairImage != null, "Missing HUD Image: Crosshair");
+        Transform marker = crosshair != null ? crosshair.Find("HitMarker") : null;
         m_hitMarkerImage = marker != null ? marker.GetComponent<Image>() : null;
         Debug.Assert(m_hitMarkerImage != null, "Missing HUD Image: Crosshair/HitMarker");
         if (m_hitMarkerImage == null)
@@ -517,6 +554,31 @@ public sealed class GameplayHUD : MonoBehaviour
 
     }
 
+    private void InitializeDmrScopeVignette()
+    {
+        Transform existing = transform.Find("Layer_DmrScopeVignette");
+        if (existing == null)
+        {
+            GameObject vignetteObject = new(
+                "Layer_DmrScopeVignette", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            vignetteObject.transform.SetParent(transform, false);
+            existing = vignetteObject.transform;
+        }
+
+        m_dmrScopeVignetteImage = existing.GetComponent<Image>();
+        RectTransform rectTransform = m_dmrScopeVignetteImage.rectTransform;
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = Vector2.zero;
+        rectTransform.sizeDelta = Vector2.zero;
+        m_dmrScopeVignetteImage.raycastTarget = false;
+        m_dmrScopeVignetteImage.sprite = m_damageVignetteSprite;
+        m_dmrScopeVignetteImage.color = new Color(0f, 0f, 0f, 0f);
+        m_dmrScopeVignetteImage.enabled = false;
+        m_dmrScopeVignetteImage.transform.SetAsFirstSibling();
+    }
+
     private static Texture2D CreateDamageVignetteTexture(int size)
     {
         Texture2D texture = new(size, size, TextureFormat.RGBA32, false, true)
@@ -563,6 +625,21 @@ public sealed class GameplayHUD : MonoBehaviour
         color.a = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * Time.unscaledDeltaTime);
         m_damageVignetteImage.color = color;
         m_damageVignetteImage.enabled = color.a > 0.001f;
+    }
+
+    private void UpdateDmrScopeVignette()
+    {
+        if (m_dmrScopeVignetteImage == null)
+        {
+            return;
+        }
+
+        Color color = m_dmrScopeVignetteImage.color;
+        float speed = k_DmrScopeVignetteAlpha / k_DmrScopeTransitionDuration;
+        color.a = Mathf.MoveTowards(
+            color.a, m_dmrScopeVignetteTargetAlpha, speed * Time.unscaledDeltaTime);
+        m_dmrScopeVignetteImage.color = color;
+        m_dmrScopeVignetteImage.enabled = color.a > 0.001f;
     }
 
     private void InitializePickupPopupPool()
@@ -766,9 +843,14 @@ public sealed class GameplayHUD : MonoBehaviour
         if (remaining <= 0f)
         {
             m_hitMarkerImage.gameObject.SetActive(false);
+            m_hitMarkerImage.rectTransform.localScale = Vector3.one;
             return;
         }
 
+        float elapsed = k_HitMarkerDuration - remaining;
+        float pulseProgress = Mathf.Clamp01(elapsed / k_HitMarkerPulseDuration);
+        m_hitMarkerImage.rectTransform.localScale = Vector3.one
+            * Mathf.Lerp(m_hitMarkerPulseScale, 1f, pulseProgress);
         Color color = m_hitMarkerBaseColor;
         color.a = remaining < k_HitMarkerFadeDuration ? remaining / k_HitMarkerFadeDuration : 1f;
         m_hitMarkerImage.color = color;
