@@ -15,6 +15,7 @@ public sealed class EnemyHealth : MonoBehaviour
     [SerializeField] private Renderer m_characterRenderer;
     [SerializeField] private bool m_playHitAndDeathAnimations;
     [SerializeField] private Animator m_animator;
+    [SerializeField] private Collider m_headHitbox;
     [SerializeField] private float m_deathRemovalDelay = 1.2f;
     [SerializeField] private AmmoPickup m_ammoPickupPrefab;
     [Header("Humanoid Voice")]
@@ -23,7 +24,6 @@ public sealed class EnemyHealth : MonoBehaviour
     [SerializeField] private float m_voiceMaxDistance = 25f;
     [SerializeField, Range(0f, 1f)] private float m_voiceVolume = 1f;
 
-    private Collider m_headHitbox;
     private Collider[] m_colliders;
     private bool[] m_colliderDefaults;
     private bool m_hasDroppedAmmo;
@@ -44,7 +44,6 @@ public sealed class EnemyHealth : MonoBehaviour
         {
             m_characterRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
         }
-        CreateHeadHitbox();
         CacheColliders();
         if (m_animator == null)
         {
@@ -169,25 +168,6 @@ public sealed class EnemyHealth : MonoBehaviour
         IsPooled = true;
     }
 
-    private void CreateHeadHitbox()
-    {
-        GameObject head = new("HeadHitbox");
-        head.transform.SetParent(transform, false);
-        if (Type == EnemyType.Suicide)
-        {
-            head.transform.localPosition = new Vector3(-0.0004f, 0.945f, -0.0004f);
-        }
-        else
-        {
-            head.transform.localPosition = new Vector3(-0.006f, 1.8619f, -0.013f);
-        }
-
-        SphereCollider collider = head.AddComponent<SphereCollider>();
-        collider.radius = Type == EnemyType.Suicide ? 0.291f : 0.282f;
-        collider.isTrigger = true;
-        m_headHitbox = collider;
-    }
-
     private void CacheColliders()
     {
         m_colliders = GetComponentsInChildren<Collider>(true);
@@ -270,7 +250,7 @@ public sealed class EnemyHealth : MonoBehaviour
         Debug.Assert(!m_playHitAndDeathAnimations || m_animator != null);
         Debug.Assert(m_deathRemovalDelay >= 0f);
         Debug.Assert(m_ammoPickupPrefab != null);
-        Debug.Assert(m_headHitbox == null || m_headHitbox.isTrigger);
+        Debug.Assert(m_headHitbox != null && m_headHitbox.isTrigger);
         Debug.Assert(!m_playHitAndDeathAnimations || (m_hurtClips != null && m_hurtClips.Length == 4));
         Debug.Assert(!m_playHitAndDeathAnimations || (m_deathClips != null && m_deathClips.Length == 2));
     }
