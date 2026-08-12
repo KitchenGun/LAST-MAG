@@ -117,7 +117,8 @@
 - 크로스헤어 하단에 흰색 득점 피드를 최대 6줄 표시한다.
 - 최신 피드는 상단에 생성하고 기존 항목은 즉시 아래로 정렬하며, 각 항목은 2.25초 유지 후 0.3초 동안 페이드한다.
 - Battlefield 3 방식처럼 `ENEMY KILLED  +100`, `HEADSHOT  +30` 등 기본점수와 각 가산점을 짧은 독립 행으로 표시한다.
-- 사유는 `ENEMY KILLED`, `HEADSHOT`, `WEAPON MATCH`, `SWAP KILL`, `SKILL KILL`, `CHAIN KILL`, `SKILL CHAIN`, `COMBO xN`을 사용한다.
+- 사유는 `ENEMY KILLED`, `HEADSHOT`, `SWAP KILL`, `SKILL KILL`, `CHAIN KILL`, `SKILL CHAIN`을 사용한다.
+- 콤보 가산점은 별도 피드를 만들지 않고 해당 처치의 `ENEMY KILLED` 점수에 합산한다.
 - 좌측 중앙 콤보는 `COMBO xN`으로 표시하고 카운트 색상을 1콤보 흰색에서 10콤보 붉은색으로 변화시킨 뒤 유지한다.
 - 가로 탄환 5발은 실시간 1초마다 오른쪽부터 한 발씩 사라지고 처치 시 5발로 복구된다.
 - 탄환은 사용자 제공 Sprite 하나를 5개 `Image`가 공유하며 원본 비율과 투명도를 유지한다. 대체 이미지 생성이나 자동 가공은 하지 않는다.
