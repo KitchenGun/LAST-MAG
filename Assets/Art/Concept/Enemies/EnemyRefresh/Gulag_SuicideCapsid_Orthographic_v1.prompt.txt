@@ -1,0 +1,28 @@
+Tool: built-in image_gen
+Use case: stylized-concept, then precise-object-edit
+Reference image: C:\Users\kang9\AppData\Local\Temp\codex-clipboard-787b29c4-080c-4d00-95ce-61f3a25d4705.png
+
+GENERATION PROMPT
+
+Use case: stylized-concept
+Asset type: Unity game enemy production concept sheet for Meshy multi-image 3D reconstruction
+Input image: Image 1 is a subject/material reference only; do not copy its infographic layout, text, labels, pedestal, or perspective.
+Primary request: Create one clean 2x2 orthographic turnaround sheet of the exact same non-humanoid suicide enemy creature. Panel order without labels: front view upper-left, back view upper-right, left side view lower-left, top view lower-right.
+Subject: A large swollen explosive biological capsid forms the dominant upper mass, approximately two thirds of total creature height. Beneath it is a short narrow biomechanical collar/torso with ribbed black tendon structures. The lower body has exactly six short thin articulated legs: three bilateral pairs located at front, middle, and rear. Every leg has exactly three clearly readable articulation joints, tapered segments, and a small grounded contact tip. Six legs total, never more or fewer. No arms.
+Design separation: Upper = fleshy explosive capsid/head. Lower = narrow torso plus all legs. Make the boundary and material regions readable for separate material slots while remaining one coherent creature.
+Style/medium: High-quality realistic 3D creature concept render, production-ready PBR reference, biologically plausible but game-readable, consistent topology cues across all four views.
+Materials/textures: Wet organic tissue with restrained flesh pores and folded capsid membranes; dark nearly black tendon and rib structures; subtle deep crimson vascular accents that do not resemble blood. Weak internal organ emission in exact accent color #EA4047, small localized glow pockets only, not bright neon.
+Composition/framing: Four equal-size panels on one landscape canvas, perfectly aligned, equal margins, identical creature scale and center height in every panel. Strict orthographic projections with no perspective distortion and no foreshortening. Entire creature visible in every panel with generous padding. Neutral symmetrical rest pose; feet touch an implied flat ground line but no visible floor, pedestal, terrain, or base.
+Scene/backdrop: Uniform bright neutral light-gray background across all panels, no grid, no panel frames.
+Lighting/mood: Flat neutral studio lighting designed for shape reconstruction, minimal soft contact shadow only, no dramatic rim light, no depth-of-field.
+Consistency invariants: The four views must depict one identical creature with the same capsid asymmetries, same tendon layout, same six leg proportions and joint locations. Top view must clearly show exactly three left legs and three right legs arranged front/mid/rear.
+Constraints: no text, no labels, no title, no arrows, no numbers, no color swatches, no watermark. No human silhouette, human face, humanoid anatomy, arms, hands, weapon, armor, clothing, exaggerated action pose, floor base, rock base, platform, scenery, gore, blood, torn flesh, exposed wounds, dripping fluid, splatter, or viscera. No perspective or three-quarter view.
+
+CORRECTION PROMPT
+
+Use case: precise-object-edit
+Input image: Image 1 is the edit target.
+Primary request: Correct only the lower-right top-view panel so this creature has exactly six legs total: exactly three legs on the left and exactly three legs on the right, arranged as front, middle, and rear bilateral pairs. Remove the extra fourth pair currently visible. Each remaining leg must retain exactly three readable articulation joints and a small tapered ground-contact tip.
+Critical consistency: Match the same six leg identities, proportions, spacing, black-tendon material, capsid asymmetry, and torso geometry shown in the upper-left front, upper-right back, and lower-left left-side panels.
+Invariants: Preserve the upper-left front view, upper-right back view, lower-left left-side view, canvas, panel positions, creature scale, lighting, bright neutral background, colors, surface detail, and all other pixels as closely as possible. The corrected lower-right remains a strict orthographic top view at the same scale.
+Constraints: exactly six legs in every view; no new appendages, arms, text, labels, title, arrows, numbers, frames, base, platform, perspective, gore, blood, or watermark.

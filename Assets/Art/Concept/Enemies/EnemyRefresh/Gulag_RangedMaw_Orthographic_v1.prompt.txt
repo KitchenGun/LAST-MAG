@@ -1,0 +1,34 @@
+Use case: stylized-concept
+Asset type: Meshy multi-image 3D reconstruction reference sheet for a Unity WebGL game enemy
+
+Input images:
+- Image 1 is anatomy and creature-identity reference only. It is not an edit target. Preserve its core identity: a biologically twisted humanoid ranged monster whose head is dominated by a specialized vertical oral discharge maw, with wet living tissue and dark exposed tendon structures.
+
+Primary request:
+Create one new, clean four-view orthographic turnaround sheet showing the exact same ranged-maw creature in FRONT, BACK, LEFT, and RIGHT views.
+
+Subject and anatomy:
+- Realistic adult human body proportions and believable anatomy; approximately human height and limb lengths.
+- Neutral symmetrical modeling T-pose in every view: torso upright, head neutral, both arms perfectly horizontal at shoulder height, elbows and wrists straight, hands relaxed, legs straight at a natural rigging stance, feet pointing forward.
+- The vertical oral discharge aperture is the defining cranial feature. It replaces the normal face but remains a non-gory living organ, slightly open only enough to read the concentric biological structure. No eyes and no recognizable human face.
+- Wet dark reddish-brown biological tissue with black sinewy tendons and restrained muscular definition.
+- Role color #2C87E8 appears only as small weakly emissive markings around the cranial maw organ. Do not tint the body blue and do not add blue clothing or equipment.
+- Keep all anatomy, proportions, surface landmarks, maw shape, hands, feet, and emission markings exactly consistent across all four views.
+
+Composition:
+- Single wide landscape image with four equal, evenly spaced columns in this order: front, back, left profile, right profile.
+- All four figures at exactly identical scale and vertical alignment, standing on one common ground line, fully visible from head to feet with generous margins.
+- True orthographic projection only: zero perspective, zero lens distortion, zero foreshortening, no three-quarter view.
+- No labels, no titles, no arrows, no panel names, no borders, and no text of any kind.
+
+Style and presentation:
+- High-quality realistic organic creature sculpt / neutral PBR character render suitable for precise 3D modeling reference.
+- Bright uniform neutral light-gray background.
+- Soft even studio illumination that reveals form without dramatic highlights.
+- Minimal soft contact shadow only; no cast shadows crossing other views.
+
+Strict constraints:
+- No gore, no blood, no wounds, no exposed viscera, no dripping fluid, no spit, no projectile, and no attack effect.
+- No weapon, armor, clothing, accessories, props, base, scenery, logo, signature, or watermark.
+- No action pose, crouch, slouch, bent elbows, raised shoulders, asymmetry, exaggerated limb length, oversized hands, or perspective.
+- Do not redesign between views. This must be a single production-grade orthographic modeling sheet of one coherent creature.
