@@ -13,7 +13,7 @@ public sealed class AmmoPickup : MonoBehaviour
         new Color32(44, 135, 232, 255),
         new Color32(44, 135, 232, 255)
     };
-    private static readonly int[] s_AmmoAmounts = { 5, 2, 10, 4 };
+    private static readonly int[] s_AmmoAmounts = { 5, 3, 20, 4 };
     private static Material s_GlowMaterial;
     private static FirstPersonController s_Player;
 
@@ -136,8 +136,8 @@ public sealed class AmmoPickup : MonoBehaviour
     private void RunAmmoPickupSelfCheck()
     {
         Debug.Assert(GetAmount(WeaponId.Pistol) == 5);
-        Debug.Assert(GetAmount(WeaponId.Shotgun) == 2);
-        Debug.Assert(GetAmount(WeaponId.Rifle) == 10);
+        Debug.Assert(GetAmount(WeaponId.Shotgun) == 3);
+        Debug.Assert(GetAmount(WeaponId.Rifle) == 20);
         Debug.Assert(GetAmount(WeaponId.DMR) == 4);
         Debug.Assert(GetColor(WeaponId.DMR) == GetColor(WeaponId.Rifle));
         Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.4999f) == WeaponId.DMR);

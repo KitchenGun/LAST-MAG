@@ -36,7 +36,6 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_DmrScopeVignetteAlpha = 0.68f;
     private const float k_DmrScopeTransitionDuration = 0.12f;
     private static readonly Vector2 k_PickupPopupBasePosition = new(-170f, 48f);
-    private static readonly Vector2 k_ScoreFeedbackBasePosition = new(0f, -72f);
     private static readonly Vector2 k_ComboBulletStartPosition = new(86f, -55f);
     private static readonly Vector2 k_ComboBulletSize = new(128f, 32f);
     private static readonly Vector2 k_ComboClipPosition = new(24f, -104f);
@@ -103,6 +102,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private float m_dmrScopeVignetteTargetAlpha;
     private int m_pickupPopupCount;
     private int m_scoreFeedbackCount;
+    private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
     private int m_lastComboCount = -1;
     private int m_lastVisibleComboBullets = -1;
     private string m_lastSkillName;
@@ -393,6 +393,19 @@ public sealed class GameplayHUD : MonoBehaviour
             if (bullet != null)
             {
                 bullet.enabled = m_comboBulletSprite != null && index < visibleBullets;
+            }
+        }
+    }
+
+    public void SetScoreFeedbackBasePosition(Vector2 position)
+    {
+        m_scoreFeedbackBasePosition = position;
+        for (int index = 0; index < m_scoreFeedbackTexts.Length; index++)
+        {
+            if (m_scoreFeedbackTexts[index] != null)
+            {
+                m_scoreFeedbackTexts[index].rectTransform.anchoredPosition =
+                    GetScoreFeedbackTargetPosition(index);
             }
         }
     }
@@ -1114,9 +1127,9 @@ public sealed class GameplayHUD : MonoBehaviour
         return Color.Lerp(Color.white, k_MaxComboColor, progress);
     }
 
-    private static Vector2 GetScoreFeedbackTargetPosition(int index)
+    private Vector2 GetScoreFeedbackTargetPosition(int index)
     {
-        return k_ScoreFeedbackBasePosition + Vector2.down * index * k_ScoreFeedbackSpacing;
+        return m_scoreFeedbackBasePosition + Vector2.down * index * k_ScoreFeedbackSpacing;
     }
 
     private static float GetScoreFeedbackAlpha(float expiryTime, float now)

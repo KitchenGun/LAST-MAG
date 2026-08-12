@@ -73158,7 +73158,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 762717790778784742, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.472
+      value: 0.433
       objectReference: {fileID: 0}
     - target: {fileID: 762717790778784742, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_LocalRotation.w
@@ -73228,6 +73228,10 @@ PrefabInstance:
       propertyPath: m_gameplayHUD
       value: 
       objectReference: {fileID: 925255843}
+    - target: {fileID: 2337511797882548981, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
+      propertyPath: m_scoreFeedbackBasePosition.y
+      value: -300
+      objectReference: {fileID: 0}
     - target: {fileID: 2620176595684157082, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_Material
       value: 
@@ -73473,9 +73477,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c7abacb87194c4e9f89949e7da3035c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_clips:
-  - {fileID: 8300000, guid: 5edb891cf04b5a1488427ac2a90aa522, type: 3}
-  - {fileID: 8300000, guid: 8b89d4b6db39195408d11ffb5765329f, type: 3}
+  m_clips: []
   m_volume: 0.45
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

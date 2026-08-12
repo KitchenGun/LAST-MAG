@@ -12,7 +12,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private const float k_MaxSpringStep = 1f / 120f;
     private const int k_MaxSpringStepsPerFrame = 8;
     private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f, 0.75f };
-    private static readonly float[] s_RecoilDistances = { 0.065f, 0.15f, 0.06f, 0.095f };
+    private static readonly float[] s_RecoilDistances = { 0.065f, 0.18f, 0.06f, 0.12f };
     private static readonly float[] s_RecoilLateralDistances = { 0.018f, 0.04f, 0.013f, 0.027f };
     private static readonly float[] s_RecoilPitches = { 5f, 11f, 4f, 6.5f };
     private static readonly float[] s_RecoilYaws = { 0.8f, 2f, 0.9f, 1.2f };
@@ -157,16 +157,17 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     [ContextMenu("Run Viewmodel Self Check")]
     private void RunViewmodelSelfCheck()
     {
+        SelectWeapon(WeaponId.Pistol);
         SelectWeapon(WeaponId.Unknown);
-        Debug.Assert(m_activeWeapon >= WeaponId.Pistol && m_activeWeapon <= WeaponId.DMR);
+        Debug.Assert(m_activeWeapon == WeaponId.Pistol);
         SelectWeapon(WeaponId.Shotgun);
         Debug.Assert(m_activeWeapon == WeaponId.Shotgun);
         Debug.Assert(m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 4);
         Debug.Assert(IsFireAudioConfigurationValid());
         Debug.Assert(Mathf.Approximately(s_RecoilDistances[0], 0.065f)
-            && Mathf.Approximately(s_RecoilDistances[1], 0.15f)
+            && Mathf.Approximately(s_RecoilDistances[1], 0.18f)
             && Mathf.Approximately(s_RecoilDistances[2], 0.06f)
-            && Mathf.Approximately(s_RecoilDistances[3], 0.095f));
+            && Mathf.Approximately(s_RecoilDistances[3], 0.12f));
         Debug.Assert(Mathf.Approximately(s_RecoilLateralDistances[1], 0.04f));
         Debug.Assert(Mathf.Approximately(s_RecoilPitches[2], 4f)
             && Mathf.Approximately(s_RecoilYaws[2], 0.9f)

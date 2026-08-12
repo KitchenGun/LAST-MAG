@@ -4,6 +4,8 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(SphereCollider))]
 public sealed class PlayerSkillProjectile : MonoBehaviour
 {
+    private const int k_GrenadeExplosionCount = 3;
+    private const float k_GrenadePulseInterval = 1f;
     private static readonly Collider[] s_ExplosionHits = new Collider[128];
 
     [Header("Explosion Audio")]
@@ -42,7 +44,9 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
     private WeaponId m_sourceWeapon;
     private PlayerDeathCause m_selfDeathCause;
     private Vector3 m_lastTrailPosition;
+    private int m_explosionsRemaining;
     private bool m_usesGravity;
+    private bool m_isGrenadePulsing;
     private bool m_isLaunched;
 
     public void Initialize(PlayerSkillController owner, PlayerHealth player, ScoreSystem scoreSystem)
@@ -65,6 +69,8 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
     public void ShowArmed(Transform parent, Vector3 localPosition, Quaternion localRotation)
     {
         m_isLaunched = false;
+        m_isGrenadePulsing = false;
+        m_explosionsRemaining = 0;
         m_body.isKinematic = true;
         m_collider.enabled = false;
         transform.SetParent(parent, false);
@@ -85,6 +91,8 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_sourceWeapon = sourceWeapon;
         m_selfDeathCause = selfDeathCause;
         m_usesGravity = useGravity;
+        m_isGrenadePulsing = false;
+        m_explosionsRemaining = useGravity ? k_GrenadeExplosionCount : 1;
         m_lastTrailPosition = position;
         m_explodeAt = Time.time + lifetime;
         m_isLaunched = true;
@@ -107,7 +115,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
 
     private void Update()
     {
-        if (m_isLaunched && m_vfxEmitter != null)
+        if (m_isLaunched && !m_isGrenadePulsing && m_vfxEmitter != null)
         {
             float spacing = m_usesGravity ? m_vfxEmitter.GrenadeTrailSpacing : m_vfxEmitter.RocketTrailSpacing;
             Vector3 trailSegment = transform.position - m_lastTrailPosition;
@@ -172,7 +180,14 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             return;
         }
 
-        m_isLaunched = false;
+        if (m_usesGravity && !m_isGrenadePulsing)
+        {
+            m_isGrenadePulsing = true;
+            m_body.linearVelocity = Vector3.zero;
+            m_body.angularVelocity = Vector3.zero;
+            m_body.isKinematic = true;
+            m_collider.enabled = false;
+        }
         if (!m_usesGravity)
         {
             m_vfxEmitter?.EndRocketFlight();
@@ -198,8 +213,16 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             && Vector3.Distance(transform.position, m_player.transform.position) <= m_radius
                 ? m_player : null;
         m_scoreSystem?.RegisterSkillBatch(m_killedEnemies);
-        Hide();
-        m_owner?.NotifyProjectileExploded();
+        m_explosionsRemaining--;
+        if (m_explosionsRemaining > 0)
+        {
+            m_explodeAt += k_GrenadePulseInterval;
+        }
+        else
+        {
+            Hide();
+            m_owner?.NotifyProjectileExploded();
+        }
         playerInBlast?.ApplyDamage(m_selfDamage, m_selfDeathCause);
     }
 
@@ -218,10 +241,20 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_body.angularVelocity = Vector3.zero;
         m_body.isKinematic = true;
         m_collider.enabled = false;
+        m_explodeAt = 0f;
+        m_explosionsRemaining = 0;
+        m_isGrenadePulsing = false;
         if (m_homeParent != null)
         {
             transform.SetParent(m_homeParent, false);
         }
         gameObject.SetActive(false);
+    }
+
+    [ContextMenu("Run Skill Projectile Self Check")]
+    private void RunSelfCheck()
+    {
+        Debug.Assert(k_GrenadeExplosionCount == 3);
+        Debug.Assert(Mathf.Approximately(k_GrenadePulseInterval, 1f));
     }
 }

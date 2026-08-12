@@ -25542,6 +25542,7 @@ MonoBehaviour:
   m_jumpHeight: 1.2
   m_gravity: -20
   m_lookSensitivity: 0.1
+  m_scoreFeedbackBasePosition: {x: 0, y: -72}
   m_pistolRecoil:
     m_pitch: 2.2
     m_yaw: 0.35
@@ -25571,15 +25572,15 @@ MonoBehaviour:
     m_fireImpulseRoll: 0.28
     m_fireImpulseDuration: 0.13
   m_rifleRecoil:
-    m_pitch: 2
+    m_pitch: 2.3
     m_yaw: 0.32
     m_randomRange: 0.12
     m_softCap: 6
     m_hardCap: 7
     m_continuousResidualRatio: 0.35
     m_kickDuration: 0.045
-    m_recoveryDelay: 0.14
-    m_returnDuration: 0.15
+    m_recoveryDelay: 0.1
+    m_returnDuration: 0.12
     m_fireImpulsePitch: 0.25
     m_fireImpulseYaw: 0.05
     m_fireImpulseRoll: 0.12

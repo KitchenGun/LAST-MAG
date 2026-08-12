@@ -9,6 +9,10 @@ public sealed class PlayerSkillController : MonoBehaviour
     private const float k_BulletTimeDuration = 5f;
     private const float k_BulletTimeSaturation = -100f;
     private const float k_BulletTimeVisualTransition = 0.15f;
+    private const float k_GrenadeFuseDuration = 4.5f;
+    private const float k_GrenadeDamage = 90f;
+    private const float k_GrenadeSelfDamage = 45f;
+    private const float k_GrenadeRadius = 5f;
     private const float k_RocketViewmodelRecoilDistance = 0.14f;
     private const float k_RocketViewmodelRecoilLateralDistance = 0.04f;
     private const float k_RocketViewmodelRecoilPitch = 9f;
@@ -183,10 +187,10 @@ public sealed class PlayerSkillController : MonoBehaviour
             launchPosition,
             m_camera.transform.forward,
             isRocket ? 25f : 12f,
-            isRocket ? 150f : 90f,
-            isRocket ? 75f : 45f,
-            isRocket ? 4f : 5f,
-            5f,
+            isRocket ? 150f : k_GrenadeDamage,
+            isRocket ? 75f : k_GrenadeSelfDamage,
+            isRocket ? 4f : k_GrenadeRadius,
+            isRocket ? 5f : k_GrenadeFuseDuration,
             !isRocket,
             FirstPersonController.CurrentInstance != null ? FirstPersonController.CurrentInstance.CurrentWeapon : WeaponId.Unknown,
             isRocket ? PlayerDeathCause.RocketSelfDamage : PlayerDeathCause.GrenadeSelfDamage);
@@ -466,6 +470,10 @@ public sealed class PlayerSkillController : MonoBehaviour
         Debug.Assert(Mathf.Approximately(k_BulletTimeDuration, 5f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeSaturation, -100f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeVisualTransition, 0.15f));
+        Debug.Assert(Mathf.Approximately(k_GrenadeFuseDuration, 4.5f));
+        Debug.Assert(Mathf.Approximately(k_GrenadeDamage, 90f));
+        Debug.Assert(Mathf.Approximately(k_GrenadeSelfDamage, 45f));
+        Debug.Assert(Mathf.Approximately(k_GrenadeRadius, 5f));
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilDistance, 0.14f));
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilLateralDistance, 0.04f));
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilPitch, 9f));

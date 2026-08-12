@@ -160,7 +160,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_DmrContinuousWindow = 0.42f;
     // ponytail: fixed buffer avoids WebGL GC; raise only if one shot can cross 64 solid colliders.
     private const int k_DmrRaycastBufferSize = 64;
-    private static readonly int[] s_StartingAmmo = { 15, 6, 30, 12 };
+    private static readonly int[] s_StartingAmmo = { 15, 8, 50, 12 };
     private static readonly Comparer<RaycastHit> s_RaycastHitDistanceComparer =
         Comparer<RaycastHit>.Create(static (left, right) => left.distance.CompareTo(right.distance));
 
@@ -174,13 +174,16 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
+    [Header("HUD Layout")]
+    [Tooltip("Anchored position relative to the Crosshair center.")]
+    [SerializeField] private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
     [Header("Weapon Recoil")]
     [SerializeField] private RecoilProfile m_pistolRecoil = new(2.2f, 0.35f, 0.1f, 3.5f, 4.5f,
         0.2f, 0.055f, 0.1f, 0.12f, 0.35f, 0.05f, 0.12f, 0.08f);
     [SerializeField] private RecoilProfile m_shotgunRecoil = new(4.6f, 0.85f, 0.15f, 4.5f, 5.5f,
         0.3f, 0.075f, 0.28f, 0.29f, 0.75f, 0.15f, 0.28f, 0.13f);
-    [SerializeField] private RecoilProfile m_rifleRecoil = new(2f, 0.32f, 0.12f, 6f, 7f,
-        0.35f, 0.045f, 0.14f, 0.15f, 0.25f, 0.05f, 0.12f, 0.06f);
+    [SerializeField] private RecoilProfile m_rifleRecoil = new(2.3f, 0.32f, 0.12f, 6f, 7f,
+        0.35f, 0.045f, 0.1f, 0.12f, 0.25f, 0.05f, 0.12f, 0.06f);
     [SerializeField] private RecoilProfile m_dmrRecoil = new(3.2f, 0.45f, 0.1f, 4.8f, 6f,
         0.25f, 0.065f, 0.18f, 0.2f, 0.5f, 0.1f, 0.18f, 0.1f);
     [SerializeField] private RecoilProfile m_rocketRecoil = new(5.6f, 1.1f, 0.15f, 5.5f, 6.5f,
@@ -275,6 +278,7 @@ public sealed class FirstPersonController : MonoBehaviour
         {
             m_defaultCameraFieldOfView = m_playerCamera.fieldOfView;
         }
+        m_gameplayHUD?.SetScoreFeedbackBasePosition(m_scoreFeedbackBasePosition);
         m_gameplayHUD?.BindPlayerHealth(m_playerHealth);
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
@@ -945,7 +949,7 @@ public sealed class FirstPersonController : MonoBehaviour
             WeaponId.Pistol => 1f / 6.75f,
             WeaponId.Shotgun => 1f / 1.1f,
             WeaponId.Rifle => 1f / 11f,
-            WeaponId.DMR => 1f / 5.25f,
+            WeaponId.DMR => 1f / 4f,
             _ => float.MaxValue
         };
     }
@@ -1077,19 +1081,19 @@ public sealed class FirstPersonController : MonoBehaviour
     [ContextMenu("Run Weapon Fire Self Check")]
     private void RunWeaponFireSelfCheck()
     {
-        Debug.Assert(k_WeaponSlotCount == 2 && IsAmmoConfigurationValid());
+        Debug.Assert(k_WeaponSlotCount == 2 && s_StartingAmmo.Length == 4);
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Pistol), 405f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Shotgun), 66f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Rifle), 660f));
-        Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.DMR), 315f));
+        Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.DMR), 240f));
         Debug.Assert(Mathf.Approximately(k_DmrZoomFieldOfView, 45f)
             && Mathf.Approximately(k_DmrZoomTransitionDuration, 0.12f)
             && Mathf.Approximately(k_DmrZoomSensitivityMultiplier, 0.5f));
         Debug.Assert(!GameplayHUD.ShouldShowCrosshair(true, false)
             && GameplayHUD.ShouldShowCrosshair(true, true)
             && GameplayHUD.ShouldShowCrosshair(false, false));
-        Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == 15 && GetStartingAmmo(WeaponId.Shotgun) == 6
-            && GetStartingAmmo(WeaponId.Rifle) == 30 && GetStartingAmmo(WeaponId.DMR) == 12);
+        Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == 15 && GetStartingAmmo(WeaponId.Shotgun) == 8
+            && GetStartingAmmo(WeaponId.Rifle) == 50 && GetStartingAmmo(WeaponId.DMR) == 12);
         Debug.Assert(RunResultStore.GetPrimaryWeapon(PlayerClassId.Grenadier) == WeaponId.Rifle
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Engineer) == WeaponId.Shotgun
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Sniper) == WeaponId.DMR);
@@ -1099,6 +1103,9 @@ public sealed class FirstPersonController : MonoBehaviour
         RecoilSample pistolRecoil = m_pistolRecoil.CreateSample();
         RecoilSample rifleRecoil = m_rifleRecoil.CreateSample();
         RecoilSample dmrRecoil = m_dmrRecoil.CreateSample();
+        Debug.Assert(rifleRecoil.Pitch >= 2.3f * 0.88f && rifleRecoil.Pitch <= 2.3f * 1.12f
+            && Mathf.Approximately(rifleRecoil.RecoveryDelay, 0.1f)
+            && Mathf.Approximately(rifleRecoil.ReturnDuration, 0.12f));
         Debug.Assert(Mathf.Approximately(pistolRecoil.ContinuousResidualRatio, 0.2f)
             && Mathf.Approximately(rifleRecoil.ContinuousResidualRatio, 0.35f)
             && Mathf.Approximately(dmrRecoil.ContinuousResidualRatio, 0.25f));

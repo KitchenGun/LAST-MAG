@@ -54,7 +54,6 @@ public readonly struct KillContext
 [DisallowMultipleComponent]
 public sealed class ScoreSystem : MonoBehaviour
 {
-    private const int k_WeaponMatchBonus = 30;
     private const int k_HeadshotBonus = 30;
     private const int k_SwapKillBonus = 70;
     private const int k_ComboBonusStep = 10;
@@ -125,9 +124,8 @@ public sealed class ScoreSystem : MonoBehaviour
         bool isSwapKill = IsSwapKill(m_lastDirectKillWeapon, weapon, now - m_lastDirectKillTime);
         bool isSkillKill = m_bulletTimeActive;
         AdvanceCombo(now);
-        bool weaponMatches = WeaponMatches(enemyType, weapon);
         int points = CalculateKillScore(
-            enemyType, ComboCount, weaponMatches, isHeadshot, isSwapKill, isSkillKill);
+            enemyType, ComboCount, isHeadshot, isSwapKill, isSkillKill);
         RegisterKillStats(enemyType, weapon, isHeadshot, false, isSkillKill);
         m_combatScore += points;
         m_lastDirectKillWeapon = weapon;
@@ -137,23 +135,15 @@ public sealed class ScoreSystem : MonoBehaviour
         {
             m_hud?.ShowScoreFeedback(baseScore * 2, "SKILL KILL");
         }
-        if (ComboCount > 1)
-        {
-            m_hud?.ShowScoreFeedback((ComboCount - 1) * k_ComboBonusStep, $"COMBO x{ComboCount}");
-        }
         if (isSwapKill)
         {
             m_hud?.ShowScoreFeedback(k_SwapKillBonus, "SWAP KILL");
-        }
-        if (weaponMatches)
-        {
-            m_hud?.ShowScoreFeedback(k_WeaponMatchBonus, "WEAPON MATCH");
         }
         if (isHeadshot)
         {
             m_hud?.ShowScoreFeedback(k_HeadshotBonus, "HEADSHOT");
         }
-        m_hud?.ShowScoreFeedback(baseScore, "ENEMY KILLED");
+        m_hud?.ShowScoreFeedback(baseScore + GetComboBonus(ComboCount), "ENEMY KILLED");
         RefreshHud();
     }
 
@@ -184,7 +174,7 @@ public sealed class ScoreSystem : MonoBehaviour
         {
             AdvanceCombo(now);
             points += CalculateKillScore(
-                killedEnemies[index], ComboCount, false, false, false, isClassSkillAttributed);
+                killedEnemies[index], ComboCount, false, false, isClassSkillAttributed);
             RegisterKillStats(killedEnemies[index], weapon, false, isChain, isClassSkillAttributed);
         }
 
@@ -234,17 +224,15 @@ public sealed class ScoreSystem : MonoBehaviour
     public static int CalculateKillScore(
         EnemyType enemyType,
         int comboCount,
-        bool weaponMatches,
         bool isHeadshot,
         bool isSwapKill,
         bool isSkillKill)
     {
         int baseScore = GetBaseScore(enemyType);
         return baseScore
-            + (weaponMatches ? k_WeaponMatchBonus : 0)
             + (isHeadshot ? k_HeadshotBonus : 0)
             + (isSwapKill ? k_SwapKillBonus : 0)
-            + Mathf.Max(0, comboCount - 1) * k_ComboBonusStep
+            + GetComboBonus(comboCount)
             + (isSkillKill ? baseScore * 2 : 0);
     }
 
@@ -259,15 +247,9 @@ public sealed class ScoreSystem : MonoBehaviour
         };
     }
 
-    private static bool WeaponMatches(EnemyType enemyType, WeaponId weapon)
+    private static int GetComboBonus(int comboCount)
     {
-        return enemyType switch
-        {
-            EnemyType.Suicide => weapon == WeaponId.Pistol,
-            EnemyType.Melee => weapon == WeaponId.Shotgun,
-            EnemyType.Ranged => weapon == WeaponId.Rifle || weapon == WeaponId.DMR,
-            _ => false
-        };
+        return Mathf.Max(0, comboCount - 1) * k_ComboBonusStep;
     }
 
     private static bool IsSwapKill(WeaponId previousWeapon, WeaponId currentWeapon, float elapsedSeconds)
@@ -373,20 +355,20 @@ public sealed class ScoreSystem : MonoBehaviour
         Debug.Assert(GetBaseScore(EnemyType.Suicide) == 50);
         Debug.Assert(GetBaseScore(EnemyType.Melee) == 70);
         Debug.Assert(GetBaseScore(EnemyType.Ranged) == 100);
-        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false, false) == 100);
-        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, true, false) == 240);
-        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false, true) == 300);
-        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, true, true) == 440);
-        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 100, false, false, false, false) == 1090);
-        int skillBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, false, true)
-            + CalculateKillScore(EnemyType.Melee, 2, false, false, false, true)
-            + CalculateKillScore(EnemyType.Ranged, 3, false, false, false, true);
-        int regularChainBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, false, false)
-            + CalculateKillScore(EnemyType.Melee, 2, false, false, false, false)
-            + CalculateKillScore(EnemyType.Ranged, 3, false, false, false, false);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false) == 100);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, false) == 210);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, true) == 300);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 2, true, true, true) == 410);
+        Debug.Assert(CalculateKillScore(EnemyType.Ranged, 100, false, false, false) == 1090);
+        Debug.Assert(GetBaseScore(EnemyType.Ranged) + GetComboBonus(2) == 110);
+        int skillBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, true)
+            + CalculateKillScore(EnemyType.Melee, 2, false, false, true)
+            + CalculateKillScore(EnemyType.Ranged, 3, false, false, true);
+        int regularChainBatch = CalculateKillScore(EnemyType.Suicide, 1, false, false, false)
+            + CalculateKillScore(EnemyType.Melee, 2, false, false, false)
+            + CalculateKillScore(EnemyType.Ranged, 3, false, false, false);
         Debug.Assert(skillBatch == 690);
         Debug.Assert(regularChainBatch == 250);
-        Debug.Assert(WeaponMatches(EnemyType.Ranged, WeaponId.DMR));
         Debug.Assert(IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 1.999f));
         Debug.Assert(IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 2f));
         Debug.Assert(!IsSwapKill(WeaponId.Pistol, WeaponId.Rifle, 2.001f));
