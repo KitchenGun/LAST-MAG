@@ -23,9 +23,11 @@ public sealed class PlayerHealth : MonoBehaviour
     private ScoreSystem m_scoreSystem;
     private FirstPersonController m_firstPersonController;
     private AudioSource m_systemVoiceSource;
-    private AudioClip m_criticalTraumaBuzzClip;
     private AudioClip m_criticalTraumaClip;
+    private AudioClip m_abilityReadyClip;
     private bool m_criticalTraumaAnnounced;
+    private bool m_criticalTraumaPlaying;
+    private bool m_abilityReadyQueued;
 
     private void Awake()
     {
@@ -84,12 +86,15 @@ public sealed class PlayerHealth : MonoBehaviour
 
     private void InitializeSystemVoice()
     {
-        m_criticalTraumaBuzzClip = Resources.Load<AudioClip>("Audio/SystemVoice/SFX_Error_Buzz_01");
         m_criticalTraumaClip = Resources.Load<AudioClip>("Audio/SystemVoice/SFX_CriticalTraumaDetected");
-        if (m_criticalTraumaBuzzClip == null || m_criticalTraumaClip == null)
+        m_abilityReadyClip = Resources.Load<AudioClip>("Audio/SystemVoice/SFX_AbilityReady");
+        if (m_criticalTraumaClip == null)
         {
             Debug.LogWarning("Critical trauma warning audio is missing.");
-            return;
+        }
+        if (m_abilityReadyClip == null)
+        {
+            Debug.LogWarning("Ability ready system voice is missing.");
         }
 
         m_systemVoiceSource = gameObject.AddComponent<AudioSource>();
@@ -102,20 +107,43 @@ public sealed class PlayerHealth : MonoBehaviour
     private void PlayCriticalTraumaWarning()
     {
         if (m_criticalTraumaAnnounced || m_systemVoiceSource == null
+            || m_criticalTraumaClip == null
             || CurrentHealth / m_maxHealth > k_CriticalTraumaThreshold)
         {
             return;
         }
 
         m_criticalTraumaAnnounced = true;
+        m_criticalTraumaPlaying = true;
+        m_abilityReadyQueued = false;
+        m_systemVoiceSource.Stop();
         StartCoroutine(PlayCriticalTraumaSequence());
     }
 
     private IEnumerator PlayCriticalTraumaSequence()
     {
-        m_systemVoiceSource.PlayOneShot(m_criticalTraumaBuzzClip);
-        yield return new WaitForSecondsRealtime(m_criticalTraumaBuzzClip.length);
         m_systemVoiceSource.PlayOneShot(m_criticalTraumaClip);
+        yield return new WaitForSecondsRealtime(m_criticalTraumaClip.length);
+        m_criticalTraumaPlaying = false;
+        if (m_abilityReadyQueued)
+        {
+            m_abilityReadyQueued = false;
+            m_systemVoiceSource.PlayOneShot(m_abilityReadyClip);
+        }
+    }
+
+    internal void PlayAbilityReadyAnnouncement()
+    {
+        if (m_systemVoiceSource == null || m_abilityReadyClip == null)
+        {
+            return;
+        }
+        if (m_criticalTraumaPlaying)
+        {
+            m_abilityReadyQueued = true;
+            return;
+        }
+        m_systemVoiceSource.PlayOneShot(m_abilityReadyClip);
     }
 
     [ContextMenu("Run Health Self Check")]

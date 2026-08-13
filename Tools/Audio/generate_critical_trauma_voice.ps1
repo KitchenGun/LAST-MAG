@@ -1,9 +1,16 @@
+param(
+    [string]$Text = "Critical trauma detected.",
+    [string]$OutputName = "SFX_CriticalTraumaDetected.wav",
+    [string]$CuePath
+)
+
 $ErrorActionPreference = "Stop"
 
 $projectRoot = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
 $outputDirectory = Join-Path $projectRoot "Assets\Resources\Audio\SystemVoice"
-$outputPath = Join-Path $outputDirectory "SFX_CriticalTraumaDetected.wav"
-$rawPath = Join-Path ([System.IO.Path]::GetTempPath()) "gulag-critical-trauma-raw.wav"
+$outputPath = Join-Path $outputDirectory $OutputName
+$rawPath = Join-Path ([System.IO.Path]::GetTempPath()) "gulag-system-voice-raw.wav"
+$voicePath = Join-Path ([System.IO.Path]::GetTempPath()) "gulag-system-voice-processed.wav"
 
 [System.IO.Directory]::CreateDirectory($outputDirectory) | Out-Null
 Add-Type -AssemblyName System.Speech
@@ -13,15 +20,29 @@ $synthesizer.SelectVoice("Microsoft Zira Desktop")
 $synthesizer.Rate = -1
 $synthesizer.Volume = 100
 $synthesizer.SetOutputToWaveFile($rawPath)
-$synthesizer.Speak("Critical trauma detected.")
+$synthesizer.Speak($Text)
 $synthesizer.Dispose()
 
-& ffmpeg -y -hide_banner -loglevel error -i $rawPath -af "highpass=f=120,lowpass=f=5200,acompressor=threshold=0.12:ratio=4:attack=5:release=80,acrusher=bits=12:mix=0.12,aecho=0.8:0.18:38:0.10,loudnorm=I=-16:TP=-1.5:LRA=5" -ar 44100 -ac 1 -c:a pcm_s16le $outputPath
+& ffmpeg -y -hide_banner -loglevel error -i $rawPath -af "highpass=f=120,lowpass=f=5200,acompressor=threshold=0.12:ratio=4:attack=5:release=80,acrusher=bits=12:mix=0.12,aecho=0.8:0.18:38:0.10,loudnorm=I=-16:TP=-1.5:LRA=5,silenceremove=start_periods=1:start_duration=0.03:start_threshold=-42dB,areverse,silenceremove=start_periods=1:start_duration=0.08:start_threshold=-42dB,areverse" -ar 44100 -ac 1 -c:a pcm_s16le $voicePath
 if ($LASTEXITCODE -ne 0) { throw "ffmpeg failed with exit code $LASTEXITCODE" }
 
-if ([System.IO.File]::Exists($rawPath))
+if ($CuePath)
 {
-    [System.IO.File]::Delete($rawPath)
+    $resolvedCuePath = [System.IO.Path]::GetFullPath((Join-Path $projectRoot $CuePath))
+    & ffmpeg -y -hide_banner -loglevel error -i $resolvedCuePath -i $voicePath -filter_complex "[0:a]aformat=sample_rates=44100:channel_layouts=mono,areverse,silenceremove=start_periods=1:start_duration=0.08:start_threshold=-42dB,areverse[cue];[1:a]aformat=sample_rates=44100:channel_layouts=mono[voice];aevalsrc=0:d=0.06:s=44100, aformat=channel_layouts=mono[gap];[cue][gap][voice]concat=n=3:v=0:a=1[out]" -map "[out]" -c:a pcm_s16le $outputPath
+}
+else
+{
+    Copy-Item -LiteralPath $voicePath -Destination $outputPath -Force
+}
+if ($LASTEXITCODE -ne 0) { throw "ffmpeg concat failed with exit code $LASTEXITCODE" }
+
+foreach ($temporaryPath in @($rawPath, $voicePath))
+{
+    if ([System.IO.File]::Exists($temporaryPath))
+    {
+        [System.IO.File]::Delete($temporaryPath)
+    }
 }
 
 Write-Output $outputPath

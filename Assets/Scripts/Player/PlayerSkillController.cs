@@ -113,6 +113,7 @@ public sealed class PlayerSkillController : MonoBehaviour
                 m_state = PlayerSkillState.Ready;
                 m_stateEndsAt = 0f;
                 m_cooldownDuration = 0f;
+                m_playerHealth?.PlayAbilityReadyAnnouncement();
             }
         }
         UpdateRocketRecoil();
