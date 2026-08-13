@@ -5,8 +5,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
 public sealed class SuicideEnemy : MonoBehaviour
 {
-    private const float k_PathUpdateInterval = 0.1f;
-    private const float k_PathDestinationThresholdSqr = 0.25f;
+    private const float k_PathUpdateInterval = 0.25f;
+    private const float k_PathDestinationThresholdSqr = 1f;
     private const float k_MinWarningEmission = 0.25f;
     private const float k_MaxWarningEmission = 4f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
@@ -14,6 +14,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     private static readonly int s_WarningSpeed = Animator.StringToHash("WarningSpeed");
     private static readonly int s_BaseColor = Shader.PropertyToID("_BaseColor");
     private static readonly int s_EmissionColor = Shader.PropertyToID("_EmissionColor");
+    private static readonly Collider[] s_ExplosionHits = new Collider[256];
 
     [SerializeField] private float m_moveSpeed = 2f;
     [SerializeField] private float m_explosionDamage = 60f;
@@ -30,6 +31,7 @@ public sealed class SuicideEnemy : MonoBehaviour
 
     private readonly HashSet<PlayerHealth> m_damagedPlayers = new();
     private readonly HashSet<EnemyHealth> m_damagedEnemies = new();
+    private readonly List<EnemyType> m_chainKills = new(16);
     private PlayerHealth m_target;
     private FirstPersonController m_targetController;
     private EnemyHealth m_health;
@@ -74,7 +76,8 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_damagedPlayers.Clear();
         m_damagedEnemies.Clear();
         m_explosionTime = 0f;
-        m_nextPathUpdateTime = 0f;
+        m_nextPathUpdateTime = Time.time
+            + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         m_sourceWeapon = WeaponId.Unknown;
         m_hasPlayerAttribution = false;
         m_hasClassSkillAttribution = false;
@@ -222,14 +225,17 @@ public sealed class SuicideEnemy : MonoBehaviour
         {
             m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
         }
-        List<EnemyType> chainKills = new();
+        m_chainKills.Clear();
         KillContext explosionContext = KillContext.Chain(
             sourceWeapon, m_hasPlayerAttribution, m_hasClassSkillAttribution);
         m_damagedPlayers.Clear();
         m_damagedEnemies.Clear();
         PlayerHealth playerToDamage = null;
-        foreach (Collider hit in Physics.OverlapSphere(transform.position, m_explosionRadius, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        int hitCount = Physics.OverlapSphereNonAlloc(transform.position, m_explosionRadius, s_ExplosionHits,
+            Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        for (int index = 0; index < hitCount; index++)
         {
+            Collider hit = s_ExplosionHits[index];
             PlayerHealth player = hit.GetComponentInParent<PlayerHealth>();
             if (player != null && m_damagedPlayers.Add(player))
             {
@@ -241,7 +247,7 @@ public sealed class SuicideEnemy : MonoBehaviour
             {
                 if (enemy.ApplyExplosionDamage(m_explosionDamage, explosionContext) && m_hasPlayerAttribution)
                 {
-                    chainKills.Add(enemy.Type);
+                    m_chainKills.Add(enemy.Type);
                 }
             }
         }
@@ -249,7 +255,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         if (m_hasPlayerAttribution)
         {
             m_scoreSystem?.RegisterChainBatch(
-                chainKills, sourceWeapon, m_hasClassSkillAttribution);
+                m_chainKills, sourceWeapon, m_hasClassSkillAttribution);
         }
 
         m_health.DropAmmo(transform.position);

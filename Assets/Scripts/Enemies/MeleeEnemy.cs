@@ -4,8 +4,9 @@ using UnityEngine.AI;
 [RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
 public sealed class MeleeEnemy : MonoBehaviour
 {
-    private const float k_PathUpdateInterval = 0.1f;
-    private const float k_PathDestinationThresholdSqr = 0.25f;
+    private const float k_PathUpdateInterval = 0.25f;
+    private const float k_PathDestinationThresholdSqr = 1f;
+    private static readonly Collider[] s_AttackHits = new Collider[128];
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
 
@@ -58,7 +59,8 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_hasPathDestination = false;
         m_hitTime = 0f;
         m_nextAttackTime = 0f;
-        m_nextPathUpdateTime = 0f;
+        m_nextPathUpdateTime = Time.time
+            + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         if (m_animator != null)
         {
             m_animator.SetBool(s_IsMoving, false);
@@ -155,8 +157,11 @@ public sealed class MeleeEnemy : MonoBehaviour
     {
         m_isAttacking = false;
         Vector3 hitCenter = transform.position + Vector3.up + m_lockedAttackDirection * Mathf.Max(0.8f, m_attackRange - m_hitRadius);
-        foreach (Collider hit in Physics.OverlapSphere(hitCenter, m_hitRadius, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        int hitCount = Physics.OverlapSphereNonAlloc(hitCenter, m_hitRadius, s_AttackHits,
+            Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        for (int index = 0; index < hitCount; index++)
         {
+            Collider hit = s_AttackHits[index];
             PlayerHealth player = hit.GetComponentInParent<PlayerHealth>();
             if (player != null)
             {

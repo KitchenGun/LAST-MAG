@@ -59,6 +59,12 @@ public sealed class PlayerHealth : MonoBehaviour
 
     public void ApplyDamage(float damage, PlayerDeathCause deathCause)
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (EnemySpawner.IsStressTestActive)
+        {
+            return;
+        }
+#endif
         if (m_isDead || damage <= 0f)
         {
             return;
