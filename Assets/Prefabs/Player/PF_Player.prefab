@@ -25676,6 +25676,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillVfxEmitter
   m_fireMaterial: {fileID: 2100000, guid: 40dd14b1925ff4a49a85e2a395b34683, type: 2}
   m_smokeMaterial: {fileID: 2100000, guid: 8ddd4228ec73e5641a86339b6d949544, type: 2}
+  m_rocketExhaustMaterial: {fileID: 2100000, guid: c9d4a0628d0b49c68864ed7b4c8a9a6a, type: 2}
+  m_explosionFireMaterial: {fileID: 2100000, guid: fb08bcb7408c46908c99342d8b28cca0, type: 2}
 --- !u!1 &7128414405091619502
 GameObject:
   m_ObjectHideFlags: 0

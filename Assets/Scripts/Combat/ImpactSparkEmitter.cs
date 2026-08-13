@@ -9,8 +9,9 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
     private const int k_MaxBiologicalParticles = 6;
     private const int k_MinHeadshotParticles = 7;
     private const int k_MaxHeadshotParticles = 9;
-    private const int k_GrenadeExplosionParticles = 22;
-    private const int k_RocketExplosionParticles = 30;
+    private const int k_RocketTrailParticles = 2;
+    private const int k_GrenadeExplosionParticles = 32;
+    private const int k_RocketExplosionParticles = 12;
 
     private ParticleSystem m_particles;
     [SerializeField] private ParticleSystem m_biologicalParticles;
@@ -90,12 +91,17 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
         float gravity = Physics.gravity.magnitude * Mathf.Max(0f, m_particles.main.gravityModifier.constantMax);
         for (int index = 0; index < particleCount; index++)
         {
-            float lifetime = Random.Range(0.25f, 0.55f);
-            float size = Random.Range(0.012f, 0.03f);
+            float lifetime = isRocket
+                ? Random.Range(0.16f, 0.32f)
+                : Random.Range(0.35f, 0.68f);
+            float size = Random.Range(0.012f, isRocket ? 0.024f : 0.028f);
             float gravityTravel = 0.5f * gravity * lifetime * lifetime;
-            float safeTravel = Mathf.Max(0f, radius * 0.85f - gravityTravel - size * 2f);
-            Vector3 direction = Random.onUnitSphere;
-            direction.y = Mathf.Abs(direction.y) + 0.18f;
+            float safeTravel = Mathf.Max(0f,
+                radius * (isRocket ? 0.55f : 0.9f) - gravityTravel - size * 2f);
+            Vector3 direction = isRocket
+                ? Random.onUnitSphere
+                : GetGrenadeFragmentDirection(index, particleCount);
+            direction.y = isRocket ? Mathf.Abs(direction.y) + 0.08f : direction.y;
             direction.Normalize();
             ParticleSystem.EmitParams emitParams = new()
             {
@@ -110,6 +116,50 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
             };
             m_particles.Emit(emitParams, 1);
         }
+    }
+
+    internal void EmitRocketTrailAt(Vector3 position, Vector3 forward)
+    {
+        if (!TryCacheParticles())
+        {
+            return;
+        }
+
+        forward = forward.sqrMagnitude > 0.001f ? forward.normalized : Vector3.forward;
+        for (int index = 0; index < k_RocketTrailParticles; index++)
+        {
+            Vector3 direction = (-forward + Random.insideUnitSphere * 0.18f).normalized;
+            ParticleSystem.EmitParams emitParams = new()
+            {
+                position = position,
+                velocity = direction * Random.Range(4.5f, 7.5f),
+                startLifetime = Random.Range(0.05f, 0.11f),
+                startSize = Random.Range(0.008f, 0.018f),
+                startColor = index == 0
+                    ? new Color(1f, 0.96f, 0.7f, 1f)
+                    : new Color(1f, 0.48f, 0.08f, 1f),
+                rotation = Random.Range(0f, 360f)
+            };
+            m_particles.Emit(emitParams, 1);
+        }
+    }
+
+    internal int ActiveParticleCount => m_particles != null ? m_particles.particleCount : 0;
+
+    internal void ClearParticles()
+    {
+        if (TryCacheParticles())
+        {
+            m_particles.Clear(true);
+        }
+    }
+
+    private static Vector3 GetGrenadeFragmentDirection(int index, int count)
+    {
+        float angle = Mathf.PI * 2f * index / count + Random.Range(-0.1f, 0.1f);
+        float upward = Random.Range(0.55f, 1.15f);
+        return new Vector3(Mathf.Cos(angle) * Random.Range(0.25f, 0.65f), upward,
+            Mathf.Sin(angle) * Random.Range(0.25f, 0.65f));
     }
 
     private bool TryCacheParticles()
@@ -147,9 +197,16 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
         Debug.Assert(m_particles.particleCount >= k_MinParticlesPerImpact
             && m_particles.particleCount <= k_MaxParticlesPerImpact);
         m_particles.Clear(true);
+        EmitRocketTrailAt(transform.position, Vector3.forward);
+        Debug.Assert(m_particles.particleCount == k_RocketTrailParticles);
+        m_particles.Clear(true);
         EmitExplosionAt(transform.position, 4f, true);
         Debug.Assert(m_particles.particleCount == k_RocketExplosionParticles);
         AssertExplosionRadius(m_particles, 4f);
+        m_particles.Clear(true);
+        EmitExplosionAt(transform.position, 5f, false);
+        Debug.Assert(m_particles.particleCount == k_GrenadeExplosionParticles);
+        AssertExplosionRadius(m_particles, 5f);
         m_particles.Clear(true);
         m_biologicalParticles.Clear(true);
         EmitBiologicalAt(transform.position, Vector3.up, true);
