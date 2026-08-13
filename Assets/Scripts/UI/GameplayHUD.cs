@@ -81,6 +81,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private readonly Image[] m_comboBulletImages = new Image[k_ComboBulletCount];
     private TextMeshProUGUI m_activeWeaponText;
     private TextMeshProUGUI m_scoreText;
+    private TextMeshProUGUI m_survivalTimeText;
     private TextMeshProUGUI m_comboText;
     private RectTransform m_comboPanel;
     private Image m_comboClipImage;
@@ -105,6 +106,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
     private int m_lastComboCount = -1;
     private int m_lastVisibleComboBullets = -1;
+    private int m_lastDisplayedSurvivalSecond = -1;
     private string m_lastSkillName;
     private string m_lastSkillStatus;
     private bool m_lastSkillHighlighted;
@@ -359,6 +361,21 @@ public sealed class GameplayHUD : MonoBehaviour
         }
     }
 
+    public void RefreshSurvivalTime(float survivalTime)
+    {
+        int elapsedSeconds = Mathf.FloorToInt(Mathf.Max(0f, survivalTime));
+        if (elapsedSeconds == m_lastDisplayedSurvivalSecond)
+        {
+            return;
+        }
+
+        m_lastDisplayedSurvivalSecond = elapsedSeconds;
+        if (m_survivalTimeText != null)
+        {
+            m_survivalTimeText.text = FormatSurvivalTime(elapsedSeconds);
+        }
+    }
+
     public void RefreshCombo(int comboCount, float remainingSeconds)
     {
         int safeCount = Mathf.Max(0, comboCount);
@@ -502,6 +519,9 @@ public sealed class GameplayHUD : MonoBehaviour
     private void RunHudSelfCheck()
     {
         Debug.Assert(k_WeaponSlotCount == 2);
+        Debug.Assert(FormatSurvivalTime(3599) == "59:59");
+        Debug.Assert(FormatSurvivalTime(3600) == "60:00");
+        Debug.Assert(FormatSurvivalTime(-1) == "00:00");
         RefreshWeapon(1, WeaponId.Rifle, 30, true);
         Debug.Assert(m_activeWeaponText.text == "30");
         Debug.Assert(Mathf.Approximately(m_weaponNumberTexts[0].color.a, 1f));
@@ -831,6 +851,8 @@ public sealed class GameplayHUD : MonoBehaviour
         InitializeComboPanel(layer);
 
         RefreshScore(0);
+        m_survivalTimeText = layer.Find("TimeText")?.GetComponent<TextMeshProUGUI>();
+        Debug.Assert(m_survivalTimeText != null, "Missing HUD Text: Layer_ScoreCombo/TimeText");
         RefreshCombo(0, 0f);
     }
 
@@ -1239,5 +1261,11 @@ public sealed class GameplayHUD : MonoBehaviour
         text.color = Color.white;
         text.raycastTarget = false;
         return text;
+    }
+
+    private static string FormatSurvivalTime(int elapsedSeconds)
+    {
+        int safeSeconds = Mathf.Max(0, elapsedSeconds);
+        return $"{safeSeconds / 60:00}:{safeSeconds % 60:00}";
     }
 }

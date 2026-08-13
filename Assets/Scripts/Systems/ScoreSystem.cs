@@ -86,9 +86,12 @@ public sealed class ScoreSystem : MonoBehaviour
         RunResultStore.ClearResult();
         m_hud = hud;
         m_bulletTimeActive = false;
+        m_survivalAccumulator = 0f;
+        m_survivalScore = 0;
         ComboCount = 0;
         m_comboExpiresAt = 0f;
         ResetSwapCandidate();
+        m_hud?.RefreshSurvivalTime(0f);
         RefreshHud();
     }
 
@@ -111,6 +114,7 @@ public sealed class ScoreSystem : MonoBehaviour
             m_survivalAccumulator -= elapsedSeconds;
             m_survivalScore += elapsedSeconds;
             m_hud?.RefreshScore(TotalScore);
+            m_hud?.RefreshSurvivalTime(m_survivalScore + m_survivalAccumulator);
         }
 
         ExpireCombo(Time.unscaledTime);
