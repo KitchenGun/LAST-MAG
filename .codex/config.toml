@@ -1,0 +1,10 @@
+# Verified with codex-cli 0.145.0. Keep project defaults independent of the
+# configuration task's temporary coordinator effort.
+model = "gpt-5.6-sol"
+model_reasoning_effort = "medium"
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+default_subagent_model = "gpt-5.6-terra"
+default_subagent_reasoning_effort = "medium"
