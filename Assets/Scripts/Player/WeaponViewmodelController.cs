@@ -11,12 +11,15 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private const float k_SpringImpulseScale = 2f;
     private const float k_MaxSpringStep = 1f / 120f;
     private const int k_MaxSpringStepsPerFrame = 8;
+    private const int k_DmrVariantCount = 6;
     private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f, 0.75f };
     private static readonly float[] s_RecoilDistances = { 0.065f, 0.18f, 0.06f, 0.12f };
     private static readonly float[] s_RecoilLateralDistances = { 0.018f, 0.04f, 0.013f, 0.027f };
     private static readonly float[] s_RecoilPitches = { 5f, 11f, 4f, 6.5f };
     private static readonly float[] s_RecoilYaws = { 0.8f, 2f, 0.9f, 1.2f };
     private static readonly float[] s_RecoilRolls = { 1.2f, 2.5f, 1.3f, 1.6f };
+    private static readonly float[] s_DmrPitchScales = { 0.97f, 1f, 1.03f };
+    private static readonly float[] s_DmrVolumeScales = { 0.98f, 1f, 0.97f };
 
     [SerializeField] private GameObject m_pistolRoot;
     [SerializeField] private GameObject m_shotgunRoot;
@@ -50,6 +53,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private readonly Vector3[] m_rootRestPositions = new Vector3[4];
     private readonly Quaternion[] m_rootRestRotations = new Quaternion[4];
     private readonly int[] m_lastFireClipIndices = { -1, -1, -1, -1 };
+    private readonly int[] m_dmrVariantBag = new int[k_DmrVariantCount];
     private CharacterController m_characterController;
     private Vector3 m_movementPositionOffset;
     private Vector3 m_movementRotationOffset;
@@ -61,6 +65,10 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private WeaponId m_activeWeapon;
     private int m_lastEmptyAmmoClipIndex = -1;
     private int m_nextWeaponAudioSourceIndex;
+    private int m_dmrVariantBagIndex = k_DmrVariantCount;
+    private int m_lastDmrVariant = -1;
+    private int m_lastDmrClipIndex = -1;
+    private int m_dmrSameClipCount;
     private bool m_waitingForLanding;
 
     private void Awake()
@@ -120,7 +128,15 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             return;
         }
 
-        PlayRandomClip(GetActiveFireClips(), ref m_lastFireClipIndices[(int)m_activeWeapon - 1], GetActiveFireVolume());
+        if (m_activeWeapon == WeaponId.DMR)
+        {
+            PlayDmrFireClip();
+        }
+        else
+        {
+            PlayRandomClip(GetActiveFireClips(), ref m_lastFireClipIndices[(int)m_activeWeapon - 1],
+                GetActiveFireVolume());
+        }
         GetActiveMuzzleFlash()?.Play();
         StartFireRecoil(recoil);
     }
@@ -164,6 +180,10 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         Debug.Assert(m_activeWeapon == WeaponId.Shotgun);
         Debug.Assert(m_weaponFireVolumes != null && m_weaponFireVolumes.Length == 4);
         Debug.Assert(IsFireAudioConfigurationValid());
+        Debug.Assert(s_DmrPitchScales.Length == 3 && s_DmrVolumeScales.Length == 3);
+        Debug.Assert(IsDmrVariantOrderValid(new[] { 3, 0, 4, 1, 2, 5 }, 0, 0, 2));
+        Debug.Assert(!IsDmrVariantOrderValid(new[] { 0, 3, 4, 1, 2, 5 }, 0, 0, 1));
+        Debug.Assert(!IsDmrVariantOrderValid(new[] { 1, 2, 0, 3, 4, 5 }, 0, 0, 2));
         Debug.Assert(Mathf.Approximately(s_RecoilDistances[0], 0.065f)
             && Mathf.Approximately(s_RecoilDistances[1], 0.18f)
             && Mathf.Approximately(s_RecoilDistances[2], 0.06f)
@@ -195,7 +215,12 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             && HasTwoOrThreeClips(m_pistolFireClips)
             && HasTwoOrThreeClips(m_shotgunFireClips)
             && HasTwoOrThreeClips(m_rifleFireClips)
-            && HasTwoOrThreeClips(m_dmrFireClips);
+            && HasExactlyTwoClips(m_dmrFireClips);
+    }
+
+    private static bool HasExactlyTwoClips(AudioClip[] clips)
+    {
+        return clips != null && clips.Length == 2 && clips[0] != null && clips[1] != null;
     }
 
     private static bool HasTwoOrThreeClips(AudioClip[] clips)
@@ -290,11 +315,77 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         }
 
         lastIndex = selectedIndex;
+        PlayClip(clips[selectedIndex], volume, UnityEngine.Random.Range(0.98f, 1.02f));
+    }
+
+    private void PlayDmrFireClip()
+    {
+        if (!HasTwoWeaponAudioSources() || !HasExactlyTwoClips(m_dmrFireClips))
+        {
+            return;
+        }
+
+        if (m_dmrVariantBagIndex >= k_DmrVariantCount)
+        {
+            RefillDmrVariantBag();
+        }
+
+        int variant = m_dmrVariantBag[m_dmrVariantBagIndex++];
+        int clipIndex = variant / s_DmrPitchScales.Length;
+        int scaleIndex = variant % s_DmrPitchScales.Length;
+        m_dmrSameClipCount = clipIndex == m_lastDmrClipIndex ? m_dmrSameClipCount + 1 : 1;
+        m_lastDmrClipIndex = clipIndex;
+        m_lastDmrVariant = variant;
+        PlayClip(m_dmrFireClips[clipIndex],
+            GetActiveFireVolume() * s_DmrVolumeScales[scaleIndex], s_DmrPitchScales[scaleIndex]);
+    }
+
+    private void RefillDmrVariantBag()
+    {
+        do
+        {
+            for (int index = 0; index < k_DmrVariantCount; index++)
+            {
+                m_dmrVariantBag[index] = index;
+            }
+            for (int index = k_DmrVariantCount - 1; index > 0; index--)
+            {
+                int swapIndex = UnityEngine.Random.Range(0, index + 1);
+                (m_dmrVariantBag[index], m_dmrVariantBag[swapIndex]) =
+                    (m_dmrVariantBag[swapIndex], m_dmrVariantBag[index]);
+            }
+        }
+        while (!IsDmrVariantOrderValid(m_dmrVariantBag,
+            m_lastDmrVariant, m_lastDmrClipIndex, m_dmrSameClipCount));
+
+        m_dmrVariantBagIndex = 0;
+    }
+
+    private static bool IsDmrVariantOrderValid(int[] variants, int lastVariant, int lastClip, int sameClipCount)
+    {
+        for (int index = 0; index < variants.Length; index++)
+        {
+            int variant = variants[index];
+            int clipIndex = variant / s_DmrPitchScales.Length;
+            if (variant == lastVariant || (clipIndex == lastClip && sameClipCount >= 2))
+            {
+                return false;
+            }
+
+            sameClipCount = clipIndex == lastClip ? sameClipCount + 1 : 1;
+            lastVariant = variant;
+            lastClip = clipIndex;
+        }
+        return true;
+    }
+
+    private void PlayClip(AudioClip clip, float volume, float pitch)
+    {
         AudioSource source = m_weaponAudioSources[m_nextWeaponAudioSourceIndex];
         m_nextWeaponAudioSourceIndex = (m_nextWeaponAudioSourceIndex + 1) % m_weaponAudioSources.Length;
-        source.clip = clips[selectedIndex];
+        source.clip = clip;
         source.volume = Mathf.Clamp01(volume);
-        source.pitch = UnityEngine.Random.Range(0.98f, 1.02f);
+        source.pitch = pitch;
         source.Play();
     }
 
