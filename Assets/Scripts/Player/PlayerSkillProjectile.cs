@@ -193,6 +193,8 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             m_vfxEmitter?.EndRocketFlight();
         }
         m_vfxEmitter?.EmitExplosion(transform.position, m_radius, !m_usesGravity);
+        FirstPersonController.CurrentInstance?.ApplyExplosionShake(
+            transform.position, m_radius, !m_usesGravity);
         SpatialAudio.PlayRandomOneShot(m_explosionClips, transform.position,
             m_explosionMaxDistance, m_explosionVolume);
         m_damagedEnemies.Clear();
@@ -237,8 +239,11 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         {
             return;
         }
-        m_body.linearVelocity = Vector3.zero;
-        m_body.angularVelocity = Vector3.zero;
+        if (!m_body.isKinematic)
+        {
+            m_body.linearVelocity = Vector3.zero;
+            m_body.angularVelocity = Vector3.zero;
+        }
         m_body.isKinematic = true;
         m_collider.enabled = false;
         m_explodeAt = 0f;

@@ -153,6 +153,14 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_DamageAimPunchSoftCap = 3f;
     private const float k_DamageAimPunchHardCapPitch = 4f;
     private const float k_DamageAimPunchHardCapYaw = 2f;
+    private const float k_ExplosionShakeRangeMultiplier = 2f;
+    private const float k_ExplosionShakeFrequency = 32f;
+    private const float k_RocketExplosionShakeAngle = 3f;
+    private const float k_RocketExplosionShakeRoll = 1.5f;
+    private const float k_RocketExplosionShakeDuration = 0.24f;
+    private const float k_GrenadeExplosionShakeAngle = 2.2f;
+    private const float k_GrenadeExplosionShakeRoll = 1f;
+    private const float k_GrenadeExplosionShakeDuration = 0.2f;
     private const float k_RifleBurstResetTime = 0.25f;
     private const int k_RifleYawDirectionShots = 4;
     private const float k_PistolContinuousWindow = 0.24f;
@@ -231,6 +239,11 @@ public sealed class FirstPersonController : MonoBehaviour
     private float m_damageAimPunchTargetPitch;
     private float m_damageAimPunchYaw;
     private float m_damageAimPunchTargetYaw;
+    private float m_explosionShakeAngle;
+    private float m_explosionShakeRoll;
+    private float m_explosionShakeStartedAt;
+    private float m_explosionShakeDuration;
+    private float m_explosionShakeSeed;
     private float m_nextAllowedFireTime;
     private float m_lastRifleShotTime = float.NegativeInfinity;
     private float m_rifleYawDirection;
@@ -328,6 +341,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_damageAimPunchTargetPitch = 0f;
         m_damageAimPunchYaw = 0f;
         m_damageAimPunchTargetYaw = 0f;
+        ResetExplosionShake();
         if (m_playerMap != null)
         {
             m_attackAction.performed -= OnAttack;
@@ -500,10 +514,13 @@ public sealed class FirstPersonController : MonoBehaviour
         UpdateCameraRecoil();
         UpdateFireImpulse();
         UpdateDamageAimPunch();
+        Vector3 explosionShake = SampleExplosionShake();
         m_playerCamera.transform.localRotation = Quaternion.Euler(
-            m_pitch - m_cameraRecoilPitch - m_fireImpulse.x - m_damageAimPunchPitch,
-            m_cameraRecoilYaw + m_fireImpulse.y + m_damageAimPunchYaw,
-            m_fireImpulse.z);
+            m_pitch - m_cameraRecoilPitch - m_fireImpulse.x - m_damageAimPunchPitch
+                + explosionShake.x,
+            m_cameraRecoilYaw + m_fireImpulse.y + m_damageAimPunchYaw
+                + explosionShake.y,
+            m_fireImpulse.z + explosionShake.z);
         transform.Rotate(Vector3.up * look.x);
     }
 
@@ -1043,6 +1060,97 @@ public sealed class FirstPersonController : MonoBehaviour
         return recoil;
     }
 
+    internal void ApplyExplosionShake(Vector3 position, float radius, bool isRocket)
+    {
+        if (m_playerCamera == null || radius <= 0f)
+        {
+            return;
+        }
+
+        if (m_explosionShakeDuration > 0f
+            && Time.unscaledTime >= m_explosionShakeStartedAt + m_explosionShakeDuration)
+        {
+            ResetExplosionShake();
+        }
+
+        float maxAngle = isRocket
+            ? k_RocketExplosionShakeAngle
+            : k_GrenadeExplosionShakeAngle;
+        float angle = CalculateExplosionShakeStrength(
+            Vector3.Distance(m_playerCamera.transform.position, position), radius, maxAngle);
+        if (angle <= 0f)
+        {
+            return;
+        }
+
+        float maxRoll = isRocket
+            ? k_RocketExplosionShakeRoll
+            : k_GrenadeExplosionShakeRoll;
+        float duration = isRocket
+            ? k_RocketExplosionShakeDuration
+            : k_GrenadeExplosionShakeDuration;
+        m_explosionShakeAngle = Mathf.Max(m_explosionShakeAngle, angle);
+        m_explosionShakeRoll = Mathf.Max(m_explosionShakeRoll, angle * maxRoll / maxAngle);
+        m_explosionShakeDuration = Mathf.Max(m_explosionShakeDuration, duration);
+        m_explosionShakeStartedAt = Time.unscaledTime;
+        m_explosionShakeSeed = UnityEngine.Random.Range(0f, 1000f);
+    }
+
+    private Vector3 SampleExplosionShake()
+    {
+        if (m_explosionShakeDuration <= 0f)
+        {
+            return Vector3.zero;
+        }
+
+        float elapsed = Time.unscaledTime - m_explosionShakeStartedAt;
+        float normalizedTime = elapsed / m_explosionShakeDuration;
+        if (normalizedTime >= 1f)
+        {
+            ResetExplosionShake();
+            return Vector3.zero;
+        }
+
+        float decay = 1f - Mathf.Clamp01(normalizedTime);
+        decay *= decay;
+        float sampleTime = Time.unscaledTime * k_ExplosionShakeFrequency;
+        Vector2 rotationalNoise = new(
+            SignedPerlin(m_explosionShakeSeed, sampleTime),
+            SignedPerlin(m_explosionShakeSeed + 17f, sampleTime));
+        rotationalNoise = Vector2.ClampMagnitude(rotationalNoise, 1f);
+        float pitch = rotationalNoise.x * m_explosionShakeAngle;
+        float yaw = rotationalNoise.y * m_explosionShakeAngle;
+        float roll = SignedPerlin(m_explosionShakeSeed + 31f, sampleTime) * m_explosionShakeRoll;
+        return new Vector3(pitch, yaw, roll) * decay;
+    }
+
+    private static float CalculateExplosionShakeStrength(float distance, float radius,
+        float maxAngle)
+    {
+        if (radius <= 0f || maxAngle <= 0f)
+        {
+            return 0f;
+        }
+
+        float falloff = 1f - Mathf.Clamp01(distance
+            / (radius * k_ExplosionShakeRangeMultiplier));
+        return maxAngle * falloff * falloff;
+    }
+
+    private static float SignedPerlin(float seed, float sampleTime)
+    {
+        return Mathf.PerlinNoise(seed, sampleTime) * 2f - 1f;
+    }
+
+    private void ResetExplosionShake()
+    {
+        m_explosionShakeAngle = 0f;
+        m_explosionShakeRoll = 0f;
+        m_explosionShakeStartedAt = 0f;
+        m_explosionShakeDuration = 0f;
+        m_explosionShakeSeed = 0f;
+    }
+
     internal void ApplyDamageAimPunch(PlayerDeathCause deathCause)
     {
         Vector2 strength = GetDamageAimPunchStrength(deathCause);
@@ -1082,6 +1190,14 @@ public sealed class FirstPersonController : MonoBehaviour
     private void RunWeaponFireSelfCheck()
     {
         Debug.Assert(k_WeaponSlotCount == 2 && s_StartingAmmo.Length == 4);
+        Debug.Assert(Mathf.Approximately(
+            CalculateExplosionShakeStrength(0f, 4f, k_RocketExplosionShakeAngle),
+            k_RocketExplosionShakeAngle));
+        Debug.Assert(Mathf.Approximately(
+            CalculateExplosionShakeStrength(4f, 4f, k_RocketExplosionShakeAngle),
+            k_RocketExplosionShakeAngle * 0.25f));
+        Debug.Assert(Mathf.Approximately(
+            CalculateExplosionShakeStrength(8f, 4f, k_RocketExplosionShakeAngle), 0f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Pistol), 405f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Shotgun), 66f));
         Debug.Assert(Mathf.Approximately(60f / GetFireInterval(WeaponId.Rifle), 660f));

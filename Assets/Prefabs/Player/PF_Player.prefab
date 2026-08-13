@@ -25965,8 +25965,8 @@ ParticleSystem:
     startSize:
       serializedVersion: 2
       minMaxState: 3
-      scalar: 0.42
-      minScalar: 0.357
+      scalar: 0.62
+      minScalar: 0.5
       maxCurve:
         serializedVersion: 2
         m_Curve:
@@ -30583,8 +30583,8 @@ Light:
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 1, g: 0.459, b: 0.094, a: 1}
-  m_Intensity: 4.5
-  m_Range: 3.5
+  m_Intensity: 6
+  m_Range: 4.2
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
   m_CookieSize2D: {x: 0.5, y: 0.5}
@@ -30649,7 +30649,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 819c8bb266d477243895b9c928e9b843, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::MuzzleFlashEffect
-  m_lightDuration: 0.06
+  m_lightDuration: 0.075
   m_variations:
   - {fileID: 2100000, guid: 40dd14b1925ff4a49a85e2a395b34683, type: 2}
   - {fileID: 2100000, guid: b5025ad6455b3cb488ed0cabb9a3de9e, type: 2}
@@ -30657,7 +30657,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: b9e039d08bc3476449c4f9f546821773, type: 2}
   - {fileID: 2100000, guid: 1c86fad4e9f469a4d88864eadcc2bb51, type: 2}
   m_smokeParticles: {fileID: 8998166419365905696}
-  m_smokeParticleCount: 6
+  m_smokeParticleCount: 8
   m_smokeEveryShots: 1
 --- !u!1 &7252066840194438433
 GameObject:

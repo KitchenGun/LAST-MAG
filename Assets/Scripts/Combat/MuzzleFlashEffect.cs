@@ -74,18 +74,26 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
         }
 
         Vector3 direction = transform.right;
+        bool heavySmoke = m_smokeParticleCount >= 6;
         GetSmokeRanges(out Vector2 lifetime, out Vector2 size, out Vector2 speed);
         for (int index = 0; index < m_smokeParticleCount; index++)
         {
-            Vector3 spreadDirection = (direction + UnityEngine.Random.insideUnitSphere * 0.3f).normalized;
+            float layer = m_smokeParticleCount > 1 ? index / (m_smokeParticleCount - 1f) : 0f;
+            float spread = heavySmoke ? Mathf.Lerp(0.16f, 0.42f, layer) : 0.3f;
+            Vector3 spreadDirection = (direction + UnityEngine.Random.insideUnitSphere * spread).normalized;
             ParticleSystem.EmitParams smoke = new()
             {
-                position = transform.position + direction * 0.035f,
-                velocity = spreadDirection * UnityEngine.Random.Range(speed.x, speed.y) + Vector3.up * 0.18f,
+                position = transform.position + direction * 0.035f
+                    + (heavySmoke ? UnityEngine.Random.insideUnitSphere * 0.012f : Vector3.zero),
+                velocity = spreadDirection * (heavySmoke
+                    ? Mathf.Lerp(speed.y, speed.x, layer)
+                    : UnityEngine.Random.Range(speed.x, speed.y))
+                    + Vector3.up * (heavySmoke ? Mathf.Lerp(0.12f, 0.36f, layer) : 0.18f),
                 startLifetime = UnityEngine.Random.Range(lifetime.x, lifetime.y),
                 startSize = UnityEngine.Random.Range(size.x, size.y),
                 rotation = UnityEngine.Random.Range(0f, 360f),
-                startColor = new Color(0.62f, 0.64f, 0.66f, UnityEngine.Random.Range(0.18f, 0.28f))
+                startColor = new Color(0.58f, 0.6f, 0.62f,
+                    UnityEngine.Random.Range(heavySmoke ? 0.22f : 0.18f, heavySmoke ? 0.34f : 0.28f))
             };
             m_smokeParticles.Emit(smoke, 1);
         }
@@ -95,9 +103,9 @@ public sealed class MuzzleFlashEffect : MonoBehaviour
     {
         if (m_smokeParticleCount >= 6)
         {
-            lifetime = new Vector2(0.3f, 0.5f);
-            size = new Vector2(0.14f, 0.24f);
-            speed = new Vector2(0.7f, 1.3f);
+            lifetime = new Vector2(0.45f, 0.8f);
+            size = new Vector2(0.18f, 0.34f);
+            speed = new Vector2(0.42f, 1.2f);
             return;
         }
         if (m_smokeParticleCount >= 4)

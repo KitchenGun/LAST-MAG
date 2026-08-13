@@ -10,6 +10,7 @@ public sealed class PlayerSkillVfxEmitter : MonoBehaviour
 
     private ParticleSystem m_fireParticles;
     private ParticleSystem m_smokeParticles;
+    private ImpactSparkEmitter m_impactSparkEmitter;
     private Light m_rocketLight;
 
     public float GrenadeTrailSpacing => k_GrenadeTrailSpacing;
@@ -83,8 +84,29 @@ public sealed class PlayerSkillVfxEmitter : MonoBehaviour
         }
 
         float scale = Mathf.Clamp(radius / 4f, 0.75f, 1.4f);
+        EmitExplosionCore(position, isRocket ? 8 : 6, scale);
         EmitExplosionFire(position, radius, isRocket ? 28 : 20, scale);
         EmitExplosionSmoke(position, radius, isRocket ? 22 : 18, scale);
+        m_impactSparkEmitter?.EmitExplosionAt(position, radius, isRocket);
+    }
+
+    private void EmitExplosionCore(Vector3 position, int count, float scale)
+    {
+        for (int index = 0; index < count; index++)
+        {
+            ParticleSystem.EmitParams emit = new()
+            {
+                position = position,
+                velocity = Vector3.zero,
+                startLifetime = Random.Range(0.06f, 0.14f),
+                startSize = Random.Range(0.65f, 1.25f) * scale,
+                startColor = index % 3 == 0
+                    ? new Color(1f, 0.96f, 0.72f, 1f)
+                    : new Color(1f, Random.Range(0.42f, 0.65f), 0.04f, 1f),
+                rotation = Random.Range(0f, 360f)
+            };
+            m_fireParticles.Emit(emit, 1);
+        }
     }
 
     private void EmitExplosionFire(Vector3 position, float radius, int count, float scale)
@@ -194,6 +216,7 @@ public sealed class PlayerSkillVfxEmitter : MonoBehaviour
 
         m_fireParticles ??= CreateParticleSystem("SkillFireParticles", m_fireMaterial, false);
         m_smokeParticles ??= CreateParticleSystem("SkillSmokeParticles", m_smokeMaterial, true);
+        m_impactSparkEmitter ??= GetComponentInChildren<ImpactSparkEmitter>(true);
         m_rocketLight ??= CreateRocketLight();
         return true;
     }
@@ -299,7 +322,7 @@ public sealed class PlayerSkillVfxEmitter : MonoBehaviour
         m_fireParticles.Clear(true);
         m_smokeParticles.Clear(true);
         EmitExplosion(transform.position, 4f, true);
-        Debug.Assert(m_fireParticles.particleCount == 28);
+        Debug.Assert(m_fireParticles.particleCount == 36);
         Debug.Assert(m_smokeParticles.particleCount == 22);
         AssertExplosionRadius(m_fireParticles, 4f, 0.5f);
         AssertExplosionRadius(m_smokeParticles, 4f, 0.725f);
