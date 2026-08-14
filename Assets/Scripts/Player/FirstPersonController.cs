@@ -776,7 +776,7 @@ public sealed class FirstPersonController : MonoBehaviour
             if (enemy != null)
             {
                 bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
-                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
+                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
                 float damage = GetDamage(weapon) * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
                 bool killed = enemy.ApplyDamage(damage, KillContext.Direct(weapon, isHeadshot));
                 if (killed)
@@ -828,7 +828,7 @@ public sealed class FirstPersonController : MonoBehaviour
             bool isHeadshot = enemy != null && enemy.IsHeadHit(ray, hit.distance + 0.5f);
             if (enemy != null)
             {
-                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
+                m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
                 bool killed = enemy.ApplyDamage(damage * (isHeadshot ? k_HeadshotDamageMultiplier : 1f),
                     KillContext.Direct(WeaponId.DMR, isHeadshot));
                 if (killed)
@@ -881,7 +881,7 @@ public sealed class FirstPersonController : MonoBehaviour
                 if (enemy != null)
                 {
                     bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
-                    m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot);
+                    m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
                     m_shotgunDamageByEnemy.TryGetValue(enemy, out float damage);
                     m_shotgunDamageByEnemy[enemy] = damage + 12f * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
                     if (isHeadshot)
