@@ -76,10 +76,33 @@ public static class SpatialAudio
 
         AudioSource source = s_Voices[voiceIndex];
         source.Stop();
+        source.spatialBlend = 1f;
         source.transform.position = position;
         source.clip = clip;
         source.volume = Mathf.Clamp01(volume);
         source.maxDistance = maxDistance;
+        source.Play();
+        s_VoiceEndTimes[voiceIndex] = AudioSettings.dspTime + clip.length;
+    }
+
+    public static void PlayOneShot2D(AudioClip clip, float volume)
+    {
+        if (clip == null)
+        {
+            return;
+        }
+
+        int voiceIndex = FindAvailableVoice();
+        if (voiceIndex < 0)
+        {
+            return;
+        }
+
+        AudioSource source = s_Voices[voiceIndex];
+        source.Stop();
+        source.spatialBlend = 0f;
+        source.clip = clip;
+        source.volume = Mathf.Clamp01(volume);
         source.Play();
         s_VoiceEndTimes[voiceIndex] = AudioSettings.dspTime + clip.length;
     }

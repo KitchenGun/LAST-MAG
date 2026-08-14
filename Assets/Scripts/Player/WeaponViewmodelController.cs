@@ -11,6 +11,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private const float k_SpringImpulseScale = 2f;
     private const float k_MaxSpringStep = 1f / 120f;
     private const int k_MaxSpringStepsPerFrame = 8;
+    private const float k_DeathDropForwardImpulse = 5f;
     private const int k_DmrVariantCount = 6;
     private static readonly float[] s_MovementScales = { 1f, 0.65f, 0.8f, 0.75f };
     private static readonly float[] s_RecoilDistances = { 0.065f, 0.18f, 0.06f, 0.12f };
@@ -170,6 +171,105 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         SetActive(m_dmrRoot, false);
     }
 
+    internal bool DropActiveWeapon(Vector3 inheritedVelocity)
+    {
+        Transform root = GetActiveRoot();
+        if (!CreateDeathDropClone(root, inheritedVelocity, transform.forward, m_characterController))
+        {
+            return false;
+        }
+
+        StopFireAnimation();
+        StopAllMuzzleEffects();
+        ResetMovementPose();
+        root.gameObject.SetActive(false);
+        m_activeWeapon = WeaponId.Unknown;
+        return true;
+    }
+
+    internal static bool CreateDeathDropClone(Transform source, Vector3 inheritedVelocity,
+        Vector3 worldForward, CharacterController ignoredController)
+    {
+        if (source == null)
+        {
+            return false;
+        }
+
+        MeshRenderer[] renderers = source.GetComponentsInChildren<MeshRenderer>(true);
+        GameObject dropRoot = new($"DeathDrop_{source.name}") { layer = 2 };
+        dropRoot.transform.SetPositionAndRotation(source.position, source.rotation);
+        Bounds localBounds = default;
+        bool hasBounds = false;
+        for (int index = 0; index < renderers.Length; index++)
+        {
+            MeshRenderer sourceRenderer = renderers[index];
+            MeshFilter sourceFilter = sourceRenderer.GetComponent<MeshFilter>();
+            if (!sourceRenderer.enabled || !sourceRenderer.gameObject.activeInHierarchy
+                || sourceFilter == null || sourceFilter.sharedMesh == null)
+            {
+                continue;
+            }
+
+            GameObject visual = new(sourceRenderer.name) { layer = 2 };
+            visual.transform.SetParent(dropRoot.transform, false);
+            visual.transform.SetPositionAndRotation(sourceRenderer.transform.position,
+                sourceRenderer.transform.rotation);
+            visual.transform.localScale = sourceRenderer.transform.lossyScale;
+            visual.AddComponent<MeshFilter>().sharedMesh = sourceFilter.sharedMesh;
+            MeshRenderer cloneRenderer = visual.AddComponent<MeshRenderer>();
+            cloneRenderer.sharedMaterials = sourceRenderer.sharedMaterials;
+            cloneRenderer.shadowCastingMode = sourceRenderer.shadowCastingMode;
+            cloneRenderer.receiveShadows = sourceRenderer.receiveShadows;
+
+            Bounds worldBounds = sourceRenderer.bounds;
+            Vector3 min = worldBounds.min;
+            Vector3 max = worldBounds.max;
+            for (int x = 0; x <= 1; x++)
+            for (int y = 0; y <= 1; y++)
+            for (int z = 0; z <= 1; z++)
+            {
+                Vector3 corner = new(x == 0 ? min.x : max.x,
+                    y == 0 ? min.y : max.y, z == 0 ? min.z : max.z);
+                Vector3 localCorner = dropRoot.transform.InverseTransformPoint(corner);
+                if (!hasBounds)
+                {
+                    localBounds = new Bounds(localCorner, Vector3.zero);
+                    hasBounds = true;
+                }
+                else
+                {
+                    localBounds.Encapsulate(localCorner);
+                }
+            }
+        }
+
+        if (!hasBounds)
+        {
+            Destroy(dropRoot);
+            Debug.LogError($"Death-drop source has no visible mesh: {source.name}");
+            return false;
+        }
+
+        BoxCollider collider = dropRoot.AddComponent<BoxCollider>();
+        collider.center = localBounds.center;
+        collider.size = Vector3.Max(localBounds.size, Vector3.one * 0.04f);
+        Rigidbody body = dropRoot.AddComponent<Rigidbody>();
+        body.mass = 2f;
+        body.interpolation = RigidbodyInterpolation.Interpolate;
+        body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+        Vector3 dropForward = worldForward.sqrMagnitude > 0.0001f
+            ? worldForward.normalized
+            : source.forward;
+        body.linearVelocity = inheritedVelocity + dropForward * 1.2f + Vector3.down * 0.5f;
+        body.AddForce(dropForward * k_DeathDropForwardImpulse, ForceMode.Impulse);
+        body.angularVelocity = Random.onUnitSphere * Random.Range(4f, 7f);
+        if (ignoredController != null)
+        {
+            Physics.IgnoreCollision(collider, ignoredController, true);
+        }
+        return true;
+    }
+
     [ContextMenu("Run Viewmodel Self Check")]
     private void RunViewmodelSelfCheck()
     {
@@ -189,6 +289,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             && Mathf.Approximately(s_RecoilDistances[2], 0.06f)
             && Mathf.Approximately(s_RecoilDistances[3], 0.12f));
         Debug.Assert(Mathf.Approximately(s_RecoilLateralDistances[1], 0.04f));
+        Debug.Assert(Mathf.Approximately(k_DeathDropForwardImpulse, 5f));
         Debug.Assert(Mathf.Approximately(s_RecoilPitches[2], 4f)
             && Mathf.Approximately(s_RecoilYaws[2], 0.9f)
             && Mathf.Approximately(s_RecoilRolls[2], 1.3f));
@@ -659,11 +760,11 @@ public sealed class WeaponViewmodelController : MonoBehaviour
 
     private void StopAllMuzzleEffects()
     {
-        m_pistolMuzzleFlash?.StopEffect();
-        m_shotgunMuzzleFlash?.StopEffect();
-        m_rifleMuzzleFlash?.StopEffect();
-        m_dmrMuzzleFlash?.StopEffect();
-        m_dmrTracer?.StopEffect();
+        if (m_pistolMuzzleFlash != null) m_pistolMuzzleFlash.StopEffect();
+        if (m_shotgunMuzzleFlash != null) m_shotgunMuzzleFlash.StopEffect();
+        if (m_rifleMuzzleFlash != null) m_rifleMuzzleFlash.StopEffect();
+        if (m_dmrMuzzleFlash != null) m_dmrMuzzleFlash.StopEffect();
+        if (m_dmrTracer != null) m_dmrTracer.StopEffect();
     }
 
     private Vector3 GetRootRestPosition(WeaponId weapon)

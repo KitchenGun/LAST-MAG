@@ -140,14 +140,21 @@ internal enum RecoilPhase
 public sealed class FirstPersonController : MonoBehaviour
 {
     private const int k_WeaponSlotCount = 2;
-    private const int k_ShotgunPelletCount = 8;
-    private const float k_ShotgunSpreadAngle = 5f;
-    private const float k_HeadshotDamageMultiplier = 2f;
     private const float k_RaycastDistance = 100f;
     private const float k_MaxPitch = 80f;
     private const float k_DmrZoomFieldOfView = 45f;
     private const float k_DmrZoomTransitionDuration = 0.12f;
     private const float k_DmrZoomSensitivityMultiplier = 0.5f;
+    private const float k_DeathFallDuration = 1.8f;
+    private const float k_DeathFallForwardDistance = 0.35f;
+    private const float k_DeathFallLateralDistance = 0.2f;
+    private const float k_DeathFallFallbackDistance = 1.4f;
+    private const float k_DeathFallPitch = 18f;
+    private const float k_DeathFallRoll = 70f;
+    private const float k_DeathCameraRadius = 0.16f;
+    private const float k_DeathCameraSkin = 0.03f;
+    private const float k_DeathGroundSearchDistance = 3f;
+    private const int k_DeathRaycastBufferSize = 16;
     private const float k_DamageAimPunchKickSpeed = 30f;
     private const float k_DamageAimPunchReturnSpeed = 8f;
     private const float k_DamageAimPunchSoftCap = 3f;
@@ -168,7 +175,6 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_DmrContinuousWindow = 0.42f;
     // ponytail: fixed buffer avoids WebGL GC; raise only if one shot can cross 64 solid colliders.
     private const int k_DmrRaycastBufferSize = 64;
-    private static readonly int[] s_StartingAmmo = { 15, 8, 50, 12 };
     private static readonly Comparer<RaycastHit> s_RaycastHitDistanceComparer =
         Comparer<RaycastHit>.Create(static (left, right) => left.distance.CompareTo(right.distance));
 
@@ -182,6 +188,31 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
+    [Header("Weapon Ammo Capacity")]
+    [Tooltip("Starting and maximum owned ammo. This game does not use magazines or reloading.")]
+    [SerializeField, Min(1)] private int m_pistolAmmoCapacity = 15;
+    [SerializeField, Min(1)] private int m_shotgunAmmoCapacity = 8;
+    [SerializeField, Min(1)] private int m_rifleAmmoCapacity = 50;
+    [SerializeField, Min(1)] private int m_dmrAmmoCapacity = 12;
+    [Header("Weapon Balance")]
+    [SerializeField, Min(0.01f)] private float m_pistolDamage = 30f;
+    [SerializeField, Min(0.01f)] private float m_pistolShotsPerSecond = 6.75f;
+    [SerializeField, Min(1f)] private float m_pistolHeadshotMultiplier = 2f;
+    [SerializeField, Min(0f)] private float m_pistolSpreadAngle = 0.35f;
+    [SerializeField, Min(1)] private int m_shotgunPelletCount = 8;
+    [SerializeField, Min(0.01f)] private float m_shotgunPelletDamage = 12f;
+    [SerializeField, Min(0.01f)] private float m_shotgunShotsPerSecond = 1.1f;
+    [SerializeField, Min(1f)] private float m_shotgunHeadshotMultiplier = 2f;
+    [SerializeField, Min(0f)] private float m_shotgunSpreadAngle = 5f;
+    [SerializeField, Min(0.01f)] private float m_rifleDamage = 15f;
+    [SerializeField, Min(0.01f)] private float m_rifleShotsPerSecond = 11f;
+    [SerializeField, Min(1f)] private float m_rifleHeadshotMultiplier = 2f;
+    [SerializeField, Min(0f)] private float m_rifleSpreadAngle = 0.75f;
+    [SerializeField, Min(0.01f)] private float m_dmrFirstHitDamage = 60f;
+    [SerializeField, Min(0.01f)] private float m_dmrSecondHitDamage = 40f;
+    [SerializeField, Min(0.01f)] private float m_dmrThirdHitDamage = 20f;
+    [SerializeField, Min(0.01f)] private float m_dmrShotsPerSecond = 4f;
+    [SerializeField, Min(1f)] private float m_dmrHeadshotMultiplier = 2f;
     [Header("HUD Layout")]
     [Tooltip("Anchored position relative to the Crosshair center.")]
     [SerializeField] private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
@@ -209,6 +240,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private readonly HashSet<Collider> m_dmrHitStructures = new();
     private readonly Dictionary<EnemyHealth, float> m_shotgunDamageByEnemy = new();
     private readonly HashSet<EnemyHealth> m_shotgunHeadshotEnemies = new();
+    private readonly RaycastHit[] m_deathCameraHits = new RaycastHit[k_DeathRaycastBufferSize];
     private CharacterController m_characterController;
     private PlayerHealth m_playerHealth;
     private InputActionAsset m_runtimeInputActions;
@@ -255,6 +287,12 @@ public sealed class FirstPersonController : MonoBehaviour
     private int m_activeWeaponSlot = 1;
     private bool m_isRifleFiring;
     private bool m_isDmrZoomed;
+    private bool m_isDeathPresentation;
+    private float m_deathPresentationStartedAt;
+    private Vector3 m_deathCameraStartPosition;
+    private Vector3 m_deathCameraTargetPosition;
+    private Quaternion m_deathCameraStartRotation;
+    private Quaternion m_deathCameraTargetRotation;
 
     public static FirstPersonController CurrentInstance { get; private set; }
     public int ActiveWeaponSlot => m_activeWeaponSlot;
@@ -366,6 +404,12 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void Update()
     {
+        if (m_isDeathPresentation)
+        {
+            UpdateDeathPresentation();
+            return;
+        }
+
         if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             UnlockCursor();
@@ -390,6 +434,121 @@ public sealed class FirstPersonController : MonoBehaviour
         HandleLook();
         HandleMovement();
         HandleAutomaticFire();
+    }
+
+    internal void BeginDeathPresentation(float duration)
+    {
+        if (m_isDeathPresentation || m_playerCamera == null)
+        {
+            return;
+        }
+
+        m_isDeathPresentation = true;
+        m_isRifleFiring = false;
+        m_playerMap?.Disable();
+        ResetDmrZoom(true);
+        ResetCameraRecoil();
+        m_damageAimPunchPitch = m_damageAimPunchTargetPitch = 0f;
+        m_damageAimPunchYaw = m_damageAimPunchTargetYaw = 0f;
+        ResetExplosionShake();
+
+        Vector3 inheritedVelocity = m_characterController != null ? m_characterController.velocity : Vector3.zero;
+        bool droppedSkillVisual = m_skillController != null
+            && m_skillController.BeginDeathPresentation(inheritedVelocity);
+        if (!droppedSkillVisual)
+        {
+            m_weaponViewmodel?.DropActiveWeapon(inheritedVelocity);
+        }
+
+        m_gameplayHUD?.BeginDeathPresentation(duration);
+        Transform cameraTransform = m_playerCamera.transform;
+        float side = UnityEngine.Random.value < 0.5f ? -1f : 1f;
+        m_deathCameraStartPosition = cameraTransform.position;
+        m_deathCameraTargetPosition = FindDeathCameraTarget(cameraTransform, side);
+        m_deathCameraStartRotation = cameraTransform.rotation;
+        m_deathCameraTargetRotation = m_deathCameraStartRotation
+            * Quaternion.Euler(k_DeathFallPitch, 0f, side * k_DeathFallRoll);
+        m_deathPresentationStartedAt = Time.unscaledTime;
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void UpdateDeathPresentation()
+    {
+        if (m_playerCamera == null)
+        {
+            return;
+        }
+
+        float progress = Mathf.Clamp01((Time.unscaledTime - m_deathPresentationStartedAt) / k_DeathFallDuration);
+        Transform cameraTransform = m_playerCamera.transform;
+        Vector3 desired = Vector3.Lerp(m_deathCameraStartPosition, m_deathCameraTargetPosition,
+            Mathf.SmoothStep(0f, 1f, progress));
+        cameraTransform.position = ResolveDeathCameraMove(cameraTransform.position, desired);
+        cameraTransform.rotation = Quaternion.SlerpUnclamped(m_deathCameraStartRotation,
+            m_deathCameraTargetRotation, RecoilSample.EaseOutCubic(progress));
+    }
+
+    private Vector3 FindDeathCameraTarget(Transform cameraTransform, float side)
+    {
+        Vector3 source = cameraTransform.position + cameraTransform.forward * k_DeathFallForwardDistance
+            + cameraTransform.right * (side * k_DeathFallLateralDistance);
+        int hitCount = Physics.SphereCastNonAlloc(source, k_DeathCameraRadius, Vector3.down,
+            m_deathCameraHits, k_DeathGroundSearchDistance, ~((1 << 2) | (1 << 5)),
+            QueryTriggerInteraction.Ignore);
+        if (TryGetDeathCameraHit(hitCount, out RaycastHit hit))
+        {
+            return hit.point + hit.normal * (k_DeathCameraRadius + k_DeathCameraSkin);
+        }
+
+        return cameraTransform.position + cameraTransform.forward * k_DeathFallForwardDistance
+            + cameraTransform.right * (side * k_DeathFallLateralDistance)
+            + Vector3.down * k_DeathFallFallbackDistance;
+    }
+
+    private Vector3 ResolveDeathCameraMove(Vector3 current, Vector3 desired)
+    {
+        Vector3 movement = desired - current;
+        float distance = movement.magnitude;
+        if (distance <= 0.0001f)
+        {
+            return desired;
+        }
+
+        int hitCount = Physics.SphereCastNonAlloc(current, k_DeathCameraRadius, movement / distance,
+            m_deathCameraHits, distance + k_DeathCameraSkin, ~((1 << 2) | (1 << 5)),
+            QueryTriggerInteraction.Ignore);
+        return TryGetDeathCameraHit(hitCount, out RaycastHit hit)
+            ? hit.point - movement.normalized * k_DeathCameraSkin
+            : desired;
+    }
+
+    private bool TryGetDeathCameraHit(int hitCount, out RaycastHit closestHit)
+    {
+        closestHit = default;
+        float closestDistance = float.PositiveInfinity;
+        for (int index = 0; index < hitCount; index++)
+        {
+            RaycastHit hit = m_deathCameraHits[index];
+            Collider collider = hit.collider;
+            if (collider == null || collider == m_characterController
+                || collider.GetComponentInParent<FirstPersonController>() != null
+                || collider.GetComponentInParent<EnemyHealth>() != null
+                || collider.GetComponentInParent<AmmoPickup>() != null
+                || collider.GetComponentInParent<PlayerSkillProjectile>() != null
+                || collider.GetComponentInParent<RangedProjectile>() != null)
+            {
+                continue;
+            }
+
+            if (hit.distance < closestDistance)
+            {
+                closestDistance = hit.distance;
+                closestHit = hit;
+            }
+        }
+
+        return closestDistance < float.PositiveInfinity;
     }
 
     private void ConfigureLoadout()
@@ -443,14 +602,27 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void HandleDmrZoomInput()
     {
-        if (Mouse.current == null || !Mouse.current.rightButton.wasPressedThisFrame
-            || CurrentWeapon != WeaponId.DMR)
+        if (Mouse.current == null || CurrentWeapon != WeaponId.DMR)
         {
             return;
         }
 
-        m_isDmrZoomed = !m_isDmrZoomed;
+        bool zoomed = ResolveDmrZoomState(m_isDmrZoomed, GameSettings.ZoomInputMode,
+            Mouse.current.rightButton.wasPressedThisFrame, Mouse.current.rightButton.isPressed);
+        if (zoomed == m_isDmrZoomed)
+        {
+            return;
+        }
+        m_isDmrZoomed = zoomed;
         m_gameplayHUD?.SetDmrAimState(true, m_isDmrZoomed);
+    }
+
+    internal static bool ResolveDmrZoomState(bool current, ZoomInputMode mode,
+        bool pressedThisFrame, bool isPressed)
+    {
+        return mode == ZoomInputMode.Hold
+            ? isPressed
+            : pressedThisFrame ? !current : current;
     }
 
     private void UpdateDmrZoom()
@@ -507,8 +679,8 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void HandleLook()
     {
-        float sensitivity = m_lookSensitivity
-            * (m_isDmrZoomed ? k_DmrZoomSensitivityMultiplier : 1f);
+        float sensitivity = CalculateLookSensitivity(
+            m_lookSensitivity, GameSettings.MouseSensitivity, m_isDmrZoomed);
         Vector2 look = m_lookAction.ReadValue<Vector2>() * sensitivity;
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
         UpdateCameraRecoil();
@@ -522,6 +694,13 @@ public sealed class FirstPersonController : MonoBehaviour
                 + explosionShake.y,
             m_fireImpulse.z + explosionShake.z);
         transform.Rotate(Vector3.up * look.x);
+    }
+
+    internal static float CalculateLookSensitivity(float baseSensitivity,
+        float sensitivitySetting, bool zoomed)
+    {
+        return Mathf.Max(0f, baseSensitivity) * Mathf.Clamp01(sensitivitySetting)
+            * (zoomed ? k_DmrZoomSensitivityMultiplier : 1f);
     }
 
     private void UpdateCameraRecoil()
@@ -733,6 +912,7 @@ public sealed class FirstPersonController : MonoBehaviour
             m_gameplayHUD?.ShowEmptyAmmoFeedback();
             m_gameplayHUD?.ShowEmptyAmmoPopup(CurrentWeapon);
             m_weaponViewmodel?.PlayEmptyAmmoFeedback();
+            m_playerHealth?.PlayAmmunitionZeroAnnouncement();
             m_isRifleFiring = false;
             return false;
         }
@@ -777,7 +957,7 @@ public sealed class FirstPersonController : MonoBehaviour
             {
                 bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
                 m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
-                float damage = GetDamage(weapon) * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
+                float damage = GetDamage(weapon) * (isHeadshot ? GetHeadshotMultiplier(weapon) : 1f);
                 bool killed = enemy.ApplyDamage(damage, KillContext.Direct(weapon, isHeadshot));
                 if (killed)
                 {
@@ -824,12 +1004,17 @@ public sealed class FirstPersonController : MonoBehaviour
                 continue;
             }
 
-            float damage = collisionIndex switch { 0 => 60f, 1 => 40f, _ => 20f };
+            float damage = collisionIndex switch
+            {
+                0 => m_dmrFirstHitDamage,
+                1 => m_dmrSecondHitDamage,
+                _ => m_dmrThirdHitDamage
+            };
             bool isHeadshot = enemy != null && enemy.IsHeadHit(ray, hit.distance + 0.5f);
             if (enemy != null)
             {
                 m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
-                bool killed = enemy.ApplyDamage(damage * (isHeadshot ? k_HeadshotDamageMultiplier : 1f),
+                bool killed = enemy.ApplyDamage(damage * (isHeadshot ? m_dmrHeadshotMultiplier : 1f),
                     KillContext.Direct(WeaponId.DMR, isHeadshot));
                 if (killed)
                 {
@@ -870,7 +1055,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_shotgunDamageByEnemy.Clear();
         m_shotgunHeadshotEnemies.Clear();
         bool playedWallImpact = false;
-        for (int pellet = 0; pellet < k_ShotgunPelletCount; pellet++)
+        for (int pellet = 0; pellet < m_shotgunPelletCount; pellet++)
         {
             Ray ray = new(m_playerCamera.transform.position, CreateShotgunDirection());
             float rayLength = k_RaycastDistance;
@@ -883,7 +1068,8 @@ public sealed class FirstPersonController : MonoBehaviour
                     bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
                     m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
                     m_shotgunDamageByEnemy.TryGetValue(enemy, out float damage);
-                    m_shotgunDamageByEnemy[enemy] = damage + 12f * (isHeadshot ? k_HeadshotDamageMultiplier : 1f);
+                    m_shotgunDamageByEnemy[enemy] = damage + m_shotgunPelletDamage
+                        * (isHeadshot ? m_shotgunHeadshotMultiplier : 1f);
                     if (isHeadshot)
                     {
                         m_shotgunHeadshotEnemies.Add(enemy);
@@ -924,7 +1110,8 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private Vector3 CreateShotgunDirection()
     {
-        Vector2 spread = UnityEngine.Random.insideUnitCircle * Mathf.Tan(k_ShotgunSpreadAngle * Mathf.Deg2Rad);
+        Vector2 spread = UnityEngine.Random.insideUnitCircle
+            * Mathf.Tan(m_shotgunSpreadAngle * Mathf.Deg2Rad);
         Quaternion aimRotation = GetAimRotation();
         return (aimRotation * Vector3.forward + aimRotation * Vector3.right * spread.x
             + aimRotation * Vector3.up * spread.y).normalized;
@@ -934,8 +1121,8 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         float spreadRange = weapon switch
         {
-            WeaponId.Pistol => 0.35f,
-            WeaponId.Rifle => 0.75f,
+            WeaponId.Pistol => m_pistolSpreadAngle,
+            WeaponId.Rifle => m_rifleSpreadAngle,
             _ => 0f
         };
         float spread = UnityEngine.Random.Range(-spreadRange, spreadRange);
@@ -948,27 +1135,46 @@ public sealed class FirstPersonController : MonoBehaviour
         return transform.rotation * Quaternion.Euler(m_pitch - m_cameraRecoilPitch, m_cameraRecoilYaw, 0f);
     }
 
-    private static float GetDamage(WeaponId weapon)
+    private float GetDamage(WeaponId weapon)
     {
         return weapon switch
         {
-            WeaponId.Pistol => 30f,
-            WeaponId.Rifle => 15f,
-            WeaponId.Shotgun => 12f,
-            _ => 60f
+            WeaponId.Pistol => m_pistolDamage,
+            WeaponId.Shotgun => m_shotgunPelletDamage,
+            WeaponId.Rifle => m_rifleDamage,
+            WeaponId.DMR => m_dmrFirstHitDamage,
+            _ => 0f
         };
     }
 
-    private static float GetFireInterval(WeaponId weapon)
+    private float GetFireInterval(WeaponId weapon)
+    {
+        float shotsPerSecond = weapon switch
+        {
+            WeaponId.Pistol => m_pistolShotsPerSecond,
+            WeaponId.Shotgun => m_shotgunShotsPerSecond,
+            WeaponId.Rifle => m_rifleShotsPerSecond,
+            WeaponId.DMR => m_dmrShotsPerSecond,
+            _ => 0f
+        };
+        return shotsPerSecond > 0f ? 1f / shotsPerSecond : float.MaxValue;
+    }
+
+    private float GetHeadshotMultiplier(WeaponId weapon)
     {
         return weapon switch
         {
-            WeaponId.Pistol => 1f / 6.75f,
-            WeaponId.Shotgun => 1f / 1.1f,
-            WeaponId.Rifle => 1f / 11f,
-            WeaponId.DMR => 1f / 4f,
-            _ => float.MaxValue
+            WeaponId.Pistol => m_pistolHeadshotMultiplier,
+            WeaponId.Shotgun => m_shotgunHeadshotMultiplier,
+            WeaponId.Rifle => m_rifleHeadshotMultiplier,
+            WeaponId.DMR => m_dmrHeadshotMultiplier,
+            _ => 1f
         };
+    }
+
+    private static int CalculateShotsToKill(float health, float damage)
+    {
+        return Mathf.CeilToInt(health / damage);
     }
 
     private RecoilProfile GetRecoilProfile(WeaponId weapon)
@@ -1180,16 +1386,22 @@ public sealed class FirstPersonController : MonoBehaviour
         };
     }
 
-    private static int GetStartingAmmo(WeaponId weapon)
+    private int GetStartingAmmo(WeaponId weapon)
     {
-        int index = (int)weapon - 1;
-        return index >= 0 && index < s_StartingAmmo.Length ? s_StartingAmmo[index] : 0;
+        return weapon switch
+        {
+            WeaponId.Pistol => m_pistolAmmoCapacity,
+            WeaponId.Shotgun => m_shotgunAmmoCapacity,
+            WeaponId.Rifle => m_rifleAmmoCapacity,
+            WeaponId.DMR => m_dmrAmmoCapacity,
+            _ => 0
+        };
     }
 
     [ContextMenu("Run Weapon Fire Self Check")]
     private void RunWeaponFireSelfCheck()
     {
-        Debug.Assert(k_WeaponSlotCount == 2 && s_StartingAmmo.Length == 4);
+        Debug.Assert(k_WeaponSlotCount == 2);
         Debug.Assert(Mathf.Approximately(
             CalculateExplosionShakeStrength(0f, 4f, k_RocketExplosionShakeAngle),
             k_RocketExplosionShakeAngle));
@@ -1208,12 +1420,56 @@ public sealed class FirstPersonController : MonoBehaviour
         Debug.Assert(!GameplayHUD.ShouldShowCrosshair(true, false)
             && GameplayHUD.ShouldShowCrosshair(true, true)
             && GameplayHUD.ShouldShowCrosshair(false, false));
-        Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == 15 && GetStartingAmmo(WeaponId.Shotgun) == 8
-            && GetStartingAmmo(WeaponId.Rifle) == 50 && GetStartingAmmo(WeaponId.DMR) == 12);
+        Debug.Assert(Mathf.Approximately(CalculateLookSensitivity(0.1f, 0f, false), 0f)
+            && Mathf.Approximately(CalculateLookSensitivity(0.1f, 0.5f, false), 0.05f)
+            && Mathf.Approximately(CalculateLookSensitivity(0.1f, 1f, false), 0.1f)
+            && Mathf.Approximately(CalculateLookSensitivity(0.1f, 1f, true), 0.05f));
+        Debug.Assert(ResolveDmrZoomState(false, ZoomInputMode.Toggle, true, true)
+            && !ResolveDmrZoomState(true, ZoomInputMode.Toggle, true, true)
+            && ResolveDmrZoomState(false, ZoomInputMode.Hold, true, true)
+            && !ResolveDmrZoomState(true, ZoomInputMode.Hold, false, false));
+        Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == m_pistolAmmoCapacity
+            && GetStartingAmmo(WeaponId.Shotgun) == m_shotgunAmmoCapacity
+            && GetStartingAmmo(WeaponId.Rifle) == m_rifleAmmoCapacity
+            && GetStartingAmmo(WeaponId.DMR) == m_dmrAmmoCapacity
+            && GetStartingAmmo(WeaponId.Unknown) == 0);
         Debug.Assert(RunResultStore.GetPrimaryWeapon(PlayerClassId.Grenadier) == WeaponId.Rifle
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Engineer) == WeaponId.Shotgun
             && RunResultStore.GetPrimaryWeapon(PlayerClassId.Sniper) == WeaponId.DMR);
-        Debug.Assert(k_ShotgunPelletCount == 8 && Mathf.Approximately(k_ShotgunSpreadAngle, 5f));
+        Debug.Assert(Mathf.Approximately(m_pistolDamage, 30f)
+            && Mathf.Approximately(m_pistolHeadshotMultiplier, 2f)
+            && Mathf.Approximately(m_pistolSpreadAngle, 0.35f));
+        Debug.Assert(m_shotgunPelletCount == 8 && Mathf.Approximately(m_shotgunPelletDamage, 12f)
+            && Mathf.Approximately(m_shotgunSpreadAngle, 5f));
+        Debug.Assert(Mathf.Approximately(m_rifleDamage, 15f)
+            && Mathf.Approximately(m_rifleSpreadAngle, 0.75f));
+        Debug.Assert(Mathf.Approximately(m_dmrFirstHitDamage, 60f)
+            && Mathf.Approximately(m_dmrSecondHitDamage, 40f)
+            && Mathf.Approximately(m_dmrThirdHitDamage, 20f)
+            && Mathf.Approximately(m_dmrHeadshotMultiplier, 2f));
+        Debug.Assert(Mathf.Approximately(m_pistolDamage * m_pistolShotsPerSecond, 202.5f)
+            && Mathf.Approximately(m_shotgunPelletDamage * m_shotgunPelletCount
+                * m_shotgunShotsPerSecond, 105.6f)
+            && Mathf.Approximately(m_rifleDamage * m_rifleShotsPerSecond, 165f)
+            && Mathf.Approximately(m_dmrFirstHitDamage * m_dmrShotsPerSecond, 240f));
+        Debug.Assert(CalculateShotsToKill(60f, m_pistolDamage) == 2
+            && CalculateShotsToKill(75f, m_pistolDamage) == 3
+            && CalculateShotsToKill(90f, m_pistolDamage) == 3);
+        Debug.Assert(CalculateShotsToKill(60f, m_rifleDamage) == 4
+            && CalculateShotsToKill(75f, m_rifleDamage) == 5
+            && CalculateShotsToKill(90f, m_rifleDamage) == 6);
+        Debug.Assert(CalculateShotsToKill(60f, m_dmrFirstHitDamage) == 1
+            && CalculateShotsToKill(75f, m_dmrFirstHitDamage) == 2
+            && CalculateShotsToKill(90f, m_dmrFirstHitDamage) == 2);
+        Debug.Assert(CalculateShotsToKill(60f, m_shotgunPelletDamage) == 5
+            && CalculateShotsToKill(75f, m_shotgunPelletDamage) == 7
+            && CalculateShotsToKill(90f, m_shotgunPelletDamage) == 8);
+        Debug.Assert(CalculateShotsToKill(60f, m_pistolDamage * m_pistolHeadshotMultiplier) == 1
+            && CalculateShotsToKill(75f, m_pistolDamage * m_pistolHeadshotMultiplier) == 2
+            && CalculateShotsToKill(90f, m_pistolDamage * m_pistolHeadshotMultiplier) == 2);
+        Debug.Assert(CalculateShotsToKill(60f, m_dmrFirstHitDamage * m_dmrHeadshotMultiplier) == 1
+            && CalculateShotsToKill(75f, m_dmrFirstHitDamage * m_dmrHeadshotMultiplier) == 1
+            && CalculateShotsToKill(90f, m_dmrFirstHitDamage * m_dmrHeadshotMultiplier) == 1);
         Debug.Assert(m_pistolRecoil.IsValid() && m_shotgunRecoil.IsValid() && m_rifleRecoil.IsValid()
             && m_dmrRecoil.IsValid() && m_rocketRecoil.IsValid());
         RecoilSample pistolRecoil = m_pistolRecoil.CreateSample();
@@ -1285,6 +1541,28 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         m_moveSpeed = Mathf.Max(0f, m_moveSpeed);
         m_jumpHeight = Mathf.Max(0f, m_jumpHeight);
+        m_pistolAmmoCapacity = Mathf.Max(1, m_pistolAmmoCapacity);
+        m_shotgunAmmoCapacity = Mathf.Max(1, m_shotgunAmmoCapacity);
+        m_rifleAmmoCapacity = Mathf.Max(1, m_rifleAmmoCapacity);
+        m_dmrAmmoCapacity = Mathf.Max(1, m_dmrAmmoCapacity);
+        m_pistolDamage = Mathf.Max(0.01f, m_pistolDamage);
+        m_pistolShotsPerSecond = Mathf.Max(0.01f, m_pistolShotsPerSecond);
+        m_pistolHeadshotMultiplier = Mathf.Max(1f, m_pistolHeadshotMultiplier);
+        m_pistolSpreadAngle = Mathf.Max(0f, m_pistolSpreadAngle);
+        m_shotgunPelletCount = Mathf.Max(1, m_shotgunPelletCount);
+        m_shotgunPelletDamage = Mathf.Max(0.01f, m_shotgunPelletDamage);
+        m_shotgunShotsPerSecond = Mathf.Max(0.01f, m_shotgunShotsPerSecond);
+        m_shotgunHeadshotMultiplier = Mathf.Max(1f, m_shotgunHeadshotMultiplier);
+        m_shotgunSpreadAngle = Mathf.Max(0f, m_shotgunSpreadAngle);
+        m_rifleDamage = Mathf.Max(0.01f, m_rifleDamage);
+        m_rifleShotsPerSecond = Mathf.Max(0.01f, m_rifleShotsPerSecond);
+        m_rifleHeadshotMultiplier = Mathf.Max(1f, m_rifleHeadshotMultiplier);
+        m_rifleSpreadAngle = Mathf.Max(0f, m_rifleSpreadAngle);
+        m_dmrFirstHitDamage = Mathf.Max(0.01f, m_dmrFirstHitDamage);
+        m_dmrSecondHitDamage = Mathf.Max(0.01f, m_dmrSecondHitDamage);
+        m_dmrThirdHitDamage = Mathf.Max(0.01f, m_dmrThirdHitDamage);
+        m_dmrShotsPerSecond = Mathf.Max(0.01f, m_dmrShotsPerSecond);
+        m_dmrHeadshotMultiplier = Mathf.Max(1f, m_dmrHeadshotMultiplier);
         m_wallImpactMaxDistance = Mathf.Max(0.1f, m_wallImpactMaxDistance);
     }
 

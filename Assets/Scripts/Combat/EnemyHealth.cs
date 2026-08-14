@@ -245,6 +245,7 @@ public sealed class EnemyHealth : MonoBehaviour
     private void RunSelfCheck()
     {
         Debug.Assert(m_maxHealth > 0f);
+        Debug.Assert(Type != EnemyType.Suicide || Mathf.Approximately(m_maxHealth, 1f));
         Debug.Assert(CurrentHealth >= 0f && CurrentHealth <= m_maxHealth);
         Debug.Assert(!IsDisabled || CurrentHealth == 0f);
         Debug.Assert(!m_playHitAndDeathAnimations || m_animator != null);

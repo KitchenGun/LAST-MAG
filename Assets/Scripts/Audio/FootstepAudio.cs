@@ -32,8 +32,15 @@ public sealed class FootstepAudio : MonoBehaviour
         }
 
         m_lastClipIndex = selectedIndex;
+        if (m_audioSource.spatialBlend <= 0f)
+        {
+            m_audioSource.PlayOneShot(m_clips[selectedIndex], m_volume);
+            return;
+        }
+
+        float volume = m_volume * m_audioSource.volume;
         SpatialAudio.PlayOneShot(m_clips[selectedIndex], transform.position,
-            m_audioSource.maxDistance, m_volume * m_audioSource.volume);
+            m_audioSource.maxDistance, volume);
     }
 
     [ContextMenu("Run Footstep Audio Self Check")]

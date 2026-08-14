@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -15,6 +16,14 @@ public sealed class StartMenuController : MonoBehaviour
     };
 
     private Button m_playButton;
+    private Button m_settingsButton;
+    private Button m_settingsBackButton;
+    private Button m_zoomToggleButton;
+    private Button m_zoomHoldButton;
+    private Slider m_sensitivitySlider;
+    private Slider m_volumeSlider;
+    private TMP_Text m_sensitivityValue;
+    private TMP_Text m_volumeValue;
     private Button[] m_classButtons;
     private TMP_Text m_selectedClassName;
     private TMP_Text m_selectedClassLoadout;
@@ -25,7 +34,9 @@ public sealed class StartMenuController : MonoBehaviour
     private GameObject m_classSelectionPanel;
     private GameObject m_title;
     private GameObject m_controls;
+    private GameObject m_settingsPanel;
     private bool m_showingClassSelection;
+    private bool m_showingSettings;
 
     private void Awake()
     {
@@ -38,10 +49,42 @@ public sealed class StartMenuController : MonoBehaviour
             return;
         }
 
+        m_settingsButton = FindButton("SettingsButton");
+        m_settingsBackButton = FindButton("SettingsBackButton");
+        m_zoomToggleButton = FindButton("ToggleButton");
+        m_zoomHoldButton = FindButton("HoldButton");
+        m_sensitivitySlider = FindSlider("SensitivitySlider");
+        m_volumeSlider = FindSlider("VolumeSlider");
+        m_sensitivityValue = FindText("SensitivityValue");
+        m_volumeValue = FindText("VolumeValue");
+        m_settingsPanel = FindChildObject("SettingsPanel");
+        if (m_settingsButton == null || m_settingsBackButton == null || m_zoomToggleButton == null
+            || m_zoomHoldButton == null || m_sensitivitySlider == null || m_volumeSlider == null
+            || m_sensitivityValue == null || m_volumeValue == null || m_settingsPanel == null)
+        {
+            Debug.LogError("[StartMenu] Serialized settings UI is incomplete in StartScene.");
+            return;
+        }
+
+        m_settingsButton.onClick.RemoveAllListeners();
+        m_settingsButton.onClick.AddListener(OpenSettings);
+        m_settingsBackButton.onClick.RemoveAllListeners();
+        m_settingsBackButton.onClick.AddListener(CloseSettings);
+        m_zoomToggleButton.onClick.RemoveAllListeners();
+        m_zoomToggleButton.onClick.AddListener(() => SetZoomMode(ZoomInputMode.Toggle));
+        m_zoomHoldButton.onClick.RemoveAllListeners();
+        m_zoomHoldButton.onClick.AddListener(() => SetZoomMode(ZoomInputMode.Hold));
+        m_sensitivitySlider.onValueChanged.RemoveAllListeners();
+        m_sensitivitySlider.onValueChanged.AddListener(OnSensitivityChanged);
+        m_volumeSlider.onValueChanged.RemoveAllListeners();
+        m_volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
+
         m_classSelectionPanel = FindChildObject("ClassSelectionPanel");
         m_title = FindChildObject("Title");
         m_controls = FindChildObject("Controls");
         m_showingClassSelection = false;
+        m_showingSettings = false;
+        if (m_settingsPanel != null) m_settingsPanel.SetActive(false);
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(false);
         if (m_title != null) m_title.SetActive(true);
         if (m_controls != null) m_controls.SetActive(true);
@@ -78,45 +121,105 @@ public sealed class StartMenuController : MonoBehaviour
         }
 
         UpdateSelectionVisuals(PlayerClassId.Unknown);
+        RefreshSettingsControls();
+    }
+
+    private void Update()
+    {
+        if (m_showingSettings && Keyboard.current != null
+            && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            CloseSettings();
+        }
     }
 
     private void InitializeBuildVersion()
     {
-        GameObject versionObject = new(
-            "BuildVersionText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        versionObject.transform.SetParent(transform, false);
-
-        TextMeshProUGUI versionText = versionObject.GetComponent<TextMeshProUGUI>();
-        TMP_Text fontSource = FindFirstFontSource();
-        if (fontSource != null)
+        TMP_Text versionText = FindText("BuildVersionText");
+        if (versionText == null)
         {
-            versionText.font = fontSource.font;
+            Debug.LogError("[StartMenu] BuildVersionText was not found.");
+            return;
         }
+
         versionText.text = FormatBuildVersion(Application.version, Application.buildGUID, Application.isEditor);
-        versionText.fontSize = 14f;
-        versionText.color = new Color(0.68f, 0.78f, 0.8f, 0.65f);
-        versionText.alignment = TextAlignmentOptions.BottomLeft;
         versionText.raycastTarget = false;
         versionText.overflowMode = TextOverflowModes.Overflow;
-
-        RectTransform rect = versionText.rectTransform;
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.zero;
-        rect.pivot = Vector2.zero;
-        rect.anchoredPosition = new Vector2(20f, 14f);
-        rect.sizeDelta = new Vector2(520f, 28f);
     }
 
-    private TMP_Text FindFirstFontSource()
+    private void OpenSettings()
     {
-        foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
+        if (m_showingClassSelection || m_settingsPanel == null)
         {
-            if (text.font != null)
-            {
-                return text;
-            }
+            return;
         }
-        return null;
+        m_showingSettings = true;
+        RefreshSettingsControls();
+        m_settingsPanel.SetActive(true);
+        m_settingsPanel.transform.SetAsLastSibling();
+    }
+
+    private void CloseSettings()
+    {
+        m_showingSettings = false;
+        if (m_settingsPanel != null) m_settingsPanel.SetActive(false);
+    }
+
+    private void RefreshSettingsControls()
+    {
+        if (m_sensitivitySlider != null) m_sensitivitySlider.SetValueWithoutNotify(GameSettings.MouseSensitivity);
+        if (m_volumeSlider != null) m_volumeSlider.SetValueWithoutNotify(GameSettings.MasterVolume);
+        if (m_sensitivityValue != null) m_sensitivityValue.text = FormatSensitivity(GameSettings.MouseSensitivity);
+        if (m_volumeValue != null) m_volumeValue.text = FormatVolume(GameSettings.MasterVolume);
+        RefreshZoomSelection();
+    }
+
+    private void OnSensitivityChanged(float value)
+    {
+        GameSettings.SetMouseSensitivity(value);
+        if (m_sensitivityValue != null) m_sensitivityValue.text = FormatSensitivity(value);
+    }
+
+    private void OnVolumeChanged(float value)
+    {
+        GameSettings.SetMasterVolume(value);
+        if (m_volumeValue != null) m_volumeValue.text = FormatVolume(value);
+    }
+
+    private void SetZoomMode(ZoomInputMode mode)
+    {
+        GameSettings.SetZoomInputMode(mode);
+        RefreshZoomSelection();
+    }
+
+    private void RefreshZoomSelection()
+    {
+        SetZoomButtonSelected(m_zoomToggleButton, GameSettings.ZoomInputMode == ZoomInputMode.Toggle);
+        SetZoomButtonSelected(m_zoomHoldButton, GameSettings.ZoomInputMode == ZoomInputMode.Hold);
+    }
+
+    private static void SetZoomButtonSelected(Button button, bool selected)
+    {
+        if (button == null) return;
+        Image image = button.GetComponent<Image>();
+        if (image != null)
+        {
+            image.color = selected
+                ? new Color(0.035f, 0.26f, 0.29f, 1f)
+                : new Color(0.035f, 0.14f, 0.16f, 1f);
+        }
+        Outline outline = button.GetComponent<Outline>();
+        if (outline != null) outline.enabled = selected;
+    }
+
+    internal static string FormatSensitivity(float value)
+    {
+        return Mathf.Clamp01(value).ToString("0.00");
+    }
+
+    internal static string FormatVolume(float value)
+    {
+        return $"{Mathf.RoundToInt(Mathf.Clamp01(value) * 100f)}%";
     }
 
     internal static string FormatBuildVersion(string version, string buildGuid, bool isEditor)
@@ -147,6 +250,15 @@ public sealed class StartMenuController : MonoBehaviour
         foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
         {
             if (text.name == objectName) return text;
+        }
+        return null;
+    }
+
+    private Slider FindSlider(string objectName)
+    {
+        foreach (Slider slider in GetComponentsInChildren<Slider>(true))
+        {
+            if (slider.name == objectName) return slider;
         }
         return null;
     }
@@ -258,6 +370,10 @@ public sealed class StartMenuController : MonoBehaviour
 
     public void Play()
     {
+        if (m_showingSettings)
+        {
+            return;
+        }
         if (!m_showingClassSelection)
         {
             ShowClassSelection();
@@ -275,9 +391,11 @@ public sealed class StartMenuController : MonoBehaviour
 
     private void ShowClassSelection()
     {
+        CloseSettings();
         m_showingClassSelection = true;
         if (m_title != null) m_title.SetActive(false);
         if (m_controls != null) m_controls.SetActive(false);
+        if (m_settingsButton != null) m_settingsButton.gameObject.SetActive(false);
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(true);
         m_playButton.interactable = false;
         SetPlayButtonLabel("CONFIRM");
@@ -286,9 +404,14 @@ public sealed class StartMenuController : MonoBehaviour
 
     private void SetPlayButtonLabel(string value)
     {
-        TMP_Text tmp = m_playButton.GetComponentInChildren<TMP_Text>(true);
+        SetButtonLabel(m_playButton, value);
+    }
+
+    private static void SetButtonLabel(Button button, string value)
+    {
+        TMP_Text tmp = button.GetComponentInChildren<TMP_Text>(true);
         if (tmp != null) tmp.text = value;
-        Text legacy = m_playButton.GetComponentInChildren<Text>(true);
+        Text legacy = button.GetComponentInChildren<Text>(true);
         if (legacy != null) legacy.text = value;
     }
 
@@ -313,5 +436,14 @@ public sealed class StartMenuController : MonoBehaviour
         Debug.Assert(FormatBuildVersion("0.1.0", "01234567-89ab-cdef", false)
             == "v0.1.0 · WEB-01234567");
         Debug.Assert(FormatBuildVersion("0.1.0", string.Empty, true) == "v0.1.0 · WEB-EDITOR");
+        Debug.Assert(FormatSensitivity(0f) == "0.00"
+            && FormatSensitivity(0.5f) == "0.50"
+            && FormatSensitivity(1f) == "1.00");
+        Debug.Assert(FormatVolume(0f) == "0%"
+            && FormatVolume(0.5f) == "50%"
+            && FormatVolume(1f) == "100%");
+        Debug.Assert(GameSettings.IsValidZoomInputMode(ZoomInputMode.Toggle)
+            && GameSettings.IsValidZoomInputMode(ZoomInputMode.Hold)
+            && !GameSettings.IsValidZoomInputMode((ZoomInputMode)2));
     }
 }

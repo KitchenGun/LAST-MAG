@@ -20342,7 +20342,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c9cb8cc7e7af5af4780de2147fba30c1, type: 3}
   - {fileID: 8300000, guid: 59fa51faf2e7a0c4496fd5f4a395e3ff, type: 3}
   - {fileID: 8300000, guid: 806d02e5dad40d44abdcb70460655e4c, type: 3}
-  m_volume: 0.5
+  m_volume: 0.18
   m_movementSource: {fileID: 0}
 --- !u!1 &3457483632116076846
 GameObject:
@@ -25542,6 +25542,28 @@ MonoBehaviour:
   m_jumpHeight: 1.2
   m_gravity: -20
   m_lookSensitivity: 0.1
+  m_pistolAmmoCapacity: 15
+  m_shotgunAmmoCapacity: 8
+  m_rifleAmmoCapacity: 50
+  m_dmrAmmoCapacity: 12
+  m_pistolDamage: 30
+  m_pistolShotsPerSecond: 6.75
+  m_pistolHeadshotMultiplier: 2
+  m_pistolSpreadAngle: 0.35
+  m_shotgunPelletCount: 8
+  m_shotgunPelletDamage: 12
+  m_shotgunShotsPerSecond: 1.1
+  m_shotgunHeadshotMultiplier: 2
+  m_shotgunSpreadAngle: 5
+  m_rifleDamage: 15
+  m_rifleShotsPerSecond: 11
+  m_rifleHeadshotMultiplier: 2
+  m_rifleSpreadAngle: 0.75
+  m_dmrFirstHitDamage: 60
+  m_dmrSecondHitDamage: 40
+  m_dmrThirdHitDamage: 20
+  m_dmrShotsPerSecond: 4
+  m_dmrHeadshotMultiplier: 2
   m_scoreFeedbackBasePosition: {x: 0, y: -72}
   m_pistolRecoil:
     m_pitch: 2.2
@@ -25635,6 +25657,9 @@ MonoBehaviour:
   m_gameplayVolume: {fileID: 0}
   m_heldLocalPosition: {x: 0.32, y: -0.28, z: 0.72}
   m_heldLocalEuler: {x: 0, y: 180, z: 0}
+  m_grenadierCooldown: 10
+  m_engineerCooldown: 14
+  m_sniperCooldown: 20
 --- !u!114 &831069756972417876
 MonoBehaviour:
   m_ObjectHideFlags: 0

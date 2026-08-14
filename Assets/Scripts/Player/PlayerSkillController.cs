@@ -32,6 +32,10 @@ public sealed class PlayerSkillController : MonoBehaviour
     [SerializeField] private Volume m_gameplayVolume;
     [SerializeField] private Vector3 m_heldLocalPosition = new(0.32f, -0.28f, 0.72f);
     [SerializeField] private Vector3 m_heldLocalEuler = new(0f, 180f, 0f);
+    [Header("Class Skill Cooldowns")]
+    [SerializeField, Min(0f)] private float m_grenadierCooldown = 10f;
+    [SerializeField, Min(0f)] private float m_engineerCooldown = 14f;
+    [SerializeField, Min(0f)] private float m_sniperCooldown = 20f;
 
     private PlayerClassId m_playerClass;
     private Camera m_camera;
@@ -106,7 +110,7 @@ public sealed class PlayerSkillController : MonoBehaviour
             if (m_state == PlayerSkillState.Active && m_playerClass == PlayerClassId.Sniper)
             {
                 RestoreTimeScale();
-                BeginCooldown(20f);
+                BeginCooldown(m_sniperCooldown);
             }
             else if (m_state == PlayerSkillState.Cooldown)
             {
@@ -230,9 +234,60 @@ public sealed class PlayerSkillController : MonoBehaviour
         RefreshHud();
     }
 
+    internal bool BeginDeathPresentation(Vector3 inheritedVelocity)
+    {
+        Vector3 worldForward = m_camera != null ? m_camera.transform.forward : transform.forward;
+        bool dropGrenade = m_playerClass == PlayerClassId.Grenadier && m_state == PlayerSkillState.Armed
+            && m_grenadeProjectile != null && m_grenadeProjectile.gameObject.activeSelf;
+        bool dropLauncher = m_playerClass == PlayerClassId.Engineer
+            && (m_state == PlayerSkillState.Armed || m_rocketRecoilActive)
+            && m_rocketLauncherViewmodel != null && m_rocketLauncherViewmodel.activeSelf;
+
+        RestoreTimeScale();
+        RestoreBulletTimeVisualImmediately();
+        m_rocketProjectile?.Hide();
+        if (!dropGrenade)
+        {
+            m_grenadeProjectile?.Hide();
+        }
+
+        m_projectile = null;
+        m_state = PlayerSkillState.Ready;
+        m_stateEndsAt = 0f;
+        m_cooldownDuration = 0f;
+        m_rocketRecoilActive = false;
+        m_rocketRecoilSample = default;
+        if (dropGrenade)
+        {
+            if (m_grenadeProjectile.DropAsInertDeathProp(inheritedVelocity, worldForward))
+            {
+                m_viewmodel?.SetSkillArmed(true);
+                RefreshHud();
+                return true;
+            }
+        }
+
+        if (dropLauncher)
+        {
+            if (DropRocketLauncher(inheritedVelocity, worldForward))
+            {
+                m_viewmodel?.SetSkillArmed(true);
+                RefreshHud();
+                return true;
+            }
+        }
+
+        ResetRocketLauncherPresentation();
+        m_viewmodel?.SetSkillArmed(false);
+        RefreshHud();
+        return false;
+    }
+
     internal void NotifyProjectileExploded()
     {
-        BeginCooldown(m_playerClass == PlayerClassId.Engineer ? 14f : 10f);
+        BeginCooldown(m_playerClass == PlayerClassId.Engineer
+            ? m_engineerCooldown
+            : m_grenadierCooldown);
     }
 
     private void BeginCooldown(float duration)
@@ -352,6 +407,23 @@ public sealed class PlayerSkillController : MonoBehaviour
         Transform launcher = m_rocketLauncherViewmodel.transform;
         launcher.localPosition = m_rocketLauncherRestPosition;
         launcher.localRotation = m_rocketLauncherRestRotation;
+    }
+
+    private bool DropRocketLauncher(Vector3 inheritedVelocity, Vector3 worldForward)
+    {
+        CharacterController controller = m_playerHealth != null
+            ? m_playerHealth.GetComponent<CharacterController>()
+            : null;
+        if (!WeaponViewmodelController.CreateDeathDropClone(
+                m_rocketLauncherViewmodel != null ? m_rocketLauncherViewmodel.transform : null,
+                inheritedVelocity, worldForward, controller))
+        {
+            ResetRocketLauncherPresentation();
+            return false;
+        }
+
+        m_rocketLauncherViewmodel.SetActive(false);
+        return true;
     }
 
     private void RefreshHud()
@@ -478,6 +550,16 @@ public sealed class PlayerSkillController : MonoBehaviour
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilDistance, 0.14f));
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilLateralDistance, 0.04f));
         Debug.Assert(Mathf.Approximately(k_RocketViewmodelRecoilPitch, 9f));
+        Debug.Assert(m_grenadierCooldown >= 0f
+            && m_engineerCooldown >= 0f
+            && m_sniperCooldown >= 0f);
         Debug.Assert(m_state is >= PlayerSkillState.Ready and <= PlayerSkillState.Cooldown);
+    }
+
+    private void OnValidate()
+    {
+        m_grenadierCooldown = Mathf.Max(0f, m_grenadierCooldown);
+        m_engineerCooldown = Mathf.Max(0f, m_engineerCooldown);
+        m_sniperCooldown = Mathf.Max(0f, m_sniperCooldown);
     }
 }

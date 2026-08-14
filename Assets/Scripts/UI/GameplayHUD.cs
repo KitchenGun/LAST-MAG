@@ -10,6 +10,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private const int k_ScoreFeedbackPoolSize = 6;
     private const int k_ComboBulletCount = 5;
     private const float k_EmptyAmmoFeedbackDuration = 0.2f;
+    private const float k_EmptyAmmoBlinkInterval = 0.2f;
     private const float k_InactiveWeaponAlpha = 0.4f;
     private const float k_ActiveWeaponFontSize = 22f;
     private const float k_InactiveWeaponFontSize = 17f;
@@ -24,13 +25,15 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_HitMarkerDuration = 0.12f;
     private const float k_HitMarkerFadeDuration = 0.04f;
     private const float k_HitMarkerPulseDuration = 0.06f;
-    private const float k_SkillReadyFlashDuration = 0.3f;
+    private const float k_SkillReadyBlinkInterval = 0.5f;
     private const float k_ComboBulletPitch = 24.5f;
     private const float k_ComboBulletVisibleHeight = 23.5f;
     private const float k_ComboClipVisibleHeightRatio = 0.975f;
     private const float k_ComboStackVisibleHeight =
         k_ComboBulletVisibleHeight + (k_ComboBulletCount - 1) * k_ComboBulletPitch;
     private const float k_MaxDamageVignetteAlpha = 0.68f;
+    private const float k_DeathDamageVignetteAlpha = 0.92f;
+    private const float k_DeathTintAlpha = 0.22f;
     private const float k_DamageVignetteIncreaseSpeed = 3.5f;
     private const float k_DamageVignetteRecoverySpeed = 1.2f;
     private const float k_DmrScopeVignetteAlpha = 0.68f;
@@ -88,7 +91,9 @@ public sealed class GameplayHUD : MonoBehaviour
     private Image m_skillCooldownFill;
     private Image m_hitMarkerImage;
     private Image m_damageVignetteImage;
+    private Image m_deathTintImage;
     private Image m_crosshairImage;
+    private TextMeshProUGUI m_emptyAmmoText;
     private Image m_dmrScopeVignetteImage;
     private PlayerHealth m_playerHealth;
     private Texture2D m_damageVignetteTexture;
@@ -96,11 +101,13 @@ public sealed class GameplayHUD : MonoBehaviour
     private Color m_activeWeaponBaseColor = Color.white;
     private Color m_hitMarkerBaseColor = Color.white;
     private float m_emptyAmmoFeedbackUntil;
+    private float m_emptyAmmoBlinkStartedAt;
     private float m_hitMarkerUntil;
     private float m_hitMarkerPulseScale = 1f;
-    private float m_skillReadyFlashUntil;
     private float m_damageVignetteTargetAlpha;
     private float m_dmrScopeVignetteTargetAlpha;
+    private float m_deathPresentationStartedAt = -1f;
+    private float m_deathPresentationDuration;
     private int m_pickupPopupCount;
     private int m_scoreFeedbackCount;
     private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
@@ -110,7 +117,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private string m_lastSkillName;
     private string m_lastSkillStatus;
     private bool m_lastSkillHighlighted;
-    private bool m_hasSkillState;
+    private bool m_emptyAmmoActive;
     private PlayerSkillState m_lastSkillState;
 
     private void Awake()
@@ -178,6 +185,7 @@ public sealed class GameplayHUD : MonoBehaviour
         InitializeHitMarker();
         InitializeScoreFeedbackPool();
         InitializeDamageVignette();
+        InitializeDeathTint();
         InitializeDmrScopeVignette();
 
         RefreshWeapon(1, WeaponId.Rifle, 0, false);
@@ -192,12 +200,14 @@ public sealed class GameplayHUD : MonoBehaviour
             m_activeWeaponText.color = Time.unscaledTime < m_emptyAmmoFeedbackUntil ? Color.red : m_activeWeaponBaseColor;
         }
 
+        UpdateEmptyAmmoText();
         UpdatePickupPopups();
         UpdateScoreFeedbacks();
         UpdateHitMarker();
         UpdateDamageVignette();
+        UpdateDeathTint();
         UpdateDmrScopeVignette();
-        UpdateSkillReadyFlash();
+        UpdateSkillReadyBlink();
     }
 
     public void BindPlayerHealth(PlayerHealth playerHealth)
@@ -217,6 +227,18 @@ public sealed class GameplayHUD : MonoBehaviour
         {
             m_playerHealth.HealthNormalizedChanged += SetHealthFeedback;
             SetHealthFeedback(m_playerHealth.CurrentHealth / m_playerHealth.MaxHealth);
+        }
+    }
+
+    internal void BeginDeathPresentation(float duration)
+    {
+        m_deathPresentationStartedAt = Time.unscaledTime;
+        m_deathPresentationDuration = Mathf.Max(0.01f, duration);
+        m_damageVignetteTargetAlpha = k_DeathDamageVignetteAlpha;
+        m_dmrScopeVignetteTargetAlpha = 0f;
+        if (m_crosshairImage != null)
+        {
+            m_crosshairImage.enabled = false;
         }
     }
 
@@ -274,6 +296,13 @@ public sealed class GameplayHUD : MonoBehaviour
         {
             m_activeWeaponText = ammoText;
             m_activeWeaponBaseColor = weaponColor;
+            bool isEmpty = ammo <= 0;
+            if (m_emptyAmmoActive != isEmpty)
+            {
+                m_emptyAmmoActive = isEmpty;
+                m_emptyAmmoBlinkStartedAt = Time.unscaledTime;
+            }
+            UpdateEmptyAmmoText();
         }
     }
 
@@ -294,19 +323,7 @@ public sealed class GameplayHUD : MonoBehaviour
     public void RefreshSkill(string skillName, PlayerSkillState state, float cooldownNormalized)
     {
         bool highlighted = state is PlayerSkillState.Ready or PlayerSkillState.Armed;
-        bool completedCooldown = m_hasSkillState
-            && m_lastSkillState == PlayerSkillState.Cooldown
-            && state == PlayerSkillState.Ready;
-        m_hasSkillState = true;
         m_lastSkillState = state;
-        if (completedCooldown)
-        {
-            m_skillReadyFlashUntil = Time.unscaledTime + k_SkillReadyFlashDuration;
-        }
-        else if (!highlighted)
-        {
-            m_skillReadyFlashUntil = 0f;
-        }
         string status = state == PlayerSkillState.Cooldown
             ? string.Empty
             : state == PlayerSkillState.Armed ? "READY" : state.ToString().ToUpperInvariant();
@@ -342,10 +359,6 @@ public sealed class GameplayHUD : MonoBehaviour
             m_weaponSilhouetteImages[row].rectTransform.sizeDelta = skillSize;
         }
         SetBorderState(m_weaponBorderImages[row], highlighted);
-        if (completedCooldown && m_weaponBorderImages[row] != null)
-        {
-            m_weaponBorderImages[row].color = Color.white;
-        }
     }
 
     public void ShowEmptyAmmoFeedback()
@@ -532,6 +545,18 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(m_weaponBackgroundImages[0].rectTransform.sizeDelta == k_WeaponBackgroundSize);
         Debug.Assert(Mathf.Approximately(m_weaponNumberTexts[0].fontSize, k_ActiveWeaponFontSize));
         Debug.Assert(m_weaponSilhouetteImages[0].color == new Color32(44, 135, 232, 255));
+        RefreshWeapon(1, WeaponId.Rifle, 0, true);
+        Debug.Assert(m_emptyAmmoText.enabled);
+        Debug.Assert(IsEmptyAmmoBlinkVisible(true, 0f));
+        Debug.Assert(!IsEmptyAmmoBlinkVisible(true, k_EmptyAmmoBlinkInterval));
+        Debug.Assert(IsEmptyAmmoBlinkVisible(true, k_EmptyAmmoBlinkInterval * 2f));
+        Debug.Assert(!IsEmptyAmmoBlinkVisible(false, 0f));
+        RefreshWeapon(2, WeaponId.Pistol, 15, true);
+        Debug.Assert(!m_emptyAmmoText.enabled);
+        RefreshWeapon(2, WeaponId.Pistol, 0, true);
+        Debug.Assert(m_emptyAmmoText.enabled);
+        RefreshWeapon(2, WeaponId.Pistol, 5, true);
+        Debug.Assert(!m_emptyAmmoText.enabled);
         RefreshWeapon(2, WeaponId.Pistol, 15, false);
         Debug.Assert(Mathf.Approximately(m_weaponAmmoTexts[1].color.a, k_InactiveWeaponAlpha));
         Debug.Assert(Mathf.Approximately(m_weaponSilhouetteImages[1].color.a, k_InactiveWeaponAlpha));
@@ -555,8 +580,9 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_skillCooldownFill.fillAmount, 1f));
         RefreshSkill("BULLET TIME", PlayerSkillState.Ready, 0f);
         Debug.Assert(!m_skillCooldownFill.gameObject.activeSelf);
-        Debug.Assert(m_skillReadyFlashUntil > Time.unscaledTime);
-        Debug.Assert(m_weaponBorderImages[k_HudRowCount - 1].color == Color.white);
+        Debug.Assert(IsSkillReadyBlinkVisible(0f));
+        Debug.Assert(!IsSkillReadyBlinkVisible(k_SkillReadyBlinkInterval));
+        Debug.Assert(IsSkillReadyBlinkVisible(k_SkillReadyBlinkInterval * 2f));
         RectTransform skillNameRect = m_weaponNameTexts[k_HudRowCount - 1].rectTransform;
         RectTransform skillStatusRect = m_weaponAmmoTexts[k_HudRowCount - 1].rectTransform;
         Debug.Assert(skillNameRect.anchoredPosition.x
@@ -645,6 +671,13 @@ public sealed class GameplayHUD : MonoBehaviour
         Transform crosshair = transform.Find("Crosshair");
         m_crosshairImage = crosshair != null ? crosshair.GetComponent<Image>() : null;
         Debug.Assert(m_crosshairImage != null, "Missing HUD Image: Crosshair");
+        Transform emptyAmmo = crosshair != null ? crosshair.Find("EmptyAmmoText") : null;
+        m_emptyAmmoText = emptyAmmo != null ? emptyAmmo.GetComponent<TextMeshProUGUI>() : null;
+        Debug.Assert(m_emptyAmmoText != null, "Missing HUD Text: Crosshair/EmptyAmmoText");
+        if (m_emptyAmmoText != null)
+        {
+            m_emptyAmmoText.enabled = false;
+        }
         Transform marker = crosshair != null ? crosshair.Find("HitMarker") : null;
         m_hitMarkerImage = marker != null ? marker.GetComponent<Image>() : null;
         Debug.Assert(m_hitMarkerImage != null, "Missing HUD Image: Crosshair/HitMarker");
@@ -664,6 +697,20 @@ public sealed class GameplayHUD : MonoBehaviour
         m_hitMarkerImage.gameObject.SetActive(false);
     }
 
+    private void UpdateEmptyAmmoText()
+    {
+        if (m_emptyAmmoText != null)
+        {
+            m_emptyAmmoText.enabled = IsEmptyAmmoBlinkVisible(m_emptyAmmoActive,
+                Time.unscaledTime - m_emptyAmmoBlinkStartedAt);
+        }
+    }
+
+    private static bool IsEmptyAmmoBlinkVisible(bool isEmpty, float elapsed)
+    {
+        return isEmpty && Mathf.FloorToInt(Mathf.Max(0f, elapsed) / k_EmptyAmmoBlinkInterval) % 2 == 0;
+    }
+
     private void InitializeDamageVignette()
     {
         Transform existing = transform.Find("Layer_DamageVignette");
@@ -675,12 +722,7 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         m_damageVignetteImage = existing.GetComponent<Image>();
-        RectTransform rectTransform = m_damageVignetteImage.rectTransform;
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.anchoredPosition = Vector2.zero;
-        rectTransform.sizeDelta = Vector2.zero;
+        ConfigureFullscreenVignette(m_damageVignetteImage);
         m_damageVignetteImage.raycastTarget = false;
         m_damageVignetteImage.transform.SetAsFirstSibling();
 
@@ -707,17 +749,50 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         m_dmrScopeVignetteImage = existing.GetComponent<Image>();
-        RectTransform rectTransform = m_dmrScopeVignetteImage.rectTransform;
-        rectTransform.anchorMin = Vector2.zero;
-        rectTransform.anchorMax = Vector2.one;
-        rectTransform.pivot = new Vector2(0.5f, 0.5f);
-        rectTransform.anchoredPosition = Vector2.zero;
-        rectTransform.sizeDelta = Vector2.zero;
+        ConfigureFullscreenVignette(m_dmrScopeVignetteImage);
         m_dmrScopeVignetteImage.raycastTarget = false;
         m_dmrScopeVignetteImage.sprite = m_damageVignetteSprite;
         m_dmrScopeVignetteImage.color = new Color(0f, 0f, 0f, 0f);
         m_dmrScopeVignetteImage.enabled = false;
         m_dmrScopeVignetteImage.transform.SetAsFirstSibling();
+    }
+
+    private void InitializeDeathTint()
+    {
+        Transform existing = transform.Find("Layer_DeathTint");
+        if (existing == null)
+        {
+            GameObject tintObject = new("Layer_DeathTint", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            tintObject.transform.SetParent(transform, false);
+            existing = tintObject.transform;
+        }
+
+        m_deathTintImage = existing.GetComponent<Image>();
+        ConfigureFullscreenVignette(m_deathTintImage);
+        m_deathTintImage.sprite = null;
+        m_deathTintImage.color = new Color(0.45f, 0.005f, 0.01f, 0f);
+        m_deathTintImage.raycastTarget = false;
+        m_deathTintImage.enabled = false;
+        m_deathTintImage.transform.SetAsFirstSibling();
+    }
+
+    private static void ConfigureFullscreenVignette(Image image)
+    {
+        RectTransform rectTransform = image.rectTransform;
+        rectTransform.anchorMin = rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        rectTransform.anchoredPosition = Vector2.zero;
+
+        AspectRatioFitter fitter = image.GetComponent<AspectRatioFitter>();
+        if (fitter == null)
+        {
+            fitter = image.gameObject.AddComponent<AspectRatioFitter>();
+        }
+
+        fitter.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        fitter.aspectRatio = 16f / 9f;
+        Debug.Assert(fitter.aspectMode == AspectRatioFitter.AspectMode.EnvelopeParent
+            && Mathf.Approximately(fitter.aspectRatio, 16f / 9f));
     }
 
     private static Texture2D CreateDamageVignetteTexture(int size)
@@ -766,6 +841,21 @@ public sealed class GameplayHUD : MonoBehaviour
         color.a = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * Time.unscaledDeltaTime);
         m_damageVignetteImage.color = color;
         m_damageVignetteImage.enabled = color.a > 0.001f;
+    }
+
+    private void UpdateDeathTint()
+    {
+        if (m_deathTintImage == null || m_deathPresentationStartedAt < 0f)
+        {
+            return;
+        }
+
+        float progress = Mathf.Clamp01((Time.unscaledTime - m_deathPresentationStartedAt)
+            / m_deathPresentationDuration);
+        Color color = m_deathTintImage.color;
+        color.a = Mathf.SmoothStep(0f, k_DeathTintAlpha, progress);
+        m_deathTintImage.color = color;
+        m_deathTintImage.enabled = color.a > 0.001f;
     }
 
     private void UpdateDmrScopeVignette()
@@ -1015,28 +1105,22 @@ public sealed class GameplayHUD : MonoBehaviour
         rectTransform.sizeDelta = size;
     }
 
-    private void UpdateSkillReadyFlash()
+    private void UpdateSkillReadyBlink()
     {
-        if (m_skillReadyFlashUntil <= 0f)
+        Image skillIcon = m_weaponSilhouetteImages[k_HudRowCount - 1];
+        if (skillIcon == null)
         {
             return;
         }
 
-        Image border = m_weaponBorderImages[k_HudRowCount - 1];
-        if (border == null)
-        {
-            m_skillReadyFlashUntil = 0f;
-            return;
-        }
+        bool isReady = m_lastSkillState == PlayerSkillState.Ready;
+        skillIcon.enabled = skillIcon.sprite != null
+            && (!isReady || IsSkillReadyBlinkVisible(Time.unscaledTime));
+    }
 
-        if (Time.unscaledTime < m_skillReadyFlashUntil)
-        {
-            border.color = Color.white;
-            return;
-        }
-
-        m_skillReadyFlashUntil = 0f;
-        SetBorderState(border, m_lastSkillState is PlayerSkillState.Ready or PlayerSkillState.Armed);
+    private static bool IsSkillReadyBlinkVisible(float elapsed)
+    {
+        return Mathf.FloorToInt(Mathf.Max(0f, elapsed) / k_SkillReadyBlinkInterval) % 2 == 0;
     }
 
     private void UpdateScoreFeedbacks()

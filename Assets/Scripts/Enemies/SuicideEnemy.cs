@@ -9,6 +9,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     private const float k_PathDestinationThresholdSqr = 1f;
     private const float k_MinWarningEmission = 0.25f;
     private const float k_MaxWarningEmission = 4f;
+    private const float k_WarningGasInterval = 0.2f;
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Warning = Animator.StringToHash("Warning");
     private static readonly int s_WarningSpeed = Animator.StringToHash("WarningSpeed");
@@ -19,7 +20,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     [SerializeField] private float m_moveSpeed = 2f;
     [SerializeField] private float m_explosionDamage = 60f;
     [SerializeField] private float m_explosionRadius = 4f;
-    [SerializeField] private float m_warningDuration = 0.8f;
+    [SerializeField] private float m_warningDuration = 2.5f;
     [SerializeField] private float m_deathExplosionDelay = 0.2f;
     [SerializeField] private Animator m_animator;
     [SerializeField] private Renderer m_warningRenderer;
@@ -41,6 +42,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     private SuicideGasEmitter m_gasEmitter;
     private Color m_normalHeadColor;
     private float m_explosionTime;
+    private float m_nextWarningGasTime;
     private float m_nextPathUpdateTime;
     private WeaponId m_sourceWeapon;
     private bool m_hasPlayerAttribution;
@@ -76,6 +78,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_damagedPlayers.Clear();
         m_damagedEnemies.Clear();
         m_explosionTime = 0f;
+        m_nextWarningGasTime = 0f;
         m_nextPathUpdateTime = Time.time
             + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         m_sourceWeapon = WeaponId.Unknown;
@@ -126,6 +129,10 @@ public sealed class SuicideEnemy : MonoBehaviour
         if (m_isDying || m_isWarning)
         {
             UpdateWarningMaterial();
+            if (m_isWarning && !m_isDying)
+            {
+                EmitWarningGas();
+            }
             if (Time.time >= m_explosionTime)
             {
                 Explode();
@@ -175,8 +182,9 @@ public sealed class SuicideEnemy : MonoBehaviour
     private void StartWarning()
     {
         m_isWarning = true;
-        m_agent.isStopped = true;
+        StopAgentForExplosion();
         m_explosionTime = Time.time + m_warningDuration;
+        m_nextWarningGasTime = Time.time;
         SetMoving(false);
         PlayWarningAnimation(1f);
         UpdateWarningMaterial();
@@ -185,6 +193,8 @@ public sealed class SuicideEnemy : MonoBehaviour
     private void StartDeathExplosion(KillContext context)
     {
         m_isDying = true;
+        m_isWarning = false;
+        m_nextWarningGasTime = 0f;
         if (m_scoreSystem == null)
         {
             m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
@@ -193,14 +203,24 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_hasPlayerAttribution = context.IsPlayerAttributed;
         m_hasClassSkillAttribution = ResolveClassSkillAttribution(
             context, m_scoreSystem != null && m_scoreSystem.IsBulletTimeActive);
-        if (m_agent.isOnNavMesh)
-        {
-            m_agent.isStopped = true;
-        }
+        StopAgentForExplosion();
         m_explosionTime = Time.time + m_deathExplosionDelay;
         SetMoving(false);
         PlayWarningAnimation(4f);
         UpdateWarningMaterial();
+    }
+
+    private void StopAgentForExplosion()
+    {
+        m_hasPathDestination = false;
+        if (m_agent == null || !m_agent.isOnNavMesh)
+        {
+            return;
+        }
+
+        m_agent.isStopped = true;
+        m_agent.velocity = Vector3.zero;
+        m_agent.ResetPath();
     }
 
     private void Explode()
@@ -263,6 +283,22 @@ public sealed class SuicideEnemy : MonoBehaviour
         playerToDamage?.ApplyDamage(m_explosionDamage, PlayerDeathCause.SuicideBacteriophage);
     }
 
+    private void EmitWarningGas()
+    {
+        if (Time.time < m_nextWarningGasTime)
+        {
+            return;
+        }
+
+        m_nextWarningGasTime = Time.time + k_WarningGasInterval;
+        if (m_gasEmitter == null)
+        {
+            m_gasEmitter = FindFirstObjectByType<SuicideGasEmitter>();
+        }
+
+        m_gasEmitter?.EmitWarningAt(transform.position, m_explosionRadius, GetWarningProgress());
+    }
+
     private static bool ResolveClassSkillAttribution(KillContext context, bool bulletTimeActive)
     {
         return context.IsClassSkillAttributed
@@ -300,10 +336,7 @@ public sealed class SuicideEnemy : MonoBehaviour
             return;
         }
 
-        float duration = m_isDying ? m_deathExplosionDelay : m_warningDuration;
-        float progress = duration > 0f
-            ? 1f - Mathf.Clamp01((m_explosionTime - Time.time) / duration)
-            : 1f;
+        float progress = GetWarningProgress();
         float pulse = m_isDying ? Mathf.SmoothStep(0f, 1f, progress) : EvaluateWarningPulse(progress);
         float emission = Mathf.Lerp(k_MinWarningEmission, k_MaxWarningEmission, pulse);
 
@@ -330,6 +363,14 @@ public sealed class SuicideEnemy : MonoBehaviour
     {
         progress = Mathf.Clamp01(progress);
         return 0.5f - 0.5f * Mathf.Cos(5f * Mathf.PI * progress * progress);
+    }
+
+    private float GetWarningProgress()
+    {
+        float duration = m_isDying ? m_deathExplosionDelay : m_warningDuration;
+        return duration > 0f
+            ? 1f - Mathf.Clamp01((m_explosionTime - Time.time) / duration)
+            : 1f;
     }
 
     private void PlayWarningAnimation(float speed)
@@ -365,6 +406,9 @@ public sealed class SuicideEnemy : MonoBehaviour
         Debug.Assert(!m_hasExploded || m_isDying || m_isWarning);
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(0f), 0f));
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(1f), 1f));
+        Debug.Assert(Mathf.Approximately(m_warningDuration, 2.5f));
+        Debug.Assert(Mathf.Approximately(m_deathExplosionDelay, 0.2f));
+        Debug.Assert(Mathf.Approximately(k_WarningGasInterval, 0.2f));
         Debug.Assert(!ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), false));
         Debug.Assert(ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), true));
         Debug.Assert(!ResolveClassSkillAttribution(KillContext.Chain(WeaponId.DMR, true), true));
