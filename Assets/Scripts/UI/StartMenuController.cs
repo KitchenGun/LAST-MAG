@@ -47,7 +47,6 @@ public sealed class StartMenuController : MonoBehaviour
         if (m_controls != null) m_controls.SetActive(true);
         m_playButton.interactable = true;
         SetPlayButtonLabel("PLAY");
-        ConfigurePlayButton(false);
         m_selectedClassName = FindText("SelectedClassName");
         m_selectedClassLoadout = FindText("SelectedClassLoadout");
         m_selectedClassSkill = FindText("SelectedClassSkill");
