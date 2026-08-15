@@ -543,7 +543,7 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_weaponBorderImages[1].color.a, k_InactiveWeaponAlpha));
         Debug.Assert(m_weaponBorderImages[1].color == k_InactiveBorderColor);
         Debug.Assert(m_weaponSilhouetteImages[1].color == new Color32(234, 64, 71, 102));
-        RefreshWeapon(1, WeaponId.DMR, 12, true);
+        RefreshWeapon(1, WeaponId.DMR, 15, true);
         Debug.Assert(m_weaponSilhouetteImages[0].color == new Color32(44, 135, 232, 255));
         RefreshSkill("GRENADE", PlayerSkillState.Cooldown, 0.04f);
         Debug.Assert(m_skillCooldownFill.gameObject.activeSelf);

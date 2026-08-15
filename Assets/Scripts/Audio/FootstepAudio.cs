@@ -66,9 +66,7 @@ public sealed class FootstepAudio : MonoBehaviour
 
         return m_movementSource.isActiveAndEnabled
             && m_movementSource.isOnNavMesh
-            && !m_movementSource.isStopped
-            && m_movementSource.hasPath
-            && m_movementSource.remainingDistance > m_movementSource.stoppingDistance;
+            && m_movementSource.velocity.sqrMagnitude > 0.01f;
     }
 
     private int SelectClipIndex(int startIndex)

@@ -25643,7 +25643,7 @@ MonoBehaviour:
   m_pistolAmmoCapacity: 15
   m_shotgunAmmoCapacity: 8
   m_rifleAmmoCapacity: 50
-  m_dmrAmmoCapacity: 12
+  m_dmrAmmoCapacity: 15
   m_pistolDamage: 30
   m_pistolShotsPerSecond: 6.75
   m_pistolHeadshotMultiplier: 2
@@ -25660,7 +25660,7 @@ MonoBehaviour:
   m_dmrFirstHitDamage: 60
   m_dmrSecondHitDamage: 40
   m_dmrThirdHitDamage: 20
-  m_dmrShotsPerSecond: 4
+  m_dmrShotsPerSecond: 5.25
   m_dmrHeadshotMultiplier: 2
   m_pistolRecoil:
     m_pitch: 2.2
