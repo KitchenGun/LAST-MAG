@@ -299,6 +299,7 @@ public sealed class FirstPersonController : MonoBehaviour
     public PlayerClassId SelectedClass { get; private set; }
     public WeaponId CurrentWeapon => m_loadout[m_activeWeaponSlot - 1];
     public WeaponId PrimaryWeapon => m_loadout[0];
+    public bool IsDeathPresentation => m_isDeathPresentation;
 
     private void Awake()
     {
@@ -410,9 +411,9 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        if (GameplayClock.IsPaused)
         {
-            UnlockCursor();
+            return;
         }
 
         HandleWeaponSelection();
@@ -468,7 +469,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_deathCameraStartRotation = cameraTransform.rotation;
         m_deathCameraTargetRotation = m_deathCameraStartRotation
             * Quaternion.Euler(k_DeathFallPitch, 0f, side * k_DeathFallRoll);
-        m_deathPresentationStartedAt = Time.unscaledTime;
+        m_deathPresentationStartedAt = GameplayClock.Now;
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
@@ -480,7 +481,7 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        float progress = Mathf.Clamp01((Time.unscaledTime - m_deathPresentationStartedAt) / k_DeathFallDuration);
+        float progress = Mathf.Clamp01((GameplayClock.Now - m_deathPresentationStartedAt) / k_DeathFallDuration);
         Transform cameraTransform = m_playerCamera.transform;
         Vector3 desired = Vector3.Lerp(m_deathCameraStartPosition, m_deathCameraTargetPosition,
             Mathf.SmoothStep(0f, 1f, progress));
@@ -636,7 +637,7 @@ public sealed class FirstPersonController : MonoBehaviour
         float speed = Mathf.Abs(m_defaultCameraFieldOfView - k_DmrZoomFieldOfView)
             / k_DmrZoomTransitionDuration;
         m_playerCamera.fieldOfView = Mathf.MoveTowards(
-            m_playerCamera.fieldOfView, targetFieldOfView, speed * Time.unscaledDeltaTime);
+            m_playerCamera.fieldOfView, targetFieldOfView, speed * GameplayClock.DeltaTime);
     }
 
     private void ResetDmrZoom(bool immediate)
@@ -706,7 +707,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private void UpdateCameraRecoil()
     {
         ClampCameraRecoilToPitchHeadroom();
-        float now = Time.unscaledTime;
+        float now = GameplayClock.Now;
         switch (m_cameraRecoilPhase)
         {
             case RecoilPhase.Kick:
@@ -815,7 +816,7 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        float elapsed = Time.unscaledTime - m_fireImpulseStartedAt;
+        float elapsed = GameplayClock.Now - m_fireImpulseStartedAt;
         float amount = 1f - RecoilSample.EaseOutCubic(elapsed / m_fireImpulseDuration);
         m_fireImpulse = m_fireImpulseStart * amount;
         if (elapsed >= m_fireImpulseDuration)
@@ -865,6 +866,11 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void OnAttack(InputAction.CallbackContext context)
     {
+        if (GameplayClock.IsPaused)
+        {
+            return;
+        }
+
         if (Cursor.lockState != CursorLockMode.Locked)
         {
             LockCursor();
@@ -917,12 +923,12 @@ public sealed class FirstPersonController : MonoBehaviour
             return false;
         }
 
-        if (Time.unscaledTime < m_nextAllowedFireTime)
+        if (GameplayClock.Now < m_nextAllowedFireTime)
         {
             return false;
         }
 
-        m_nextAllowedFireTime = Time.unscaledTime + GetFireInterval(CurrentWeapon);
+        m_nextAllowedFireTime = GameplayClock.Now + GetFireInterval(CurrentWeapon);
         m_weaponAmmo[index]--;
         m_gameplayHUD?.RefreshWeapon(m_activeWeaponSlot, CurrentWeapon, m_weaponAmmo[index], true);
         RecoilSample recoil = GetRecoilProfile(CurrentWeapon).CreateSample(GetRecoilYawDirection(CurrentWeapon));
@@ -1196,7 +1202,7 @@ public sealed class FirstPersonController : MonoBehaviour
             return 0f;
         }
 
-        float now = Time.unscaledTime;
+        float now = GameplayClock.Now;
         if (now - m_lastRifleShotTime > k_RifleBurstResetTime || m_rifleBurstShots == 0)
         {
             m_rifleBurstShots = 0;
@@ -1214,7 +1220,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private bool RegisterSuccessfulShot(WeaponId weapon)
     {
-        float now = Time.unscaledTime;
+        float now = GameplayClock.Now;
         bool isContinuous = IsContinuousFire(
             weapon, m_burstWeapon, m_burstShotCount, now - m_lastSuccessfulShotAt);
         m_burstWeapon = weapon;
@@ -1246,14 +1252,14 @@ public sealed class FirstPersonController : MonoBehaviour
         m_cameraRecoilTarget = m_cameraRecoilStart + new Vector2(recoil.Pitch * pitchAddScale, recoil.Yaw);
         m_cameraRecoilTarget.x = Mathf.Min(m_cameraRecoilTarget.x, recoil.HardCap);
         m_activeRecoilSample = recoil;
-        m_cameraRecoilPhaseStartedAt = Time.unscaledTime;
-        m_cameraRecoilLastShotAt = Time.unscaledTime;
+        m_cameraRecoilPhaseStartedAt = GameplayClock.Now;
+        m_cameraRecoilLastShotAt = GameplayClock.Now;
         m_cameraRecoilPhase = RecoilPhase.Kick;
         m_cameraRecoilReturnTarget = Vector2.zero;
         m_commitResidualOnReturn = isContinuousFire;
         m_fireImpulseStart = new Vector3(recoil.FireImpulsePitch, recoil.FireImpulseYaw, recoil.FireImpulseRoll);
         m_fireImpulse = m_fireImpulseStart;
-        m_fireImpulseStartedAt = Time.unscaledTime;
+        m_fireImpulseStartedAt = GameplayClock.Now;
         m_fireImpulseDuration = recoil.FireImpulseDuration;
         ClampCameraRecoilToPitchHeadroom();
     }
@@ -1274,7 +1280,7 @@ public sealed class FirstPersonController : MonoBehaviour
         }
 
         if (m_explosionShakeDuration > 0f
-            && Time.unscaledTime >= m_explosionShakeStartedAt + m_explosionShakeDuration)
+            && GameplayClock.Now >= m_explosionShakeStartedAt + m_explosionShakeDuration)
         {
             ResetExplosionShake();
         }
@@ -1298,7 +1304,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_explosionShakeAngle = Mathf.Max(m_explosionShakeAngle, angle);
         m_explosionShakeRoll = Mathf.Max(m_explosionShakeRoll, angle * maxRoll / maxAngle);
         m_explosionShakeDuration = Mathf.Max(m_explosionShakeDuration, duration);
-        m_explosionShakeStartedAt = Time.unscaledTime;
+        m_explosionShakeStartedAt = GameplayClock.Now;
         m_explosionShakeSeed = UnityEngine.Random.Range(0f, 1000f);
     }
 
@@ -1309,7 +1315,7 @@ public sealed class FirstPersonController : MonoBehaviour
             return Vector3.zero;
         }
 
-        float elapsed = Time.unscaledTime - m_explosionShakeStartedAt;
+        float elapsed = GameplayClock.Now - m_explosionShakeStartedAt;
         float normalizedTime = elapsed / m_explosionShakeDuration;
         if (normalizedTime >= 1f)
         {
@@ -1319,7 +1325,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
         float decay = 1f - Mathf.Clamp01(normalizedTime);
         decay *= decay;
-        float sampleTime = Time.unscaledTime * k_ExplosionShakeFrequency;
+        float sampleTime = GameplayClock.Now * k_ExplosionShakeFrequency;
         Vector2 rotationalNoise = new(
             SignedPerlin(m_explosionShakeSeed, sampleTime),
             SignedPerlin(m_explosionShakeSeed + 17f, sampleTime));
@@ -1506,7 +1512,8 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (Cursor.lockState == CursorLockMode.Locked && m_characterController.isGrounded)
+        if (!GameplayClock.IsPaused && Cursor.lockState == CursorLockMode.Locked
+            && m_characterController.isGrounded)
         {
             m_verticalVelocity = Mathf.Sqrt(m_jumpHeight * -2f * m_gravity);
         }
@@ -1514,9 +1521,27 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
-        if (!hasFocus)
+        if (!hasFocus && !GameplayClock.IsPaused)
         {
             UnlockCursor();
+        }
+    }
+
+    public void SetPaused(bool paused)
+    {
+        m_isRifleFiring = false;
+        if (paused)
+        {
+            m_playerMap?.Disable();
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            return;
+        }
+
+        if (!m_isDeathPresentation)
+        {
+            m_playerMap?.Enable();
+            LockCursor();
         }
     }
 

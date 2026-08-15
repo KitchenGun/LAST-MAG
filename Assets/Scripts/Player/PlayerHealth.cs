@@ -55,13 +55,13 @@ public sealed class PlayerHealth : MonoBehaviour
 
     private void Update()
     {
-        if (m_isDead || CurrentHealth >= m_maxHealth || Time.unscaledTime < m_regenerationStartTime)
+        if (m_isDead || CurrentHealth >= m_maxHealth || GameplayClock.Now < m_regenerationStartTime)
         {
             return;
         }
 
         float previousHealth = CurrentHealth;
-        CurrentHealth = Mathf.Min(m_maxHealth, CurrentHealth + m_regenerationPerSecond * Time.unscaledDeltaTime);
+        CurrentHealth = Mathf.Min(m_maxHealth, CurrentHealth + m_regenerationPerSecond * GameplayClock.DeltaTime);
         if (!Mathf.Approximately(previousHealth, CurrentHealth))
         {
             NotifyHealthChanged();
@@ -88,7 +88,7 @@ public sealed class PlayerHealth : MonoBehaviour
         CurrentHealth = Mathf.Max(0f, CurrentHealth - damage);
         NotifyHealthChanged();
         m_firstPersonController?.ApplyDamageAimPunch(deathCause);
-        m_regenerationStartTime = Time.unscaledTime + m_regenerationDelay;
+        m_regenerationStartTime = GameplayClock.Now + m_regenerationDelay;
         if (CurrentHealth > 0f)
         {
             PlayCriticalTraumaWarning();

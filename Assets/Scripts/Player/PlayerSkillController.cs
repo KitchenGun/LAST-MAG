@@ -47,7 +47,6 @@ public sealed class PlayerSkillController : MonoBehaviour
     private PlayerSkillState m_state = PlayerSkillState.Ready;
     private float m_stateEndsAt;
     private float m_cooldownDuration;
-    private float m_defaultFixedDeltaTime;
     private bool m_controlsTimeScale;
     private ColorAdjustments m_colorAdjustments;
     private float m_defaultSaturation;
@@ -69,7 +68,6 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void Awake()
     {
-        m_defaultFixedDeltaTime = Time.fixedDeltaTime;
         if (m_rocketLauncherViewmodel != null)
         {
             Transform launcher = m_rocketLauncherViewmodel.transform;
@@ -105,7 +103,7 @@ public sealed class PlayerSkillController : MonoBehaviour
     private void Update()
     {
         if ((m_state == PlayerSkillState.Active || m_state == PlayerSkillState.Cooldown)
-            && m_stateEndsAt > 0f && Time.unscaledTime >= m_stateEndsAt)
+            && m_stateEndsAt > 0f && GameplayClock.Now >= m_stateEndsAt)
         {
             if (m_state == PlayerSkillState.Active && m_playerClass == PlayerClassId.Sniper)
             {
@@ -135,11 +133,10 @@ public sealed class PlayerSkillController : MonoBehaviour
         if (m_playerClass == PlayerClassId.Sniper)
         {
             m_controlsTimeScale = true;
-            Time.timeScale = k_BulletTimeScale;
-            Time.fixedDeltaTime = m_defaultFixedDeltaTime * k_BulletTimeScale;
+            GameplayClock.SetWorldScale(k_BulletTimeScale);
             SetBulletTimeVisual(true);
             m_state = PlayerSkillState.Active;
-            m_stateEndsAt = Time.unscaledTime + k_BulletTimeDuration;
+            m_stateEndsAt = GameplayClock.Now + k_BulletTimeDuration;
             if (m_scoreSystem != null)
             {
                 m_scoreSystem.SetBulletTimeActive(true);
@@ -294,7 +291,7 @@ public sealed class PlayerSkillController : MonoBehaviour
     {
         m_state = PlayerSkillState.Cooldown;
         m_cooldownDuration = duration;
-        m_stateEndsAt = Time.unscaledTime + duration;
+        m_stateEndsAt = GameplayClock.Now + duration;
         RefreshHud();
     }
 
@@ -428,7 +425,7 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void RefreshHud()
     {
-        float remaining = m_stateEndsAt > 0f ? Mathf.Max(0f, m_stateEndsAt - Time.unscaledTime) : 0f;
+        float remaining = m_stateEndsAt > 0f ? Mathf.Max(0f, m_stateEndsAt - GameplayClock.Now) : 0f;
         float cooldownNormalized = m_state == PlayerSkillState.Cooldown && m_cooldownDuration > 0f
             ? 1f - remaining / m_cooldownDuration
             : 0f;
@@ -474,8 +471,7 @@ public sealed class PlayerSkillController : MonoBehaviour
             return;
         }
         m_controlsTimeScale = false;
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = m_defaultFixedDeltaTime;
+        GameplayClock.SetWorldScale(1f);
     }
 
     private void InitializeBulletTimeVisual()
@@ -517,7 +513,7 @@ public sealed class PlayerSkillController : MonoBehaviour
         m_colorAdjustments.saturation.value = Mathf.MoveTowards(
             m_colorAdjustments.saturation.value,
             m_targetSaturation,
-            m_saturationTransitionSpeed * Time.unscaledDeltaTime);
+            m_saturationTransitionSpeed * GameplayClock.DeltaTime);
         if (Mathf.Approximately(m_targetSaturation, m_defaultSaturation)
             && Mathf.Approximately(m_colorAdjustments.saturation.value, m_defaultSaturation))
         {

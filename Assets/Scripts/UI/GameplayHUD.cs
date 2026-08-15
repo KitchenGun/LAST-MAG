@@ -197,7 +197,7 @@ public sealed class GameplayHUD : MonoBehaviour
     {
         if (m_activeWeaponText != null)
         {
-            m_activeWeaponText.color = Time.unscaledTime < m_emptyAmmoFeedbackUntil ? Color.red : m_activeWeaponBaseColor;
+            m_activeWeaponText.color = GameplayClock.Now < m_emptyAmmoFeedbackUntil ? Color.red : m_activeWeaponBaseColor;
         }
 
         UpdateEmptyAmmoText();
@@ -232,7 +232,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
     internal void BeginDeathPresentation(float duration)
     {
-        m_deathPresentationStartedAt = Time.unscaledTime;
+        m_deathPresentationStartedAt = GameplayClock.Now;
         m_deathPresentationDuration = Mathf.Max(0.01f, duration);
         m_damageVignetteTargetAlpha = k_DeathDamageVignetteAlpha;
         m_dmrScopeVignetteTargetAlpha = 0f;
@@ -300,7 +300,7 @@ public sealed class GameplayHUD : MonoBehaviour
             if (m_emptyAmmoActive != isEmpty)
             {
                 m_emptyAmmoActive = isEmpty;
-                m_emptyAmmoBlinkStartedAt = Time.unscaledTime;
+                m_emptyAmmoBlinkStartedAt = GameplayClock.Now;
             }
             UpdateEmptyAmmoText();
         }
@@ -363,7 +363,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
     public void ShowEmptyAmmoFeedback()
     {
-        m_emptyAmmoFeedbackUntil = Time.unscaledTime + k_EmptyAmmoFeedbackDuration;
+        m_emptyAmmoFeedbackUntil = GameplayClock.Now + k_EmptyAmmoFeedbackDuration;
     }
 
     public void RefreshScore(int score)
@@ -459,7 +459,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
         m_scoreFeedbackCount = newCount;
         m_scoreFeedbackTexts[0] = recycled;
-        m_scoreFeedbackExpiry[0] = Time.unscaledTime + k_ScoreFeedbackDuration + k_ScoreFeedbackFadeDuration;
+        m_scoreFeedbackExpiry[0] = GameplayClock.Now + k_ScoreFeedbackDuration + k_ScoreFeedbackFadeDuration;
         string trimmedLabel = label?.Trim();
         recycled.text = string.IsNullOrEmpty(trimmedLabel)
             ? $"<b>+{points}</b>"
@@ -490,7 +490,7 @@ public sealed class GameplayHUD : MonoBehaviour
         m_hitMarkerPulseScale = isKill ? 1.35f : isHeadshot ? 1.25f : 1.15f;
         m_hitMarkerImage.rectTransform.localScale = Vector3.one * m_hitMarkerPulseScale;
         m_hitMarkerImage.gameObject.SetActive(true);
-        m_hitMarkerUntil = Time.unscaledTime + k_HitMarkerDuration;
+        m_hitMarkerUntil = GameplayClock.Now + k_HitMarkerDuration;
     }
 
     public void ShowAmmoPickup(WeaponId weapon, int amount)
@@ -524,7 +524,7 @@ public sealed class GameplayHUD : MonoBehaviour
         popup.color = GetWeaponColor(weapon);
         popup.rectTransform.anchoredPosition = k_PickupPopupBasePosition;
         popup.gameObject.SetActive(true);
-        m_pickupPopupExpiry[m_pickupPopupCount] = Time.unscaledTime + k_PickupPopupDuration;
+        m_pickupPopupExpiry[m_pickupPopupCount] = GameplayClock.Now + k_PickupPopupDuration;
         m_pickupPopupCount++;
     }
 
@@ -590,7 +590,7 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(m_weaponBorderImages[1].rectTransform.sizeDelta == k_WeaponBorderSize);
         Debug.Assert(Mathf.Approximately(m_weaponNumberTexts[1].fontSize, k_InactiveWeaponFontSize));
         ShowEmptyAmmoFeedback();
-        Debug.Assert(m_emptyAmmoFeedbackUntil > Time.unscaledTime);
+        Debug.Assert(m_emptyAmmoFeedbackUntil > GameplayClock.Now);
         int popupCount = m_pickupPopupCount;
         ShowAmmoPickup(WeaponId.Pistol, 0);
         Debug.Assert(m_pickupPopupCount == popupCount);
@@ -606,7 +606,7 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(m_hitMarkerImage.color == k_KillHitMarkerColor);
         Debug.Assert(m_hitMarkerImage.rectTransform.sizeDelta == k_KillHitMarkerSize);
         Debug.Assert(Mathf.Approximately(m_hitMarkerPulseScale, 1.35f));
-        Debug.Assert(m_hitMarkerUntil > Time.unscaledTime);
+        Debug.Assert(m_hitMarkerUntil > GameplayClock.Now);
         SetDmrAimState(true, false);
         Debug.Assert(!m_crosshairImage.enabled && m_hitMarkerImage.gameObject.activeSelf);
         SetDmrAimState(true, true);
@@ -702,7 +702,7 @@ public sealed class GameplayHUD : MonoBehaviour
         if (m_emptyAmmoText != null)
         {
             m_emptyAmmoText.enabled = IsEmptyAmmoBlinkVisible(m_emptyAmmoActive,
-                Time.unscaledTime - m_emptyAmmoBlinkStartedAt);
+                GameplayClock.Now - m_emptyAmmoBlinkStartedAt);
         }
     }
 
@@ -838,7 +838,7 @@ public sealed class GameplayHUD : MonoBehaviour
         float speed = m_damageVignetteTargetAlpha > color.a
             ? k_DamageVignetteIncreaseSpeed
             : k_DamageVignetteRecoverySpeed;
-        color.a = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * Time.unscaledDeltaTime);
+        color.a = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * GameplayClock.DeltaTime);
         m_damageVignetteImage.color = color;
         m_damageVignetteImage.enabled = color.a > 0.001f;
     }
@@ -850,7 +850,7 @@ public sealed class GameplayHUD : MonoBehaviour
             return;
         }
 
-        float progress = Mathf.Clamp01((Time.unscaledTime - m_deathPresentationStartedAt)
+        float progress = Mathf.Clamp01((GameplayClock.Now - m_deathPresentationStartedAt)
             / m_deathPresentationDuration);
         Color color = m_deathTintImage.color;
         color.a = Mathf.SmoothStep(0f, k_DeathTintAlpha, progress);
@@ -868,7 +868,7 @@ public sealed class GameplayHUD : MonoBehaviour
         Color color = m_dmrScopeVignetteImage.color;
         float speed = k_DmrScopeVignetteAlpha / k_DmrScopeTransitionDuration;
         color.a = Mathf.MoveTowards(
-            color.a, m_dmrScopeVignetteTargetAlpha, speed * Time.unscaledDeltaTime);
+            color.a, m_dmrScopeVignetteTargetAlpha, speed * GameplayClock.DeltaTime);
         m_dmrScopeVignetteImage.color = color;
         m_dmrScopeVignetteImage.enabled = color.a > 0.001f;
     }
@@ -1115,7 +1115,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
         bool isReady = m_lastSkillState == PlayerSkillState.Ready;
         skillIcon.enabled = skillIcon.sprite != null
-            && (!isReady || IsSkillReadyBlinkVisible(Time.unscaledTime));
+            && (!isReady || IsSkillReadyBlinkVisible(GameplayClock.Now));
     }
 
     private static bool IsSkillReadyBlinkVisible(float elapsed)
@@ -1126,7 +1126,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private void UpdateScoreFeedbacks()
     {
         while (m_scoreFeedbackCount > 0
-            && m_scoreFeedbackExpiry[m_scoreFeedbackCount - 1] <= Time.unscaledTime)
+            && m_scoreFeedbackExpiry[m_scoreFeedbackCount - 1] <= GameplayClock.Now)
         {
             RemoveOldestScoreFeedback();
         }
@@ -1135,7 +1135,7 @@ public sealed class GameplayHUD : MonoBehaviour
         {
             TextMeshProUGUI feedback = m_scoreFeedbackTexts[index];
             Color color = Color.white;
-            color.a = GetScoreFeedbackAlpha(m_scoreFeedbackExpiry[index], Time.unscaledTime);
+            color.a = GetScoreFeedbackAlpha(m_scoreFeedbackExpiry[index], GameplayClock.Now);
             feedback.color = color;
         }
     }
@@ -1155,7 +1155,7 @@ public sealed class GameplayHUD : MonoBehaviour
             return;
         }
 
-        float remaining = m_hitMarkerUntil - Time.unscaledTime;
+        float remaining = m_hitMarkerUntil - GameplayClock.Now;
         if (remaining <= 0f)
         {
             m_hitMarkerImage.gameObject.SetActive(false);
@@ -1174,7 +1174,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
     private void UpdatePickupPopups()
     {
-        while (m_pickupPopupCount > 0 && m_pickupPopupExpiry[0] <= Time.unscaledTime)
+        while (m_pickupPopupCount > 0 && m_pickupPopupExpiry[0] <= GameplayClock.Now)
         {
             RemoveOldestPickupPopup();
         }
@@ -1186,10 +1186,10 @@ public sealed class GameplayHUD : MonoBehaviour
             popup.rectTransform.anchoredPosition = Vector2.MoveTowards(
                 popup.rectTransform.anchoredPosition,
                 target,
-                k_PickupPopupMoveSpeed * Time.unscaledDeltaTime);
+                k_PickupPopupMoveSpeed * GameplayClock.DeltaTime);
 
             Color color = popup.color;
-            color.a = Mathf.Clamp01((m_pickupPopupExpiry[index] - Time.unscaledTime) / k_PickupPopupFadeDuration);
+            color.a = Mathf.Clamp01((m_pickupPopupExpiry[index] - GameplayClock.Now) / k_PickupPopupFadeDuration);
             popup.color = color;
         }
     }
