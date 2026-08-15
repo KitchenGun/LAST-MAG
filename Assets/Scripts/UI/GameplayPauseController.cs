@@ -44,7 +44,8 @@ public sealed class GameplayPauseController : MonoBehaviour
 
     private void PauseGame()
     {
-        if (m_settingsPanel == null || m_player == null || m_player.IsDeathPresentation)
+        if (m_settingsPanel == null || m_player == null
+            || !CanPause(GameplayClock.IsPaused, m_player.IsDeathPresentation))
         {
             return;
         }
@@ -52,6 +53,22 @@ public sealed class GameplayPauseController : MonoBehaviour
         m_player.SetPaused(true);
         GameplayClock.Pause();
         m_settingsPanel.Show(ResumeGame);
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus)
+        {
+            PauseGame();
+        }
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+        {
+            PauseGame();
+        }
     }
 
     private void ResumeGame()
@@ -80,5 +97,13 @@ public sealed class GameplayPauseController : MonoBehaviour
             GameplayClock.ResolveWorldScale(false, 0.35f), 0.35f));
         Debug.Assert(Mathf.Approximately(
             GameplayClock.ResolveWorldScale(true, 0.35f), 0f));
+        Debug.Assert(CanPause(false, false));
+        Debug.Assert(!CanPause(true, false));
+        Debug.Assert(!CanPause(false, true));
+    }
+
+    private static bool CanPause(bool isPaused, bool isDeathPresentation)
+    {
+        return !isPaused && !isDeathPresentation;
     }
 }
