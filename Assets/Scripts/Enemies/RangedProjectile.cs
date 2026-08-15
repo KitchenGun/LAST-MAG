@@ -4,6 +4,8 @@ using UnityEngine;
 public sealed class RangedProjectile : MonoBehaviour
 {
     private const float k_TrailSpacing = 0.8f;
+    private const float k_ColliderToVisualRadiusRatio = 0.6f;
+    private const float k_UnitSphereRadius = 0.5f;
 
     private GameplayObjectPool m_pool;
     private SphereCollider m_collider;
@@ -30,6 +32,7 @@ public sealed class RangedProjectile : MonoBehaviour
         IsPooled = false;
         transform.SetPositionAndRotation(position, Quaternion.identity);
         transform.localScale = Vector3.one * radius * 2f;
+        m_collider.radius = k_UnitSphereRadius * k_ColliderToVisualRadiusRatio;
         m_damage = damage;
         m_releaseTime = Time.time + lifetime;
         m_lastTrailPosition = position;
@@ -103,6 +106,15 @@ public sealed class RangedProjectile : MonoBehaviour
     internal void MarkPooled()
     {
         IsPooled = true;
+    }
+
+    [ContextMenu("Run Ranged Projectile Self Check")]
+    private void RunSelfCheck()
+    {
+        Debug.Assert(Application.isPlaying, "Run this check in Play Mode.");
+        float visualRadius = transform.lossyScale.x * k_UnitSphereRadius;
+        float colliderRadius = m_collider.radius * transform.lossyScale.x;
+        Debug.Assert(Mathf.Approximately(colliderRadius, visualRadius * k_ColliderToVisualRadiusRatio));
     }
 
 }

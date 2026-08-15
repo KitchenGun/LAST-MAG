@@ -8,6 +8,7 @@ public sealed class RangedEnemy : MonoBehaviour
     private const float k_LineOfSightInterval = 0.1f;
     private const float k_RepositionInterval = 0.75f;
     private const int k_SearchCandidatesPerTick = 2;
+    private static readonly RaycastHit[] s_LineOfSightHits = new RaycastHit[32];
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
     private static readonly Vector3[] s_SearchDirections =
@@ -290,11 +291,31 @@ public sealed class RangedEnemy : MonoBehaviour
     {
         Vector3 origin = position + Vector3.up * 1.4f;
         Vector3 targetPosition = m_target.transform.position + Vector3.up;
-        if (!Physics.Raycast(origin, targetPosition - origin, out RaycastHit hit, Vector3.Distance(origin, targetPosition), Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        Vector3 direction = targetPosition - origin;
+        float distance = direction.magnitude;
+        if (distance <= 0.001f)
         {
             return false;
         }
-        return hit.collider.GetComponentInParent<PlayerHealth>() == m_target;
+
+        int hitCount = Physics.RaycastNonAlloc(origin, direction / distance, s_LineOfSightHits, distance,
+            Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        RaycastHit nearestNonEnemy = default;
+        bool foundNonEnemy = false;
+        for (int index = 0; index < hitCount; index++)
+        {
+            RaycastHit hit = s_LineOfSightHits[index];
+            if (hit.collider.GetComponentInParent<EnemyHealth>() != null
+                || foundNonEnemy && hit.distance >= nearestNonEnemy.distance)
+            {
+                continue;
+            }
+
+            nearestNonEnemy = hit;
+            foundNonEnemy = true;
+        }
+
+        return foundNonEnemy && nearestNonEnemy.collider.GetComponentInParent<PlayerHealth>() == m_target;
     }
 
     private void FaceTarget()

@@ -20,12 +20,13 @@ public sealed class SuicideEnemy : MonoBehaviour
     [SerializeField] private float m_moveSpeed = 2f;
     [SerializeField] private float m_explosionDamage = 60f;
     [SerializeField] private float m_explosionRadius = 4f;
-    [SerializeField] private float m_warningDuration = 2.5f;
+    [SerializeField] private float m_warningDuration = 2f;
     [SerializeField] private float m_deathExplosionDelay = 0.2f;
     [SerializeField] private Animator m_animator;
     [SerializeField] private Renderer m_warningRenderer;
     [SerializeField, Min(0)] private int m_warningMaterialIndex = 1;
     [Header("Explosion Audio")]
+    [SerializeField] private AudioClip[] m_preExplosionClips;
     [SerializeField] private AudioClip m_explosionClip;
     [SerializeField] private float m_explosionMaxDistance = 35f;
     [SerializeField, Range(0f, 1f)] private float m_explosionVolume = 1f;
@@ -60,7 +61,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_health.ZeroHealthReached += StartDeathExplosion;
         m_agent = GetComponent<NavMeshAgent>();
         m_agent.speed = m_moveSpeed;
-        m_agent.stoppingDistance = Mathf.Max(0f, m_explosionRadius - 0.25f);
+        m_agent.stoppingDistance = m_explosionRadius * 0.5f;
         m_agent.updateRotation = true;
 
         if (m_warningRenderer == null)
@@ -159,7 +160,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         }
         bool hasCompletePath = m_hasPathDestination && m_agent.hasPath && !m_agent.pathPending
             && m_agent.pathStatus == NavMeshPathStatus.PathComplete;
-        if (hasCompletePath && Vector3.Distance(transform.position, m_target.transform.position) <= m_explosionRadius)
+        if (IsWithinWarningRange(transform.position, m_target.transform.position, m_explosionRadius))
         {
             StartWarning();
             return;
@@ -188,6 +189,14 @@ public sealed class SuicideEnemy : MonoBehaviour
         SetMoving(false);
         PlayWarningAnimation(1f);
         UpdateWarningMaterial();
+    }
+
+    private static bool IsWithinWarningRange(Vector3 enemyPosition, Vector3 targetPosition, float explosionRadius)
+    {
+        Vector3 horizontalOffset = targetPosition - enemyPosition;
+        horizontalOffset.y = 0f;
+        float warningRange = explosionRadius * 0.5f;
+        return horizontalOffset.sqrMagnitude <= warningRange * warningRange;
     }
 
     private void StartDeathExplosion(KillContext context)
@@ -233,6 +242,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_hasExploded = true;
         m_health.DisableColliders();
         SetMoving(false);
+        SpatialAudio.PlayRandomOneShot(m_preExplosionClips, transform.position, m_explosionMaxDistance, m_explosionVolume);
         SpatialAudio.PlayOneShot(m_explosionClip, transform.position, m_explosionMaxDistance, m_explosionVolume);
         if (m_gasEmitter == null)
         {
@@ -406,8 +416,11 @@ public sealed class SuicideEnemy : MonoBehaviour
         Debug.Assert(!m_hasExploded || m_isDying || m_isWarning);
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(0f), 0f));
         Debug.Assert(Mathf.Approximately(EvaluateWarningPulse(1f), 1f));
-        Debug.Assert(Mathf.Approximately(m_warningDuration, 2.5f));
+        Debug.Assert(Mathf.Approximately(m_warningDuration, 2f));
         Debug.Assert(Mathf.Approximately(m_deathExplosionDelay, 0.2f));
+        Debug.Assert(m_agent == null || Mathf.Approximately(m_agent.stoppingDistance, m_explosionRadius * 0.5f));
+        Debug.Assert(IsWithinWarningRange(Vector3.zero, new Vector3(0f, 10f, 1.99f), 4f));
+        Debug.Assert(!IsWithinWarningRange(Vector3.zero, new Vector3(0f, 10f, 2.01f), 4f));
         Debug.Assert(Mathf.Approximately(k_WarningGasInterval, 0.2f));
         Debug.Assert(!ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), false));
         Debug.Assert(ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), true));

@@ -173,11 +173,16 @@ MonoBehaviour:
   m_moveSpeed: 2
   m_explosionDamage: 60
   m_explosionRadius: 4
-  m_warningDuration: 2.5
+  m_warningDuration: 2
   m_deathExplosionDelay: 0.2
   m_animator: {fileID: 6635377610207947365}
   m_warningRenderer: {fileID: 897310945107858656}
   m_warningMaterialIndex: 1
+  m_preExplosionClips:
+  - {fileID: 8300000, guid: 5174415e9879415498f7b0dd794d19c5, type: 3}
+  - {fileID: 8300000, guid: 2a295373a10441545bcaf619b61bea94, type: 3}
+  - {fileID: 8300000, guid: 8ba1ce15e8593064aa781b941381f053, type: 3}
+  - {fileID: 8300000, guid: 05d0536a3eefc80438f95f9662331f52, type: 3}
   m_explosionClip: {fileID: 8300000, guid: 0bd05763df902854a80475577a26666a, type: 3}
   m_explosionMaxDistance: 35
   m_explosionVolume: 1
