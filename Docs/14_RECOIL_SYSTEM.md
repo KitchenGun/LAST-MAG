@@ -124,7 +124,7 @@ TargetYaw = StartYaw + SampleYaw
 - 라이플은 버튼을 누르는 동안 재시도하고 다음 발사 가능 시각에 자동 발사한다.
 - 성공한 같은 무기 발사만 연속 판정 시간을 갱신한다. 다른 무기의 실제 발사는 새 Burst의 첫 발이며, 탄약 부족·발사 간격 차단·커서 잠금 클릭은 판정에 포함하지 않는다.
 - 샷건은 반복 발사해도 항상 단발이며 로켓은 잔류 반동을 사용하지 않는다.
-- 공통 발사 제한은 `Time.unscaledTime`을 사용하며 무기 교체로 우회할 수 없다.
+- 공통 발사 제한은 일시정지에 대응하는 `GameplayClock.Now`를 사용하며 무기 교체나 SettingsPanel로 우회할 수 없다.
 
 ## 7. Fire Impulse
 
@@ -198,9 +198,9 @@ Yaw·Roll = 무기 기본값 × Sample HorizontalScale × Direction
 
 ## 11. 불릿타임
 
-- Aim Recoil과 Fire Impulse는 `Time.unscaledTime`을 사용한다.
+- Aim Recoil과 Fire Impulse는 `GameplayClock.Now`를 사용해 불릿타임에는 실시간, SettingsPanel 일시정지 중에는 정지한다.
 - 총기 Viewmodel과 로켓 런처 스프링, 총구 화염·연기·DMR 탄도 파티클은 scaled time을 사용해 35% 속도를 따른다.
-- 총기 RPM도 `Time.unscaledTime`을 사용한다.
+- 총기 RPM도 `GameplayClock.Now`를 사용한다.
 - 불릿타임 `timeScale = 0.35`에서도 조준·발사속도·Aim Recoil은 실제 시간 속도를 유지하고 모델 및 파티클 표현만 느려진다.
 - 배경음악 AudioSource의 Pitch도 `0.35`로 낮춰 재생속도를 세계 시간과 맞춘다.
 - 플레이어 이동·점프·중력과 월드·적은 35% 속도를 따른다.
