@@ -213,9 +213,6 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float m_dmrThirdHitDamage = 20f;
     [SerializeField, Min(0.01f)] private float m_dmrShotsPerSecond = 4f;
     [SerializeField, Min(1f)] private float m_dmrHeadshotMultiplier = 2f;
-    [Header("HUD Layout")]
-    [Tooltip("Anchored position relative to the Crosshair center.")]
-    [SerializeField] private Vector2 m_scoreFeedbackBasePosition = new(0f, -72f);
     [Header("Weapon Recoil")]
     [SerializeField] private RecoilProfile m_pistolRecoil = new(2.2f, 0.35f, 0.1f, 3.5f, 4.5f,
         0.2f, 0.055f, 0.1f, 0.12f, 0.35f, 0.05f, 0.12f, 0.08f);
@@ -231,6 +228,13 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private AudioClip m_wallImpactClip;
     [SerializeField] private float m_wallImpactMaxDistance = 20f;
     [SerializeField, Range(0f, 1f)] private float m_wallImpactVolume = 0.7f;
+    [Header("Humanoid Hit Marker Audio")]
+    [SerializeField] private AudioSource m_humanoidHitMarkerAudioSource;
+    [SerializeField] private AudioClip[] m_humanoidHeadshotHitClips;
+    [SerializeField] private AudioClip[] m_humanoidBodyHitClips;
+    [SerializeField] private AudioClip[] m_humanoidBodyKillClips;
+    [SerializeField] private AudioClip[] m_humanoidHeadshotKillClips;
+    [SerializeField, Range(0f, 1f)] private float m_humanoidHitMarkerVolume = 1f;
 
     private readonly WeaponId[] m_loadout = new WeaponId[k_WeaponSlotCount];
     private readonly int[] m_weaponAmmo = new int[k_WeaponSlotCount];
@@ -325,12 +329,19 @@ public sealed class FirstPersonController : MonoBehaviour
     private void Start()
     {
         Debug.Assert(m_gameplayHUD != null && m_playerCamera != null && m_weaponViewmodel != null
+            && m_humanoidHitMarkerAudioSource != null
             && IsAmmoConfigurationValid());
+        if (m_humanoidHitMarkerAudioSource != null)
+        {
+            m_humanoidHitMarkerAudioSource.playOnAwake = false;
+            m_humanoidHitMarkerAudioSource.loop = false;
+            m_humanoidHitMarkerAudioSource.spatialBlend = 0f;
+            m_humanoidHitMarkerAudioSource.priority = 32;
+        }
         if (m_playerCamera != null)
         {
             m_defaultCameraFieldOfView = m_playerCamera.fieldOfView;
         }
-        m_gameplayHUD?.SetScoreFeedbackBasePosition(m_scoreFeedbackBasePosition);
         m_gameplayHUD?.BindPlayerHealth(m_playerHealth);
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
@@ -970,6 +981,7 @@ public sealed class FirstPersonController : MonoBehaviour
                     m_scoreSystem.RegisterDirectKill(enemy.Type, weapon, isHeadshot);
                 }
                 m_gameplayHUD?.ShowHitMarker(isHeadshot, killed);
+                PlayHumanoidHitMarkerFeedback(enemy.Type, isHeadshot, killed, isHeadshot && killed);
             }
             else
             {
@@ -991,6 +1003,10 @@ public sealed class FirstPersonController : MonoBehaviour
         int collisionIndex = 0;
         bool anyHeadshot = false;
         bool anyKill = false;
+        bool anyHumanoidHit = false;
+        bool anyHumanoidHeadshot = false;
+        bool anyHumanoidKill = false;
+        bool anyHumanoidHeadshotKill = false;
         bool playedWallImpact = false;
         float rayLength = k_RaycastDistance;
 
@@ -1028,6 +1044,13 @@ public sealed class FirstPersonController : MonoBehaviour
                 }
                 anyHeadshot |= isHeadshot;
                 anyKill |= killed;
+                if (enemy.Type != EnemyType.Suicide)
+                {
+                    anyHumanoidHit = true;
+                    anyHumanoidHeadshot |= isHeadshot;
+                    anyHumanoidKill |= killed;
+                    anyHumanoidHeadshotKill |= isHeadshot && killed;
+                }
             }
             else if (!playedWallImpact)
             {
@@ -1051,6 +1074,8 @@ public sealed class FirstPersonController : MonoBehaviour
         if (m_dmrDamagedEnemies.Count > 0)
         {
             m_gameplayHUD?.ShowHitMarker(anyHeadshot, anyKill);
+            PlayHumanoidHitMarkerFeedback(anyHumanoidHit, anyHumanoidHeadshot, anyHumanoidKill,
+                anyHumanoidHeadshotKill);
         }
         m_weaponViewmodel?.PlayDmrTracer(ray.GetPoint(rayLength));
         Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.cyan, 0.15f);
@@ -1097,6 +1122,10 @@ public sealed class FirstPersonController : MonoBehaviour
 
         bool anyHeadshot = false;
         bool anyKill = false;
+        bool anyHumanoidHit = false;
+        bool anyHumanoidHeadshot = false;
+        bool anyHumanoidKill = false;
+        bool anyHumanoidHeadshotKill = false;
         foreach (KeyValuePair<EnemyHealth, float> hit in m_shotgunDamageByEnemy)
         {
             bool isHeadshot = m_shotgunHeadshotEnemies.Contains(hit.Key);
@@ -1107,10 +1136,54 @@ public sealed class FirstPersonController : MonoBehaviour
             }
             anyHeadshot |= isHeadshot;
             anyKill |= killed;
+            if (hit.Key.Type != EnemyType.Suicide)
+            {
+                anyHumanoidHit = true;
+                anyHumanoidHeadshot |= isHeadshot;
+                anyHumanoidKill |= killed;
+                anyHumanoidHeadshotKill |= isHeadshot && killed;
+            }
         }
         if (m_shotgunDamageByEnemy.Count > 0)
         {
             m_gameplayHUD?.ShowHitMarker(anyHeadshot, anyKill);
+            PlayHumanoidHitMarkerFeedback(anyHumanoidHit, anyHumanoidHeadshot, anyHumanoidKill,
+                anyHumanoidHeadshotKill);
+        }
+    }
+
+    private void PlayHumanoidHitMarkerFeedback(EnemyType enemyType, bool isHeadshot, bool isKill,
+        bool isHeadshotKill)
+    {
+        PlayHumanoidHitMarkerFeedback(enemyType != EnemyType.Suicide, isHeadshot, isKill, isHeadshotKill);
+    }
+
+    private void PlayHumanoidHitMarkerFeedback(bool hitHumanoid, bool anyHeadshot, bool anyKill,
+        bool anyHeadshotKill)
+    {
+        if (!hitHumanoid)
+        {
+            return;
+        }
+
+        AudioClip[] clips = anyHeadshotKill ? m_humanoidHeadshotKillClips
+            : anyKill ? m_humanoidBodyKillClips
+            : anyHeadshot ? m_humanoidHeadshotHitClips
+            : m_humanoidBodyHitClips;
+        if (m_humanoidHitMarkerAudioSource == null || clips == null || clips.Length == 0)
+        {
+            return;
+        }
+
+        int startIndex = UnityEngine.Random.Range(0, clips.Length);
+        for (int offset = 0; offset < clips.Length; offset++)
+        {
+            AudioClip clip = clips[(startIndex + offset) % clips.Length];
+            if (clip != null)
+            {
+                m_humanoidHitMarkerAudioSource.PlayOneShot(clip, m_humanoidHitMarkerVolume);
+                return;
+            }
         }
     }
 
@@ -1516,14 +1589,6 @@ public sealed class FirstPersonController : MonoBehaviour
             && m_characterController.isGrounded)
         {
             m_verticalVelocity = Mathf.Sqrt(m_jumpHeight * -2f * m_gravity);
-        }
-    }
-
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (!hasFocus && !GameplayClock.IsPaused)
-        {
-            UnlockCursor();
         }
     }
 
