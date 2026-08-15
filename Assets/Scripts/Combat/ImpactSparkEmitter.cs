@@ -17,6 +17,7 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
     private const float k_SplatLifetime = 4f;
     private const float k_SplatSurfaceOffset = 0.008f;
     private const float k_SplatRayLength = 2f;
+    private const float k_ParticleSizeMultiplier = 12f;
     private const int k_RocketTrailParticles = 2;
     private const int k_GrenadeExplosionParticles = 32;
     private const int k_RocketExplosionParticles = 12;
@@ -76,7 +77,7 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
                 position = emissionPosition,
                 velocity = direction * Random.Range(1.5f, 3.5f),
                 startLifetime = Random.Range(0.08f, 0.18f),
-                startSize = Random.Range(0.008f, 0.018f),
+                startSize = Random.Range(0.008f, 0.018f) * k_ParticleSizeMultiplier,
                 startColor = new Color(1f, Random.Range(0.78f, 0.95f), Random.Range(0.35f, 0.65f), 1f),
                 rotation = Random.Range(0f, 360f)
             };
@@ -114,7 +115,8 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
                 position = emissionPosition,
                 velocity = direction * Random.Range(humanoid ? 2f : 0.6f, humanoid ? 5.5f : 1.8f),
                 startLifetime = Random.Range(humanoid ? 0.25f : 0.08f, humanoid ? 0.55f : 0.16f),
-                startSize = Random.Range(humanoid ? 0.02f : 0.015f, humanoid ? 0.055f : 0.035f),
+                startSize = Random.Range(humanoid ? 0.02f : 0.015f, humanoid ? 0.055f : 0.035f)
+                    * k_ParticleSizeMultiplier,
                 startColor = color,
                 rotation = Random.Range(0f, 360f)
             };
@@ -139,7 +141,7 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
         for (int index = 0; index < particleCount; index++)
         {
             float lifetime = isRocket ? Random.Range(0.16f, 0.32f) : Random.Range(0.35f, 0.68f);
-            float size = Random.Range(0.012f, isRocket ? 0.024f : 0.028f);
+            float size = Random.Range(0.012f, isRocket ? 0.024f : 0.028f) * k_ParticleSizeMultiplier;
             float gravityTravel = 0.5f * gravity * lifetime * lifetime;
             float safeTravel = Mathf.Max(0f, radius * (isRocket ? 0.55f : 0.9f) - gravityTravel - size * 2f);
             Vector3 direction = isRocket ? Random.onUnitSphere : GetGrenadeFragmentDirection(index, particleCount);
@@ -174,7 +176,7 @@ public sealed class ImpactSparkEmitter : MonoBehaviour
                 position = position,
                 velocity = direction * Random.Range(4.5f, 7.5f),
                 startLifetime = Random.Range(0.05f, 0.11f),
-                startSize = Random.Range(0.008f, 0.018f),
+                startSize = Random.Range(0.008f, 0.018f) * k_ParticleSizeMultiplier,
                 startColor = index == 0 ? new Color(1f, 0.96f, 0.7f, 1f) : new Color(1f, 0.48f, 0.08f, 1f),
                 rotation = Random.Range(0f, 360f)
             };
