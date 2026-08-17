@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
+[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent), typeof(EnemyLedgeTraversal))]
 public sealed class RangedEnemy : MonoBehaviour
 {
     private const float k_ChargePuffInterval = 0.12f;
@@ -34,6 +34,7 @@ public sealed class RangedEnemy : MonoBehaviour
     private NavMeshPath m_searchPath;
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
+    private EnemyLedgeTraversal m_ledgeTraversal;
     private PlayerHealth m_target;
     private float m_fireTime;
     private float m_nextChargePuffTime;
@@ -51,6 +52,7 @@ public sealed class RangedEnemy : MonoBehaviour
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += DisableEnemy;
         m_agent = GetComponent<NavMeshAgent>();
+        m_ledgeTraversal = GetComponent<EnemyLedgeTraversal>();
         m_agent.speed = m_moveSpeed;
         if (m_animator == null)
         {
@@ -121,6 +123,12 @@ public sealed class RangedEnemy : MonoBehaviour
     {
         if (m_health.IsDisabled)
         {
+            return;
+        }
+
+        if (m_ledgeTraversal.IsTraversing)
+        {
+            SetMoving(true);
             return;
         }
 

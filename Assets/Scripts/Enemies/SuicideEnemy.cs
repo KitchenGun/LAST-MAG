@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
+[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent), typeof(EnemyLedgeTraversal))]
 public sealed class SuicideEnemy : MonoBehaviour
 {
     private const float k_PathUpdateInterval = 0.25f;
@@ -38,6 +38,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     private FirstPersonController m_targetController;
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
+    private EnemyLedgeTraversal m_ledgeTraversal;
     private MaterialPropertyBlock m_warningProperties;
     private ScoreSystem m_scoreSystem;
     private SuicideGasEmitter m_gasEmitter;
@@ -60,6 +61,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += StartDeathExplosion;
         m_agent = GetComponent<NavMeshAgent>();
+        m_ledgeTraversal = GetComponent<EnemyLedgeTraversal>();
         m_agent.speed = m_moveSpeed;
         m_agent.stoppingDistance = m_explosionRadius * 0.5f;
         m_agent.updateRotation = true;
@@ -141,6 +143,12 @@ public sealed class SuicideEnemy : MonoBehaviour
             return;
         }
 
+        if (m_ledgeTraversal.IsTraversing)
+        {
+            SetMoving(true);
+            return;
+        }
+
         FindTarget();
         if (m_target == null || !m_agent.isOnNavMesh)
         {
@@ -160,7 +168,8 @@ public sealed class SuicideEnemy : MonoBehaviour
         }
         bool hasCompletePath = m_hasPathDestination && m_agent.hasPath && !m_agent.pathPending
             && m_agent.pathStatus == NavMeshPathStatus.PathComplete;
-        if (IsWithinWarningRange(transform.position, m_target.transform.position, m_explosionRadius))
+        if (!m_agent.isOnOffMeshLink
+            && IsWithinWarningRange(transform.position, m_target.transform.position, m_explosionRadius))
         {
             StartWarning();
             return;
@@ -193,10 +202,8 @@ public sealed class SuicideEnemy : MonoBehaviour
 
     private static bool IsWithinWarningRange(Vector3 enemyPosition, Vector3 targetPosition, float explosionRadius)
     {
-        Vector3 horizontalOffset = targetPosition - enemyPosition;
-        horizontalOffset.y = 0f;
         float warningRange = explosionRadius * 0.5f;
-        return horizontalOffset.sqrMagnitude <= warningRange * warningRange;
+        return (targetPosition - enemyPosition).sqrMagnitude <= warningRange * warningRange;
     }
 
     private void StartDeathExplosion(KillContext context)
@@ -419,8 +426,8 @@ public sealed class SuicideEnemy : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_warningDuration, 2f));
         Debug.Assert(Mathf.Approximately(m_deathExplosionDelay, 0.2f));
         Debug.Assert(m_agent == null || Mathf.Approximately(m_agent.stoppingDistance, m_explosionRadius * 0.5f));
-        Debug.Assert(IsWithinWarningRange(Vector3.zero, new Vector3(0f, 10f, 1.99f), 4f));
-        Debug.Assert(!IsWithinWarningRange(Vector3.zero, new Vector3(0f, 10f, 2.01f), 4f));
+        Debug.Assert(IsWithinWarningRange(Vector3.zero, new Vector3(0f, 0f, 1.99f), 4f));
+        Debug.Assert(!IsWithinWarningRange(Vector3.zero, new Vector3(0f, 10f, 1.99f), 4f));
         Debug.Assert(Mathf.Approximately(k_WarningGasInterval, 0.2f));
         Debug.Assert(!ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), false));
         Debug.Assert(ResolveClassSkillAttribution(KillContext.Direct(WeaponId.DMR, false), true));

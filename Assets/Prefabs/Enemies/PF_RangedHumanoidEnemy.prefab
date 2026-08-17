@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4704238573374507600}
   - component: {fileID: 6421149726485911030}
   - component: {fileID: 6678344365863054548}
+  - component: {fileID: 1778511998773505199}
   m_Layer: 0
   m_Name: PF_RangedHumanoidEnemy
   m_TagString: Untagged
@@ -75,7 +76,7 @@ NavMeshAgent:
   avoidancePriority: 50
   m_AngularSpeed: 720
   m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
+  m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 2.4
@@ -232,6 +233,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1778511998773505199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 815573145433436136}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32f82ab5bdb74554ab47b799a1dfe8fe, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyLedgeTraversal
 --- !u!1 &2642496138349333846
 GameObject:
   m_ObjectHideFlags: 0

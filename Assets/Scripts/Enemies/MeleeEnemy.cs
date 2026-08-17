@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
+[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent), typeof(EnemyLedgeTraversal))]
 public sealed class MeleeEnemy : MonoBehaviour
 {
     private const float k_PathUpdateInterval = 0.25f;
@@ -24,6 +24,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
+    private EnemyLedgeTraversal m_ledgeTraversal;
     private PlayerHealth m_target;
     private Vector3 m_lockedAttackDirection;
     private float m_hitTime;
@@ -39,6 +40,7 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += DisableEnemy;
         m_agent = GetComponent<NavMeshAgent>();
+        m_ledgeTraversal = GetComponent<EnemyLedgeTraversal>();
         m_agent.speed = m_moveSpeed;
         m_agent.stoppingDistance = m_attackRange * 0.8f;
         if (m_animator == null)
@@ -93,6 +95,12 @@ public sealed class MeleeEnemy : MonoBehaviour
     {
         if (m_health.IsDisabled)
         {
+            return;
+        }
+
+        if (m_ledgeTraversal.IsTraversing)
+        {
+            SetMoving(true);
             return;
         }
 
