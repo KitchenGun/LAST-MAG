@@ -7,8 +7,11 @@ public sealed class FootstepAudio : MonoBehaviour
     [SerializeField] private AudioClip[] m_clips;
     [SerializeField, Range(0f, 1f)] private float m_volume = 0.5f;
     [SerializeField] private NavMeshAgent m_movementSource;
+    [SerializeField] private bool m_useMovementDrivenPlayback;
+    [SerializeField, Min(0.1f)] private float m_stepInterval = 0.4f;
 
     private int m_lastClipIndex = -1;
+    private float m_stepTimer;
 
     private void Awake()
     {
@@ -20,7 +23,41 @@ public sealed class FootstepAudio : MonoBehaviour
 
     public void PlayFootstep()
     {
-        if (m_audioSource == null || !CanPlayWhileMoving())
+        if (m_useMovementDrivenPlayback)
+        {
+            return;
+        }
+
+        PlaySelectedFootstep(false);
+    }
+
+    private void Update()
+    {
+        if (!m_useMovementDrivenPlayback || m_movementSource == null)
+        {
+            return;
+        }
+
+        if (!m_movementSource.isActiveAndEnabled || !m_movementSource.isOnNavMesh
+            || m_movementSource.velocity.sqrMagnitude <= 0.01f)
+        {
+            m_stepTimer = 0f;
+            return;
+        }
+
+        m_stepTimer -= Time.deltaTime;
+        if (m_stepTimer > 0f)
+        {
+            return;
+        }
+
+        PlaySelectedFootstep(true);
+        m_stepTimer = m_stepInterval;
+    }
+
+    private void PlaySelectedFootstep(bool useAttachedSource)
+    {
+        if (m_audioSource == null)
         {
             return;
         }
@@ -32,7 +69,7 @@ public sealed class FootstepAudio : MonoBehaviour
         }
 
         m_lastClipIndex = selectedIndex;
-        if (m_audioSource.spatialBlend <= 0f)
+        if (useAttachedSource || m_audioSource.spatialBlend <= 0f)
         {
             m_audioSource.PlayOneShot(m_clips[selectedIndex], m_volume);
             return;
@@ -55,18 +92,6 @@ public sealed class FootstepAudio : MonoBehaviour
         m_lastClipIndex = 0;
         Debug.Assert(SelectClipIndex(0) != 0, "Footsteps must not immediately repeat a clip.");
         m_lastClipIndex = previousIndex;
-    }
-
-    private bool CanPlayWhileMoving()
-    {
-        if (m_movementSource == null)
-        {
-            return true;
-        }
-
-        return m_movementSource.isActiveAndEnabled
-            && m_movementSource.isOnNavMesh
-            && m_movementSource.velocity.sqrMagnitude > 0.01f;
     }
 
     private int SelectClipIndex(int startIndex)

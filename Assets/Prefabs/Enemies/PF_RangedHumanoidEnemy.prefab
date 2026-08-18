@@ -527,6 +527,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 0644ead4793f8494eb4c7389ec5bb3f7, type: 3}
   m_volume: 0.65
   m_movementSource: {fileID: 1348676284319420594}
+  m_useMovementDrivenPlayback: 1
+  m_stepInterval: 0.4
 --- !u!4 &848433059779797283 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 21aff008b95fbcd48bc2a779a957d025, type: 3}

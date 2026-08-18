@@ -23,6 +23,8 @@ public sealed class FacilityLockdownAnnouncement : MonoBehaviour
     private float m_startedAt;
     private bool m_hasStarted;
 
+    internal float SubtitleEndDelay => m_audioStartDelay + m_subtitleStartTime + m_subtitleDuration;
+
     private IEnumerator Start()
     {
         AudioClip clip = Resources.Load<AudioClip>(k_AudioPath);
