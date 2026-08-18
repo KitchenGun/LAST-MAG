@@ -356,8 +356,6 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        m_attackAction.performed += OnAttack;
-        m_attackAction.canceled += OnAttackCanceled;
         m_jumpAction.performed += OnJump;
         m_playerMap.Enable();
     }
@@ -395,8 +393,6 @@ public sealed class FirstPersonController : MonoBehaviour
         ResetExplosionShake();
         if (m_playerMap != null)
         {
-            m_attackAction.performed -= OnAttack;
-            m_attackAction.canceled -= OnAttackCanceled;
             m_jumpAction.performed -= OnJump;
             m_playerMap.Disable();
         }
@@ -429,6 +425,7 @@ public sealed class FirstPersonController : MonoBehaviour
         }
 
         HandleWeaponSelection();
+        HandleAttackInput();
         if (m_playerMap != null && Cursor.lockState == CursorLockMode.Locked)
         {
             HandleDmrZoomInput();
@@ -446,7 +443,6 @@ public sealed class FirstPersonController : MonoBehaviour
 
         HandleLook();
         HandleMovement();
-        HandleAutomaticFire();
     }
 
     internal void BeginDeathPresentation(float duration)
@@ -876,39 +872,46 @@ public sealed class FirstPersonController : MonoBehaviour
         m_characterController.Move(velocity * deltaTime);
     }
 
-    private void OnAttack(InputAction.CallbackContext context)
+    private void HandleAttackInput()
     {
-        if (GameplayClock.IsPaused)
+        if (m_attackAction == null)
         {
             return;
         }
 
+        bool wasPressed = m_attackAction.WasPressedThisFrame();
         if (Cursor.lockState != CursorLockMode.Locked)
         {
-            LockCursor();
+            m_isRifleFiring = false;
+            if (wasPressed)
+            {
+                LockCursor();
+            }
             return;
         }
 
-        if (m_skillController != null && m_skillController.TryUseArmedSkill())
+        if (wasPressed)
         {
+            if (m_skillController != null && m_skillController.TryUseArmedSkill())
+            {
+                return;
+            }
+            if (m_skillController != null && m_skillController.IsWeaponInputLocked)
+            {
+                return;
+            }
+
+            m_isRifleFiring = CurrentWeapon == WeaponId.Rifle;
+            TryFireCurrentWeapon();
             return;
         }
-        if (m_skillController != null && m_skillController.IsWeaponInputLocked)
+
+        if (m_attackAction.WasReleasedThisFrame())
         {
+            m_isRifleFiring = false;
             return;
         }
 
-        m_isRifleFiring = CurrentWeapon == WeaponId.Rifle;
-        TryFireCurrentWeapon();
-    }
-
-    private void OnAttackCanceled(InputAction.CallbackContext context)
-    {
-        m_isRifleFiring = false;
-    }
-
-    private void HandleAutomaticFire()
-    {
         if (m_skillController != null && m_skillController.IsWeaponInputLocked)
         {
             m_isRifleFiring = false;
