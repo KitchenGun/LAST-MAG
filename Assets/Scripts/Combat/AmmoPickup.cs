@@ -13,9 +13,10 @@ public sealed class AmmoPickup : MonoBehaviour
         new Color32(44, 135, 232, 255),
         new Color32(44, 135, 232, 255)
     };
-    private static readonly int[] s_AmmoAmounts = { 5, 3, 20, 4 };
+    private static readonly int[] s_AmmoAmounts = { 5, 3, 20, 5 };
     private static Material s_GlowMaterial;
     private static FirstPersonController s_Player;
+    private static AudioClip s_CollectClip;
 
     [SerializeField] private WeaponId m_weapon = WeaponId.Pistol;
     [SerializeField, Min(1)] private int m_amount = 5;
@@ -53,7 +54,7 @@ public sealed class AmmoPickup : MonoBehaviour
 
     internal static WeaponId ChooseAmmoWeapon(WeaponId primary, float roll)
     {
-        return roll < 0.5f ? primary : WeaponId.Pistol;
+        return roll < 0.7f ? primary : WeaponId.Pistol;
     }
 
     public void Configure(WeaponId weapon, int amount)
@@ -138,10 +139,14 @@ public sealed class AmmoPickup : MonoBehaviour
         Debug.Assert(GetAmount(WeaponId.Pistol) == 5);
         Debug.Assert(GetAmount(WeaponId.Shotgun) == 3);
         Debug.Assert(GetAmount(WeaponId.Rifle) == 20);
-        Debug.Assert(GetAmount(WeaponId.DMR) == 4);
+        Debug.Assert(GetAmount(WeaponId.DMR) == 5);
         Debug.Assert(GetColor(WeaponId.DMR) == GetColor(WeaponId.Rifle));
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.4999f) == WeaponId.DMR);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.5f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.6999f) == WeaponId.Rifle);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.6999f) == WeaponId.Shotgun);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.6999f) == WeaponId.DMR);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.7f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.7f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.7f) == WeaponId.Pistol);
     }
 
     internal static Vector3 FindGroundPosition(Vector3 deathPosition)
@@ -163,6 +168,7 @@ public sealed class AmmoPickup : MonoBehaviour
     private void Awake()
     {
         m_trigger = GetComponent<Collider>();
+        s_CollectClip ??= Resources.Load<AudioClip>("Audio/Pickups/SFX_AmmoPickup");
     }
 
     private void LateUpdate()
@@ -212,6 +218,7 @@ public sealed class AmmoPickup : MonoBehaviour
         }
 
         s_Player = player;
+        SpatialAudio.PlayOneShot2D(s_CollectClip, 0.75f);
         if (m_pool != null)
         {
             m_pool.ReleaseAmmo(this);

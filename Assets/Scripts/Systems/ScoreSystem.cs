@@ -86,9 +86,12 @@ public sealed class ScoreSystem : MonoBehaviour
         RunResultStore.ClearResult();
         m_hud = hud;
         m_bulletTimeActive = false;
+        m_survivalAccumulator = 0f;
+        m_survivalScore = 0;
         ComboCount = 0;
         m_comboExpiresAt = 0f;
         ResetSwapCandidate();
+        m_hud?.RefreshSurvivalTime(0f);
         RefreshHud();
     }
 
@@ -104,22 +107,23 @@ public sealed class ScoreSystem : MonoBehaviour
             return;
         }
 
-        m_survivalAccumulator += Time.unscaledDeltaTime;
+        m_survivalAccumulator += GameplayClock.DeltaTime;
         if (m_survivalAccumulator >= 1f)
         {
             int elapsedSeconds = Mathf.FloorToInt(m_survivalAccumulator);
             m_survivalAccumulator -= elapsedSeconds;
             m_survivalScore += elapsedSeconds;
             m_hud?.RefreshScore(TotalScore);
+            m_hud?.RefreshSurvivalTime(m_survivalScore + m_survivalAccumulator);
         }
 
-        ExpireCombo(Time.unscaledTime);
-        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(Time.unscaledTime));
+        ExpireCombo(GameplayClock.Now);
+        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(GameplayClock.Now));
     }
 
     public void RegisterDirectKill(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
     {
-        float now = Time.unscaledTime;
+        float now = GameplayClock.Now;
         ExpireCombo(now);
         bool isSwapKill = IsSwapKill(m_lastDirectKillWeapon, weapon, now - m_lastDirectKillTime);
         bool isSkillKill = m_bulletTimeActive;
@@ -166,7 +170,7 @@ public sealed class ScoreSystem : MonoBehaviour
             return;
         }
 
-        float now = Time.unscaledTime;
+        float now = GameplayClock.Now;
         ExpireCombo(now);
         ResetSwapCandidate();
         int points = 0;
@@ -346,7 +350,7 @@ public sealed class ScoreSystem : MonoBehaviour
     private void RefreshHud()
     {
         m_hud?.RefreshScore(TotalScore);
-        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(Time.unscaledTime));
+        m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(GameplayClock.Now));
     }
 
     [ContextMenu("Run Score System Self Check")]

@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ public sealed class StartMenuController : MonoBehaviour
     };
 
     private Button m_playButton;
+    private Button m_settingsButton;
     private Button[] m_classButtons;
     private TMP_Text m_selectedClassName;
     private TMP_Text m_selectedClassLoadout;
@@ -25,7 +27,9 @@ public sealed class StartMenuController : MonoBehaviour
     private GameObject m_classSelectionPanel;
     private GameObject m_title;
     private GameObject m_controls;
+    private SettingsPanelController m_settingsPanel;
     private bool m_showingClassSelection;
+    private bool m_showingSettings;
 
     private void Awake()
     {
@@ -38,16 +42,28 @@ public sealed class StartMenuController : MonoBehaviour
             return;
         }
 
+        m_settingsButton = FindButton("SettingsButton");
+        m_settingsPanel = GetComponentInChildren<SettingsPanelController>(true);
+        if (m_settingsButton == null || m_settingsPanel == null)
+        {
+            Debug.LogError("[StartMenu] Serialized settings UI is incomplete in StartScene.");
+            return;
+        }
+
+        m_settingsButton.onClick.RemoveAllListeners();
+        m_settingsButton.onClick.AddListener(OpenSettings);
+
         m_classSelectionPanel = FindChildObject("ClassSelectionPanel");
         m_title = FindChildObject("Title");
         m_controls = FindChildObject("Controls");
         m_showingClassSelection = false;
+        m_showingSettings = false;
+        m_settingsPanel.Hide();
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(false);
         if (m_title != null) m_title.SetActive(true);
         if (m_controls != null) m_controls.SetActive(true);
         m_playButton.interactable = true;
         SetPlayButtonLabel("PLAY");
-        ConfigurePlayButton(false);
         m_selectedClassName = FindText("SelectedClassName");
         m_selectedClassLoadout = FindText("SelectedClassLoadout");
         m_selectedClassSkill = FindText("SelectedClassSkill");
@@ -81,43 +97,43 @@ public sealed class StartMenuController : MonoBehaviour
         UpdateSelectionVisuals(PlayerClassId.Unknown);
     }
 
-    private void InitializeBuildVersion()
+    private void Update()
     {
-        GameObject versionObject = new(
-            "BuildVersionText", typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
-        versionObject.transform.SetParent(transform, false);
-
-        TextMeshProUGUI versionText = versionObject.GetComponent<TextMeshProUGUI>();
-        TMP_Text fontSource = FindFirstFontSource();
-        if (fontSource != null)
+        if (m_showingSettings && Keyboard.current != null
+            && Keyboard.current.escapeKey.wasPressedThisFrame)
         {
-            versionText.font = fontSource.font;
+            CloseSettings();
         }
-        versionText.text = FormatBuildVersion(Application.version, Application.buildGUID, Application.isEditor);
-        versionText.fontSize = 14f;
-        versionText.color = new Color(0.68f, 0.78f, 0.8f, 0.65f);
-        versionText.alignment = TextAlignmentOptions.BottomLeft;
-        versionText.raycastTarget = false;
-        versionText.overflowMode = TextOverflowModes.Overflow;
-
-        RectTransform rect = versionText.rectTransform;
-        rect.anchorMin = Vector2.zero;
-        rect.anchorMax = Vector2.zero;
-        rect.pivot = Vector2.zero;
-        rect.anchoredPosition = new Vector2(20f, 14f);
-        rect.sizeDelta = new Vector2(520f, 28f);
     }
 
-    private TMP_Text FindFirstFontSource()
+    private void InitializeBuildVersion()
     {
-        foreach (TMP_Text text in GetComponentsInChildren<TMP_Text>(true))
+        TMP_Text versionText = FindText("BuildVersionText");
+        if (versionText == null)
         {
-            if (text.font != null)
-            {
-                return text;
-            }
+            Debug.LogError("[StartMenu] BuildVersionText was not found.");
+            return;
         }
-        return null;
+
+        versionText.text = FormatBuildVersion(Application.version, Application.buildGUID, Application.isEditor);
+        versionText.raycastTarget = false;
+        versionText.overflowMode = TextOverflowModes.Overflow;
+    }
+
+    private void OpenSettings()
+    {
+        if (m_showingClassSelection || m_settingsPanel == null)
+        {
+            return;
+        }
+        m_showingSettings = true;
+        m_settingsPanel.Show(CloseSettings);
+    }
+
+    private void CloseSettings()
+    {
+        m_showingSettings = false;
+        m_settingsPanel?.Hide();
     }
 
     internal static string FormatBuildVersion(string version, string buildGuid, bool isEditor)
@@ -259,6 +275,10 @@ public sealed class StartMenuController : MonoBehaviour
 
     public void Play()
     {
+        if (m_showingSettings)
+        {
+            return;
+        }
         if (!m_showingClassSelection)
         {
             ShowClassSelection();
@@ -276,9 +296,11 @@ public sealed class StartMenuController : MonoBehaviour
 
     private void ShowClassSelection()
     {
+        CloseSettings();
         m_showingClassSelection = true;
         if (m_title != null) m_title.SetActive(false);
         if (m_controls != null) m_controls.SetActive(false);
+        if (m_settingsButton != null) m_settingsButton.gameObject.SetActive(false);
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(true);
         m_playButton.interactable = false;
         SetPlayButtonLabel("CONFIRM");
@@ -287,9 +309,14 @@ public sealed class StartMenuController : MonoBehaviour
 
     private void SetPlayButtonLabel(string value)
     {
-        TMP_Text tmp = m_playButton.GetComponentInChildren<TMP_Text>(true);
+        SetButtonLabel(m_playButton, value);
+    }
+
+    private static void SetButtonLabel(Button button, string value)
+    {
+        TMP_Text tmp = button.GetComponentInChildren<TMP_Text>(true);
         if (tmp != null) tmp.text = value;
-        Text legacy = m_playButton.GetComponentInChildren<Text>(true);
+        Text legacy = button.GetComponentInChildren<Text>(true);
         if (legacy != null) legacy.text = value;
     }
 
@@ -314,5 +341,14 @@ public sealed class StartMenuController : MonoBehaviour
         Debug.Assert(FormatBuildVersion("0.1.0", "01234567-89ab-cdef", false)
             == "v0.1.0 · WEB-01234567");
         Debug.Assert(FormatBuildVersion("0.1.0", string.Empty, true) == "v0.1.0 · WEB-EDITOR");
+        Debug.Assert(SettingsPanelController.FormatSensitivity(0f) == "0.00"
+            && SettingsPanelController.FormatSensitivity(0.5f) == "0.50"
+            && SettingsPanelController.FormatSensitivity(1f) == "1.00");
+        Debug.Assert(SettingsPanelController.FormatVolume(0f) == "0%"
+            && SettingsPanelController.FormatVolume(0.5f) == "50%"
+            && SettingsPanelController.FormatVolume(1f) == "100%");
+        Debug.Assert(GameSettings.IsValidZoomInputMode(ZoomInputMode.Toggle)
+            && GameSettings.IsValidZoomInputMode(ZoomInputMode.Hold)
+            && !GameSettings.IsValidZoomInputMode((ZoomInputMode)2));
     }
 }

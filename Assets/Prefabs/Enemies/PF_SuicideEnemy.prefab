@@ -66,6 +66,7 @@ GameObject:
   - component: {fileID: 6010385386296230468}
   - component: {fileID: 4252198854786110117}
   - component: {fileID: 6325062449837423255}
+  - component: {fileID: 8654937311774744986}
   m_Layer: 0
   m_Name: PF_SuicideEnemy
   m_TagString: Untagged
@@ -128,7 +129,7 @@ NavMeshAgent:
   avoidancePriority: 50
   m_AngularSpeed: 120
   m_StoppingDistance: 3.75
-  m_AutoTraverseOffMeshLink: 1
+  m_AutoTraverseOffMeshLink: 0
   m_AutoBraking: 1
   m_AutoRepath: 1
   m_Height: 1.2
@@ -147,7 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2b5427d2cd6bdd47837134eb90f9576, type: 3}
   m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
-  m_maxHealth: 60
+  m_maxHealth: 1
   m_characterRenderer: {fileID: 897310945107858656}
   m_playHitAndDeathAnimations: 0
   m_animator: {fileID: 0}
@@ -173,14 +174,31 @@ MonoBehaviour:
   m_moveSpeed: 2
   m_explosionDamage: 60
   m_explosionRadius: 4
-  m_warningDuration: 0.8
+  m_warningDuration: 2
   m_deathExplosionDelay: 0.2
   m_animator: {fileID: 6635377610207947365}
   m_warningRenderer: {fileID: 897310945107858656}
   m_warningMaterialIndex: 1
+  m_preExplosionClips:
+  - {fileID: 8300000, guid: 5174415e9879415498f7b0dd794d19c5, type: 3}
+  - {fileID: 8300000, guid: 2a295373a10441545bcaf619b61bea94, type: 3}
+  - {fileID: 8300000, guid: 8ba1ce15e8593064aa781b941381f053, type: 3}
+  - {fileID: 8300000, guid: 05d0536a3eefc80438f95f9662331f52, type: 3}
   m_explosionClip: {fileID: 8300000, guid: 0bd05763df902854a80475577a26666a, type: 3}
   m_explosionMaxDistance: 35
   m_explosionVolume: 1
+--- !u!114 &8654937311774744986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6710161395956170048}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32f82ab5bdb74554ab47b799a1dfe8fe, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyLedgeTraversal
 --- !u!1001 &8421411959450138095
 PrefabInstance:
   m_ObjectHideFlags: 0

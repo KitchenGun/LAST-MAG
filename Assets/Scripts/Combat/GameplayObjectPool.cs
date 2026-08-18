@@ -4,8 +4,8 @@ using UnityEngine.Pool;
 
 public sealed class GameplayObjectPool : MonoBehaviour
 {
-    private const int k_EnemyDefaultCapacity = 8;
-    private const int k_EnemyMaxInactive = 16;
+    private const int k_EnemyPrewarmCount = 36;
+    private const int k_EnemyMaxInactive = 40;
     private const int k_ProjectileDefaultCapacity = 16;
     private const int k_ProjectileMaxInactive = 128;
     private const int k_MaxActiveAmmo = 30;
@@ -41,7 +41,7 @@ public sealed class GameplayObjectPool : MonoBehaviour
             DestroyAmmo, true, k_MaxActiveAmmo, k_MaxActiveAmmo);
         for (int i = 0; i < m_enemyPools.Length; i++)
         {
-            Prewarm(m_enemyPools[i], k_EnemyDefaultCapacity);
+            Prewarm(m_enemyPools[i], k_EnemyPrewarmCount);
         }
         Prewarm(m_projectilePool, k_ProjectileDefaultCapacity);
         SpatialAudio.Initialize(transform);
@@ -147,7 +147,7 @@ public sealed class GameplayObjectPool : MonoBehaviour
             enemy.gameObject.SetActive(false);
             return enemy;
         }, null, enemy => enemy.gameObject.SetActive(false), enemy => Destroy(enemy.gameObject),
-            true, k_EnemyDefaultCapacity, k_EnemyMaxInactive);
+            true, k_EnemyPrewarmCount, k_EnemyMaxInactive);
     }
 
     private RangedProjectile CreateProjectile()
@@ -205,6 +205,12 @@ public sealed class GameplayObjectPool : MonoBehaviour
         Debug.Assert(ActiveEnemyCount >= 0);
         Debug.Assert(m_activeAmmo.Count <= k_MaxActiveAmmo);
         Debug.Assert(m_enemyPools != null && m_enemyPools.Length == 3);
+        for (int index = 0; index < m_enemyPools.Length; index++)
+        {
+            Debug.Assert(m_enemyPools[index].CountAll >= k_EnemyPrewarmCount);
+            Debug.Assert(m_enemyPools[index].CountInactive >= k_EnemyPrewarmCount
+                || ActiveEnemyCount > 0);
+        }
         Debug.Assert(m_projectileGasEmitter != null);
     }
 }

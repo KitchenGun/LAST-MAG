@@ -6,6 +6,11 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
 {
     private const int k_GrenadeExplosionCount = 3;
     private const float k_GrenadePulseInterval = 1f;
+    private const float k_AirLinearDamping = 0f;
+    private const float k_AirAngularDamping = 0.05f;
+    private const float k_GroundLinearDamping = 2.5f;
+    private const float k_GroundAngularDamping = 8f;
+    private const float k_GroundNormalMinY = 0.55f;
     private static readonly Collider[] s_ExplosionHits = new Collider[128];
 
     [Header("Explosion Audio")]
@@ -99,6 +104,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_collider.enabled = true;
         m_body.isKinematic = false;
         m_body.useGravity = useGravity;
+        ResetAirDamping();
         m_body.linearVelocity = direction.normalized * speed;
         m_body.angularVelocity = useGravity ? new Vector3(4f, 2f, 3f) : Vector3.zero;
         if (useGravity)
@@ -162,7 +168,13 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
 
         if (m_body.useGravity)
         {
-            if (collision.collider.GetComponentInParent<EnemyHealth>() == null)
+            bool hitEnemy = collision.collider.GetComponentInParent<EnemyHealth>() != null;
+            if (!hitEnemy && HasGroundContact(collision))
+            {
+                m_body.linearDamping = k_GroundLinearDamping;
+                m_body.angularDamping = k_GroundAngularDamping;
+            }
+            if (!hitEnemy)
             {
                 SpatialAudio.PlayRandomOneShot(m_collisionClips, collision.GetContact(0).point,
                     m_collisionMaxDistance, m_collisionVolume);
@@ -245,6 +257,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             m_body.angularVelocity = Vector3.zero;
         }
         m_body.isKinematic = true;
+        ResetAirDamping();
         m_collider.enabled = false;
         m_explodeAt = 0f;
         m_explosionsRemaining = 0;
@@ -256,10 +269,45 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    internal bool DropAsInertDeathProp(Vector3 inheritedVelocity, Vector3 worldForward)
+    {
+        CharacterController controller = m_player != null
+            ? m_player.GetComponent<CharacterController>()
+            : null;
+        bool created = WeaponViewmodelController.CreateDeathDropClone(
+            transform, inheritedVelocity, worldForward, controller);
+        Hide();
+        return created;
+    }
+
+    private static bool HasGroundContact(Collision collision)
+    {
+        for (int index = 0; index < collision.contactCount; index++)
+        {
+            if (collision.GetContact(index).normal.y >= k_GroundNormalMinY)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void ResetAirDamping()
+    {
+        m_body.linearDamping = k_AirLinearDamping;
+        m_body.angularDamping = k_AirAngularDamping;
+    }
+
     [ContextMenu("Run Skill Projectile Self Check")]
     private void RunSelfCheck()
     {
         Debug.Assert(k_GrenadeExplosionCount == 3);
         Debug.Assert(Mathf.Approximately(k_GrenadePulseInterval, 1f));
+        Debug.Assert(Mathf.Approximately(k_AirLinearDamping, 0f));
+        Debug.Assert(Mathf.Approximately(k_AirAngularDamping, 0.05f));
+        Debug.Assert(Mathf.Approximately(k_GroundLinearDamping, 2.5f));
+        Debug.Assert(Mathf.Approximately(k_GroundAngularDamping, 8f));
+        Debug.Assert(Mathf.Approximately(k_GroundNormalMinY, 0.55f));
     }
 }

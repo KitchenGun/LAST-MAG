@@ -1,10 +1,14 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
+[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent), typeof(EnemyLedgeTraversal))]
 public sealed class RangedEnemy : MonoBehaviour
 {
     private const float k_ChargePuffInterval = 0.12f;
+    private const float k_LineOfSightInterval = 0.1f;
+    private const float k_RepositionInterval = 0.75f;
+    private const int k_SearchCandidatesPerTick = 2;
+    private static readonly RaycastHit[] s_LineOfSightHits = new RaycastHit[32];
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
     private static readonly Vector3[] s_SearchDirections =
@@ -30,13 +34,16 @@ public sealed class RangedEnemy : MonoBehaviour
     private NavMeshPath m_searchPath;
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
+    private EnemyLedgeTraversal m_ledgeTraversal;
     private PlayerHealth m_target;
     private float m_fireTime;
     private float m_nextChargePuffTime;
     private float m_nextAttackTime;
+    private float m_nextLineOfSightCheckTime;
     private float m_nextRepositionTime;
     private int m_searchDirectionIndex;
     private bool m_isAiming;
+    private bool m_cachedCanFire;
     private bool m_isMoving;
 
     private void Awake()
@@ -45,6 +52,7 @@ public sealed class RangedEnemy : MonoBehaviour
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += DisableEnemy;
         m_agent = GetComponent<NavMeshAgent>();
+        m_ledgeTraversal = GetComponent<EnemyLedgeTraversal>();
         m_agent.speed = m_moveSpeed;
         if (m_animator == null)
         {
@@ -75,7 +83,10 @@ public sealed class RangedEnemy : MonoBehaviour
         m_fireTime = 0f;
         m_nextChargePuffTime = 0f;
         m_nextAttackTime = 0f;
-        m_nextRepositionTime = 0f;
+        float stagger = Mathf.Abs(GetInstanceID() % 1000) / 1000f;
+        m_nextLineOfSightCheckTime = Time.time + stagger * k_LineOfSightInterval;
+        m_nextRepositionTime = Time.time + stagger * k_RepositionInterval;
+        m_cachedCanFire = false;
         if (m_chargeVisual != null)
         {
             m_chargeVisual.SetActive(false);
@@ -115,6 +126,12 @@ public sealed class RangedEnemy : MonoBehaviour
             return;
         }
 
+        if (m_ledgeTraversal.IsTraversing)
+        {
+            SetMoving(true);
+            return;
+        }
+
         if (m_target == null)
         {
             m_target = FindFirstObjectByType<PlayerHealth>();
@@ -131,7 +148,7 @@ public sealed class RangedEnemy : MonoBehaviour
             return;
         }
 
-        if (CanFireFrom(transform.position))
+        if (CanFireFromCached())
         {
             m_agent.isStopped = true;
             SetMoving(false);
@@ -165,7 +182,7 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private void UpdateAim()
     {
-        if (!CanFireFrom(transform.position))
+        if (!CanFireFromCached())
         {
             CancelAim();
             return;
@@ -210,7 +227,7 @@ public sealed class RangedEnemy : MonoBehaviour
             SetMoving(m_agent.velocity.sqrMagnitude > 0.01f);
             return;
         }
-        m_nextRepositionTime = Time.time + 0.5f;
+        m_nextRepositionTime = Time.time + k_RepositionInterval;
 
         Vector3 toTarget = m_target.transform.position - transform.position;
         toTarget.y = 0f;
@@ -236,7 +253,7 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private bool TryFindFiringPosition(out Vector3 position)
     {
-        for (int offset = 0; offset < s_SearchDirections.Length; offset++)
+        for (int offset = 0; offset < k_SearchCandidatesPerTick; offset++)
         {
             Vector3 direction = s_SearchDirections[(m_searchDirectionIndex + offset) % s_SearchDirections.Length];
             Vector3 candidate = m_target.transform.position + direction * ((m_minimumRange + m_maximumRange) * 0.5f);
@@ -256,8 +273,20 @@ public sealed class RangedEnemy : MonoBehaviour
             return true;
         }
 
+        m_searchDirectionIndex = (m_searchDirectionIndex + k_SearchCandidatesPerTick)
+            % s_SearchDirections.Length;
         position = transform.position;
         return false;
+    }
+
+    private bool CanFireFromCached()
+    {
+        if (Time.time >= m_nextLineOfSightCheckTime)
+        {
+            m_nextLineOfSightCheckTime = Time.time + k_LineOfSightInterval;
+            m_cachedCanFire = CanFireFrom(transform.position);
+        }
+        return m_cachedCanFire;
     }
 
     private bool CanFireFrom(Vector3 position)
@@ -270,11 +299,31 @@ public sealed class RangedEnemy : MonoBehaviour
     {
         Vector3 origin = position + Vector3.up * 1.4f;
         Vector3 targetPosition = m_target.transform.position + Vector3.up;
-        if (!Physics.Raycast(origin, targetPosition - origin, out RaycastHit hit, Vector3.Distance(origin, targetPosition), Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        Vector3 direction = targetPosition - origin;
+        float distance = direction.magnitude;
+        if (distance <= 0.001f)
         {
             return false;
         }
-        return hit.collider.GetComponentInParent<PlayerHealth>() == m_target;
+
+        int hitCount = Physics.RaycastNonAlloc(origin, direction / distance, s_LineOfSightHits, distance,
+            Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        RaycastHit nearestNonEnemy = default;
+        bool foundNonEnemy = false;
+        for (int index = 0; index < hitCount; index++)
+        {
+            RaycastHit hit = s_LineOfSightHits[index];
+            if (hit.collider.GetComponentInParent<EnemyHealth>() != null
+                || foundNonEnemy && hit.distance >= nearestNonEnemy.distance)
+            {
+                continue;
+            }
+
+            nearestNonEnemy = hit;
+            foundNonEnemy = true;
+        }
+
+        return foundNonEnemy && nearestNonEnemy.collider.GetComponentInParent<PlayerHealth>() == m_target;
     }
 
     private void FaceTarget()

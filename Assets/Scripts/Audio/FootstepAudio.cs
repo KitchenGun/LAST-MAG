@@ -32,7 +32,15 @@ public sealed class FootstepAudio : MonoBehaviour
         }
 
         m_lastClipIndex = selectedIndex;
-        m_audioSource.PlayOneShot(m_clips[selectedIndex], m_volume);
+        if (m_audioSource.spatialBlend <= 0f)
+        {
+            m_audioSource.PlayOneShot(m_clips[selectedIndex], m_volume);
+            return;
+        }
+
+        float volume = m_volume * m_audioSource.volume;
+        SpatialAudio.PlayOneShot(m_clips[selectedIndex], transform.position,
+            m_audioSource.maxDistance, volume);
     }
 
     [ContextMenu("Run Footstep Audio Self Check")]
@@ -58,9 +66,7 @@ public sealed class FootstepAudio : MonoBehaviour
 
         return m_movementSource.isActiveAndEnabled
             && m_movementSource.isOnNavMesh
-            && !m_movementSource.isStopped
-            && m_movementSource.hasPath
-            && m_movementSource.remainingDistance > m_movementSource.stoppingDistance;
+            && m_movementSource.velocity.sqrMagnitude > 0.01f;
     }
 
     private int SelectClipIndex(int startIndex)

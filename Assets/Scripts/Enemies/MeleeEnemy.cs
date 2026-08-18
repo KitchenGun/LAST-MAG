@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent))]
+[RequireComponent(typeof(EnemyHealth), typeof(NavMeshAgent), typeof(EnemyLedgeTraversal))]
 public sealed class MeleeEnemy : MonoBehaviour
 {
-    private const float k_PathUpdateInterval = 0.1f;
-    private const float k_PathDestinationThresholdSqr = 0.25f;
+    private const float k_PathUpdateInterval = 0.25f;
+    private const float k_PathDestinationThresholdSqr = 1f;
+    private static readonly Collider[] s_AttackHits = new Collider[128];
     private static readonly int s_IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int s_Attack = Animator.StringToHash("Attack");
 
@@ -23,6 +24,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
     private EnemyHealth m_health;
     private NavMeshAgent m_agent;
+    private EnemyLedgeTraversal m_ledgeTraversal;
     private PlayerHealth m_target;
     private Vector3 m_lockedAttackDirection;
     private float m_hitTime;
@@ -38,6 +40,7 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_health = GetComponent<EnemyHealth>();
         m_health.ZeroHealthReached += DisableEnemy;
         m_agent = GetComponent<NavMeshAgent>();
+        m_ledgeTraversal = GetComponent<EnemyLedgeTraversal>();
         m_agent.speed = m_moveSpeed;
         m_agent.stoppingDistance = m_attackRange * 0.8f;
         if (m_animator == null)
@@ -58,7 +61,8 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_hasPathDestination = false;
         m_hitTime = 0f;
         m_nextAttackTime = 0f;
-        m_nextPathUpdateTime = 0f;
+        m_nextPathUpdateTime = Time.time
+            + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         if (m_animator != null)
         {
             m_animator.SetBool(s_IsMoving, false);
@@ -91,6 +95,12 @@ public sealed class MeleeEnemy : MonoBehaviour
     {
         if (m_health.IsDisabled)
         {
+            return;
+        }
+
+        if (m_ledgeTraversal.IsTraversing)
+        {
+            SetMoving(true);
             return;
         }
 
@@ -155,8 +165,11 @@ public sealed class MeleeEnemy : MonoBehaviour
     {
         m_isAttacking = false;
         Vector3 hitCenter = transform.position + Vector3.up + m_lockedAttackDirection * Mathf.Max(0.8f, m_attackRange - m_hitRadius);
-        foreach (Collider hit in Physics.OverlapSphere(hitCenter, m_hitRadius, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        int hitCount = Physics.OverlapSphereNonAlloc(hitCenter, m_hitRadius, s_AttackHits,
+            Physics.AllLayers, QueryTriggerInteraction.Ignore);
+        for (int index = 0; index < hitCount; index++)
         {
+            Collider hit = s_AttackHits[index];
             PlayerHealth player = hit.GetComponentInParent<PlayerHealth>();
             if (player != null)
             {

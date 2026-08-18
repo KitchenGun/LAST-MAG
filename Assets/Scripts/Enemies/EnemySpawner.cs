@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
@@ -6,6 +7,7 @@ using UnityEngine.AI;
 public sealed class EnemySpawner : MonoBehaviour
 {
     private const float k_RetryInterval = 0.25f;
+    private const float k_MaxRetryInterval = 1f;
     private const float k_MinPlayerDistance = 15f;
 
     [SerializeField] private Transform m_player;
@@ -18,12 +20,31 @@ public sealed class EnemySpawner : MonoBehaviour
     private readonly List<Vector3> m_candidatePositions = new();
     private readonly RaycastHit[] m_visibilityHits = new RaycastHit[32];
     private readonly Vector3[] m_pathCorners = new Vector3[64];
+    private Vector3[] m_spawnNavPositions;
+    private bool[] m_spawnNavPositionValid;
     private NavMeshPath m_spawnPath;
     private GameplayObjectPool m_objectPool;
     private int m_cycleIndex;
     private int m_lastSpawnPoint = -1;
     private float m_startTime;
     private float m_nextAttemptTime;
+    private float m_retryInterval = k_RetryInterval;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private const int k_StressSampleCapacity = 12000;
+    private int m_stressEnemyTarget;
+    private readonly float[] m_stressFrameSamples = new float[k_StressSampleCapacity];
+    private readonly float[] m_stressCpuSamples = new float[k_StressSampleCapacity];
+    private readonly float[] m_stressGpuSamples = new float[k_StressSampleCapacity];
+    private readonly FrameTiming[] m_frameTiming = new FrameTiming[1];
+    private int m_stressFrameSampleCount;
+    private int m_stressCpuSampleCount;
+    private int m_stressGpuSampleCount;
+    private float m_stressWarmupEndsAt;
+    private float m_stressSampleStartedAt;
+    private bool m_stressMeasurementStarted;
+    private bool m_stressMeasurementComplete;
+    internal static bool IsStressTestActive { get; private set; }
+#endif
 
     private void Awake()
     {
@@ -40,6 +61,7 @@ public sealed class EnemySpawner : MonoBehaviour
         }
 
         m_objectPool = GetComponent<GameplayObjectPool>();
+        CacheSpawnPositions();
         ShuffleCycle();
     }
 
@@ -47,17 +69,38 @@ public sealed class EnemySpawner : MonoBehaviour
     {
         m_startTime = Time.time;
         m_nextAttemptTime = m_startTime + m_initialDelay;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        m_stressEnemyTarget = ParseStressTarget(Application.absoluteURL);
+        IsStressTestActive = m_stressEnemyTarget > 0;
+        if (m_stressEnemyTarget > 0)
+        {
+            m_nextAttemptTime = Time.time;
+        }
+#endif
     }
 
     private void Update()
     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        UpdateStressMeasurement();
+#endif
         if (Time.time < m_nextAttemptTime || !HasRequiredReferences())
         {
             return;
         }
 
         float elapsedMinutes = (Time.time - m_startTime) / 60f;
-        if (m_objectPool.ActiveEnemyCount >= EvaluateActiveTarget(elapsedMinutes))
+        int activeTarget = EvaluateActiveTarget(elapsedMinutes);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        bool isStressFill = m_stressEnemyTarget > 0 && m_objectPool.ActiveEnemyCount < m_stressEnemyTarget;
+        if (isStressFill)
+        {
+            activeTarget = m_stressEnemyTarget;
+        }
+#else
+        const bool isStressFill = false;
+#endif
+        if (m_objectPool.ActiveEnemyCount >= activeTarget)
         {
             m_nextAttemptTime = Time.time + k_RetryInterval;
             return;
@@ -66,7 +109,7 @@ public sealed class EnemySpawner : MonoBehaviour
         int enemyIndex = m_enemyCycle[m_cycleIndex];
         if (!TryChooseSpawnPosition(out int pointIndex, out Vector3 spawnPosition))
         {
-            m_nextAttemptTime = Time.time + k_RetryInterval;
+            ScheduleRetry();
             return;
         }
 
@@ -77,7 +120,8 @@ public sealed class EnemySpawner : MonoBehaviour
 
         m_lastSpawnPoint = pointIndex;
         AdvanceCycle();
-        m_nextAttemptTime = Time.time + EvaluateSpawnInterval(elapsedMinutes);
+        m_retryInterval = k_RetryInterval;
+        m_nextAttemptTime = isStressFill ? Time.time : Time.time + EvaluateSpawnInterval(elapsedMinutes);
     }
 
     private bool TryChooseSpawnPosition(out int pointIndex, out Vector3 spawnPosition)
@@ -95,10 +139,11 @@ public sealed class EnemySpawner : MonoBehaviour
         for (int index = 0; index < m_spawnPoints.Length; index++)
         {
             EnemySpawnPoint point = m_spawnPoints[index];
-            if (index == m_lastSpawnPoint || point == null || !point.TryGetNavMeshPosition(out Vector3 candidate))
+            if (index == m_lastSpawnPoint || point == null || !m_spawnNavPositionValid[index])
             {
                 continue;
             }
+            Vector3 candidate = m_spawnNavPositions[index];
 
             if (Vector3.Distance(candidate, playerHit.position) < k_MinPlayerDistance
                 || !HasLongCompletePath(candidate, playerHit.position)
@@ -142,28 +187,135 @@ public sealed class EnemySpawner : MonoBehaviour
     private bool IsHiddenFromCamera(Vector3 position)
     {
         Vector3 right = m_playerCamera.transform.right * 0.55f;
-        Vector3[] probes =
-        {
-            position + Vector3.up * 0.25f,
-            position + Vector3.up * 1.1f,
-            position + Vector3.up * 2.2f,
-            position + Vector3.up * 1.1f + right,
-            position + Vector3.up * 1.1f - right
-        };
+        Vector3 middle = position + Vector3.up * 1.1f;
+        return IsProbeHidden(position + Vector3.up * 0.25f)
+            && IsProbeHidden(middle)
+            && IsProbeHidden(position + Vector3.up * 2.2f)
+            && IsProbeHidden(middle + right)
+            && IsProbeHidden(middle - right);
+    }
 
-        foreach (Vector3 probe in probes)
+    private bool IsProbeHidden(Vector3 probe)
+    {
+        Vector3 viewport = m_playerCamera.WorldToViewportPoint(probe);
+        bool isOnScreen = viewport.z > 0f
+            && viewport.x >= 0f && viewport.x <= 1f
+            && viewport.y >= 0f && viewport.y <= 1f;
+        return !isOnScreen || HasWorldOccluder(probe);
+    }
+
+    private void CacheSpawnPositions()
+    {
+        int count = m_spawnPoints != null ? m_spawnPoints.Length : 0;
+        m_spawnNavPositions = new Vector3[count];
+        m_spawnNavPositionValid = new bool[count];
+        for (int index = 0; index < count; index++)
         {
-            Vector3 viewport = m_playerCamera.WorldToViewportPoint(probe);
-            bool isOnScreen = viewport.z > 0f
-                && viewport.x >= 0f && viewport.x <= 1f
-                && viewport.y >= 0f && viewport.y <= 1f;
-            if (isOnScreen && !HasWorldOccluder(probe))
+            EnemySpawnPoint point = m_spawnPoints[index];
+            m_spawnNavPositionValid[index] = point != null
+                && point.TryGetNavMeshPosition(out m_spawnNavPositions[index]);
+        }
+    }
+
+    private void ScheduleRetry()
+    {
+        m_nextAttemptTime = Time.time + m_retryInterval;
+        m_retryInterval = Mathf.Min(k_MaxRetryInterval, m_retryInterval * 2f);
+    }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private void UpdateStressMeasurement()
+    {
+        if (!IsStressTestActive || m_stressMeasurementComplete
+            || m_objectPool == null || m_objectPool.ActiveEnemyCount < m_stressEnemyTarget)
+        {
+            return;
+        }
+
+        float now = Time.realtimeSinceStartup;
+        if (!m_stressMeasurementStarted)
+        {
+            m_stressMeasurementStarted = true;
+            m_stressWarmupEndsAt = now + 10f;
+            return;
+        }
+        if (now < m_stressWarmupEndsAt)
+        {
+            return;
+        }
+        if (m_stressSampleStartedAt <= 0f)
+        {
+            m_stressSampleStartedAt = now;
+        }
+
+        // ponytail: 12000 samples cover 60 seconds at up to 200 FPS.
+        if (m_stressFrameSampleCount < k_StressSampleCapacity)
+        {
+            m_stressFrameSamples[m_stressFrameSampleCount++] = Time.unscaledDeltaTime * 1000f;
+        }
+        FrameTimingManager.CaptureFrameTimings();
+        if (FrameTimingManager.GetLatestTimings(1, m_frameTiming) > 0)
+        {
+            FrameTiming timing = m_frameTiming[0];
+            if (timing.cpuFrameTime > 0d && m_stressCpuSampleCount < k_StressSampleCapacity)
             {
-                return false;
+                m_stressCpuSamples[m_stressCpuSampleCount++] = (float)timing.cpuFrameTime;
+            }
+            if (timing.gpuFrameTime > 0d && m_stressGpuSampleCount < k_StressSampleCapacity)
+            {
+                m_stressGpuSamples[m_stressGpuSampleCount++] = (float)timing.gpuFrameTime;
             }
         }
-        return true;
+
+        float duration = now - m_stressSampleStartedAt;
+        if (duration < 60f)
+        {
+            return;
+        }
+
+        m_stressMeasurementComplete = true;
+        int over33Ms = 0;
+        for (int index = 0; index < m_stressFrameSampleCount; index++)
+        {
+            over33Ms += m_stressFrameSamples[index] >= 33f ? 1 : 0;
+        }
+        float averageFps = m_stressFrameSampleCount / duration;
+        Debug.Log($"[WebGL Stress] target={m_stressEnemyTarget} duration={duration:F1}s "
+            + $"averageFps={averageFps:F1} frameP95Ms={CalculateP95(m_stressFrameSamples, m_stressFrameSampleCount):F2} "
+            + $"cpuP95Ms={CalculateP95(m_stressCpuSamples, m_stressCpuSampleCount):F2} "
+            + $"gpuP95Ms={CalculateP95(m_stressGpuSamples, m_stressGpuSampleCount):F2} over33Ms={over33Ms}");
     }
+
+    private static float CalculateP95(float[] samples, int count)
+    {
+        if (count <= 0)
+        {
+            return -1f;
+        }
+        Array.Sort(samples, 0, count);
+        return samples[Mathf.Clamp(Mathf.CeilToInt(count * 0.95f) - 1, 0, count - 1)];
+    }
+
+    private static int ParseStressTarget(string absoluteUrl)
+    {
+        if (string.IsNullOrEmpty(absoluteUrl) || !Uri.TryCreate(absoluteUrl, UriKind.Absolute, out Uri uri))
+        {
+            return 0;
+        }
+
+        string[] parameters = uri.Query.TrimStart('?').Split('&');
+        for (int index = 0; index < parameters.Length; index++)
+        {
+            string[] pair = parameters[index].Split('=');
+            if (pair.Length == 2 && pair[0] == "stressEnemies"
+                && int.TryParse(pair[1], out int target) && (target == 48 || target == 108))
+            {
+                return target;
+            }
+        }
+        return 0;
+    }
+#endif
 
     private bool HasWorldOccluder(Vector3 probe)
     {
@@ -239,6 +391,11 @@ public sealed class EnemySpawner : MonoBehaviour
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(3f), 1.6f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(5f), 1.1f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(8f), 0.7f));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=48") == 48);
+        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=108") == 108);
+        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=99") == 0);
+#endif
         Debug.Assert(HasRequiredReferences());
     }
 
