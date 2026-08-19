@@ -70,6 +70,7 @@ public sealed class SettingsPanelController : MonoBehaviour
         m_volumeSlider.onValueChanged.RemoveAllListeners();
         m_volumeSlider.onValueChanged.AddListener(OnVolumeChanged);
         m_initialized = true;
+        UIButtonClickAudio.RefreshButtonHooks();
     }
 
     private void RequestClose()

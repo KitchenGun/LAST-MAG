@@ -200,6 +200,7 @@ public sealed class StartMenuController : MonoBehaviour
     private void SelectClass(PlayerClassId playerClass)
     {
         RunResultStore.SelectClass(playerClass);
+        m_confirmButton.gameObject.SetActive(true);
         m_confirmButton.interactable = true;
         UpdateSelectionVisuals(playerClass);
     }
@@ -306,7 +307,7 @@ public sealed class StartMenuController : MonoBehaviour
         if (m_settingsButton != null) m_settingsButton.gameObject.SetActive(false);
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(true);
         m_playButton.gameObject.SetActive(false);
-        m_confirmButton.gameObject.SetActive(true);
+        m_confirmButton.gameObject.SetActive(false);
         m_confirmButton.interactable = false;
     }
 

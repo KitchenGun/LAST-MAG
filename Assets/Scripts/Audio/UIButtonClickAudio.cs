@@ -62,6 +62,11 @@ public sealed class UIButtonClickAudio : MonoBehaviour
         HookButtons();
     }
 
+    internal static void RefreshButtonHooks()
+    {
+        s_instance?.HookButtons();
+    }
+
     private void HookButtons()
     {
         Button[] buttons = FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None);
