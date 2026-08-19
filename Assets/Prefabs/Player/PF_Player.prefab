@@ -20442,6 +20442,8 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 806d02e5dad40d44abdcb70460655e4c, type: 3}
   m_volume: 0.18
   m_movementSource: {fileID: 0}
+  m_useMovementDrivenPlayback: 0
+  m_stepInterval: 0.4
 --- !u!1 &3457483632116076846
 GameObject:
   m_ObjectHideFlags: 0
@@ -25640,6 +25642,14 @@ MonoBehaviour:
   m_jumpHeight: 1.2
   m_gravity: -20
   m_lookSensitivity: 0.1
+  m_damageAimPunchKickSpeed: 30
+  m_damageAimPunchReturnSpeed: 8
+  m_damageAimPunchSoftCap: 3
+  m_damageAimPunchHardCapPitch: 4
+  m_damageAimPunchHardCapYaw: 2
+  m_suicideDamageAimPunch: {x: 2.8, y: 1.2}
+  m_meleeDamageAimPunch: {x: 1.7, y: 0.75}
+  m_rangedDamageAimPunch: {x: 1.6, y: 0.7}
   m_pistolAmmoCapacity: 15
   m_shotgunAmmoCapacity: 8
   m_rifleAmmoCapacity: 50
