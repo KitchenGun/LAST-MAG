@@ -29,12 +29,17 @@ public sealed class ResultSceneController : MonoBehaviour
     [SerializeField] private TMP_Text m_deathCauseText;
     [SerializeField] private Button m_retryButton;
 
+    [Header("UI Skin")]
+    [SerializeField] private Sprite m_rankingRowNormalSprite;
+    [SerializeField] private Sprite m_rankingRowPlayerSprite;
+
     [Header("Online ranking")]
     [SerializeField] private string m_leaderboardUrl;
     [SerializeField] private TMP_InputField m_nicknameInput;
     [SerializeField] private Button m_submitButton;
     [SerializeField] private TMP_Text m_submitButtonText;
     [SerializeField] private TMP_Text m_submissionStatusText;
+    [SerializeField] private TMP_Text m_submissionHelpText;
     [SerializeField] private TMP_Text m_rankingText;
     [SerializeField] private TMP_Text[] m_rankingRankTexts;
     [SerializeField] private TMP_Text[] m_rankingNicknameTexts;
@@ -45,6 +50,7 @@ public sealed class ResultSceneController : MonoBehaviour
     private readonly Color[] m_nicknameColors = new Color[MaxRankingEntries];
     private readonly Color[] m_classColors = new Color[MaxRankingEntries];
     private readonly Color[] m_scoreColors = new Color[MaxRankingEntries];
+    private readonly Image[] m_rankingRowBackgrounds = new Image[MaxRankingEntries];
     private bool m_isLoading;
     private bool m_submissionArmed;
     private bool m_submissionStarted;
@@ -75,10 +81,14 @@ public sealed class ResultSceneController : MonoBehaviour
             m_retryButton.onClick.AddListener(Retry);
         }
 
+        bool inputIsAvailable = m_nicknameInput != null && m_nicknameInput.gameObject.activeSelf;
         EventSystem.current?.SetSelectedGameObject(
-            m_nicknameInput != null && m_nicknameInput.gameObject.activeSelf
-                ? m_nicknameInput.gameObject
-                : m_retryButton?.gameObject);
+            inputIsAvailable ? m_nicknameInput.gameObject : m_retryButton?.gameObject);
+        if (inputIsAvailable)
+        {
+            m_nicknameInput.Select();
+            m_nicknameInput.ActivateInputField();
+        }
     }
 
     private void OnDestroy()
@@ -114,6 +124,7 @@ public sealed class ResultSceneController : MonoBehaviour
         }
 
         SetInputVisible(true);
+        m_submissionHelpText?.gameObject.SetActive(true);
         SetText(m_submissionStatusText, string.Empty);
         m_submissionStatusText?.gameObject.SetActive(false);
         SetText(m_submitButtonText, "SUBMIT SCORE");
@@ -259,6 +270,7 @@ public sealed class ResultSceneController : MonoBehaviour
         m_submissionArmed = false;
         m_rankingRequestId++;
         SetInputVisible(false);
+        m_submissionHelpText?.gameObject.SetActive(false);
         ShowSubmissionStatus("LOCAL RESULT SAVED");
         SetText(m_submitButtonText, OfflineSubmissionText);
         ClearRankingRows();
@@ -392,6 +404,13 @@ public sealed class ResultSceneController : MonoBehaviour
             }
 
             RectTransform nicknameRect = nicknameText.rectTransform;
+            m_rankingRowBackgrounds[index] = nicknameText.transform.parent?.GetComponent<Image>();
+            if (m_rankingRowBackgrounds[index] != null)
+            {
+                m_rankingRowBackgrounds[index].raycastTarget = false;
+                m_rankingRowBackgrounds[index].type = Image.Type.Sliced;
+                m_rankingRowBackgrounds[index].color = Color.white;
+            }
             nicknameRect.sizeDelta = new Vector2(150f, nicknameRect.sizeDelta.y);
             TMP_Text classText = Instantiate(nicknameText, nicknameText.transform.parent);
             classText.name = $"Class_{index + 1:00}";
@@ -419,6 +438,19 @@ public sealed class ResultSceneController : MonoBehaviour
         SetColor(GetRankingText(m_rankingNicknameTexts, index), highlighted ? accent : m_nicknameColors[index]);
         SetColor(GetRankingText(m_rankingClassTexts, index), highlighted ? accent : m_classColors[index]);
         SetColor(GetRankingText(m_rankingScoreTexts, index), highlighted ? accent : m_scoreColors[index]);
+        Image rowBackground = index >= 0 && index < m_rankingRowBackgrounds.Length
+            ? m_rankingRowBackgrounds[index]
+            : null;
+        if (rowBackground != null)
+        {
+            Sprite stateSprite = highlighted ? m_rankingRowPlayerSprite : m_rankingRowNormalSprite;
+            if (stateSprite != null)
+            {
+                rowBackground.sprite = stateSprite;
+                rowBackground.type = Image.Type.Sliced;
+                rowBackground.color = Color.white;
+            }
+        }
     }
 
     private static void SetColor(TMP_Text target, Color color)
@@ -458,14 +490,14 @@ public sealed class ResultSceneController : MonoBehaviour
         SetText(
             m_personalBestText,
             result != null && result.IsNewPersonalBest
-                ? $"NEW PERSONAL BEST  {FormatScore(personalBest)}"
-                : $"PERSONAL BEST  {FormatScore(personalBest)}");
+                ? $"NEW PERSONAL BEST\n{FormatScore(personalBest)}"
+                : $"PERSONAL BEST\n{FormatScore(personalBest)}");
 
         if (m_runValues != null && m_runValues.Length >= 6)
         {
             SetText(m_runValues[0], FormatTime(result?.SurvivalTime ?? 0f));
-            SetText(m_totalKillsLabel, "TOTAL / SUICIDE / MELEE / RANGED");
-            SetText(m_runValues[1], $"{result?.TotalKills ?? 0} / {result?.SuicideKills ?? 0} / {result?.MeleeKills ?? 0} / {result?.RangedKills ?? 0}");
+            SetText(m_totalKillsLabel, "TOTAL KILLS");
+            SetText(m_runValues[1], $"{result?.TotalKills ?? 0}");
             SetText(m_headshotKillsLabel, "HEADSHOT / CHAIN");
             SetText(m_runValues[3], $"{result?.HeadshotKills ?? 0} / {result?.ChainKills ?? 0}");
             int combo = result?.MaxComboCount ?? 0;

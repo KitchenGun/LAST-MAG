@@ -22,11 +22,6 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_HitMarkerFadeDuration = 0.04f;
     private const float k_HitMarkerPulseDuration = 0.06f;
     private const float k_SkillReadyBlinkInterval = 0.5f;
-    private const float k_ComboBulletPitch = 24.5f;
-    private const float k_ComboBulletVisibleHeight = 23.5f;
-    private const float k_ComboClipVisibleHeightRatio = 0.975f;
-    private const float k_ComboStackVisibleHeight =
-        k_ComboBulletVisibleHeight + (k_ComboBulletCount - 1) * k_ComboBulletPitch;
     private const float k_MaxDamageVignetteAlpha = 0.68f;
     private const float k_DeathDamageVignetteAlpha = 0.92f;
     private const float k_DeathTintAlpha = 0.22f;
@@ -34,11 +29,6 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_DamageVignetteRecoverySpeed = 1.2f;
     private const float k_DmrScopeVignetteAlpha = 0.68f;
     private const float k_DmrScopeTransitionDuration = 0.12f;
-    private static readonly Vector2 k_ComboBulletStartPosition = new(86f, -55f);
-    private static readonly Vector2 k_ComboBulletSize = new(128f, 32f);
-    private static readonly Vector2 k_ComboClipPosition = new(24f, -104f);
-    private static readonly Vector2 k_ComboClipSize =
-        new(25f, k_ComboStackVisibleHeight / k_ComboClipVisibleHeightRatio);
     private static readonly Color k_MaxComboColor = new Color32(234, 64, 71, 255);
     private static readonly Color k_ActiveBorderColor = new(1f, 1f, 1f, 0.65f);
     private static readonly Color k_InactiveBorderColor = new(0.28f, 0.34f, 0.37f, k_InactiveWeaponAlpha);
@@ -57,7 +47,12 @@ public sealed class GameplayHUD : MonoBehaviour
     [SerializeField] private Sprite m_rocketSkillSilhouette;
     [SerializeField] private Sprite m_bulletTimeSkillSilhouette;
     [SerializeField] private Sprite m_comboBulletSprite;
-    [SerializeField] private Sprite m_comboClipSprite;
+    [SerializeField] private Sprite m_comboBulletEmptySprite;
+    [Header("HUD Skin")]
+    [SerializeField] private Sprite m_weaponRowInactiveSprite;
+    [SerializeField] private Sprite m_weaponRowActiveSprite;
+    [SerializeField] private Sprite m_weaponRowEmptySprite;
+    [SerializeField] private Sprite m_skillRowReadySprite;
     [Header("Ammo Pickup Colors")]
     [SerializeField] private Color m_pistolAmmoPickupColor = new Color32(234, 64, 71, 255);
     [SerializeField] private Color m_shotgunAmmoPickupColor = new Color32(53, 199, 89, 255);
@@ -81,12 +76,15 @@ public sealed class GameplayHUD : MonoBehaviour
     private readonly Color[] m_scoreFeedbackBaseColors = new Color[k_ScoreFeedbackPoolSize];
     private readonly Image[] m_comboBulletImages = new Image[k_ComboBulletCount];
     private TextMeshProUGUI m_activeWeaponText;
+    private TextMeshProUGUI m_scoreLabel;
     private TextMeshProUGUI m_scoreText;
     private TextMeshProUGUI m_survivalTimeText;
+    private TextMeshProUGUI m_comboLabel;
     private TextMeshProUGUI m_comboText;
     private TextMeshProUGUI m_comboDecayText;
     private RectTransform m_comboPanel;
-    private Image m_comboClipImage;
+    private Image m_comboProgressTrack;
+    private Image m_comboProgressFill;
     private Image m_skillCooldownFill;
     private Image m_hitMarkerImage;
     private Vector2 m_hitMarkerBaseSize;
@@ -111,7 +109,6 @@ public sealed class GameplayHUD : MonoBehaviour
     private int m_pickupPopupCount;
     private int m_scoreFeedbackCount;
     private int m_lastComboCount = -1;
-    private int m_lastVisibleComboBullets = -1;
     private int m_lastDisplayedSurvivalSecond = -1;
     private string m_lastSkillName;
     private string m_lastSkillStatus;
@@ -267,6 +264,7 @@ public sealed class GameplayHUD : MonoBehaviour
             silhouette.color = weaponColor;
         }
         SetBorderState(m_weaponBorderImages[slot - 1], isActive);
+        SetWeaponBackgroundState(slot - 1, isActive, ammo <= 0);
         if (isActive)
         {
             m_activeWeaponText = ammoText;
@@ -331,6 +329,7 @@ public sealed class GameplayHUD : MonoBehaviour
             m_weaponSilhouetteImages[row].color = color;
         }
         SetBorderState(m_weaponBorderImages[row], highlighted);
+        SetSkillBackgroundState(highlighted);
     }
 
     public void ShowEmptyAmmoFeedback()
@@ -342,7 +341,7 @@ public sealed class GameplayHUD : MonoBehaviour
     {
         if (m_scoreText != null)
         {
-            m_scoreText.text = $"SCORE  {Mathf.Max(0, score):000000}";
+            m_scoreText.text = $"{Mathf.Max(0, score):000000}";
         }
     }
 
@@ -373,13 +372,16 @@ public sealed class GameplayHUD : MonoBehaviour
         if (!isVisible)
         {
             m_lastComboCount = safeCount;
-            m_lastVisibleComboBullets = visibleBullets;
+            if (m_comboProgressFill != null)
+            {
+                m_comboProgressFill.fillAmount = 0f;
+            }
             return;
         }
 
         if (m_comboText != null && m_lastComboCount != safeCount)
         {
-            m_comboText.text = $"COMBO  x{safeCount}";
+            m_comboText.text = $"x{safeCount}";
             m_lastComboCount = safeCount;
         }
 
@@ -396,18 +398,21 @@ public sealed class GameplayHUD : MonoBehaviour
             m_comboDecayText.color = comboDecayColor;
         }
 
-        if (m_lastVisibleComboBullets == visibleBullets)
+        if (m_comboProgressFill != null)
         {
-            return;
+            m_comboProgressFill.fillAmount = GetComboBulletDecaySeconds(remainingSeconds);
+            m_comboProgressFill.color = comboDecayColor;
         }
 
-        m_lastVisibleComboBullets = visibleBullets;
         for (int index = 0; index < m_comboBulletImages.Length; index++)
         {
             Image bullet = m_comboBulletImages[index];
             if (bullet != null)
             {
-                bullet.enabled = m_comboBulletSprite != null && index < visibleBullets;
+                bool filled = index < visibleBullets;
+                bullet.sprite = filled ? m_comboBulletSprite : m_comboBulletEmptySprite;
+                bullet.color = filled ? comboDecayColor : new Color(0.35f, 0.42f, 0.46f, 0.8f);
+                bullet.enabled = bullet.sprite != null;
             }
         }
     }
@@ -525,8 +530,16 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_weaponSilhouetteImages[0].color.a, 1f));
         Debug.Assert(m_weaponBorderImages[0].color == k_ActiveBorderColor);
         Debug.Assert(m_weaponSilhouetteImages[0].color == new Color32(44, 135, 232, 255));
+        if (m_weaponRowActiveSprite != null)
+        {
+            Debug.Assert(m_weaponBackgroundImages[0].sprite == m_weaponRowActiveSprite);
+        }
         RefreshWeapon(1, WeaponId.Rifle, 0, true);
         Debug.Assert(m_emptyAmmoText.enabled);
+        if (m_weaponRowEmptySprite != null)
+        {
+            Debug.Assert(m_weaponBackgroundImages[0].sprite == m_weaponRowEmptySprite);
+        }
         Debug.Assert(IsEmptyAmmoBlinkVisible(true, 0f));
         Debug.Assert(!IsEmptyAmmoBlinkVisible(true, k_EmptyAmmoBlinkInterval));
         Debug.Assert(IsEmptyAmmoBlinkVisible(true, k_EmptyAmmoBlinkInterval * 2f));
@@ -558,6 +571,10 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_skillCooldownFill.fillAmount, 1f));
         RefreshSkill("BULLET TIME", PlayerSkillState.Ready, 0f);
         Debug.Assert(!m_skillCooldownFill.gameObject.activeSelf);
+        if (m_skillRowReadySprite != null)
+        {
+            Debug.Assert(m_weaponBackgroundImages[2].sprite == m_skillRowReadySprite);
+        }
         Debug.Assert(IsSkillReadyBlinkVisible(0f));
         Debug.Assert(!IsSkillReadyBlinkVisible(k_SkillReadyBlinkInterval));
         Debug.Assert(IsSkillReadyBlinkVisible(k_SkillReadyBlinkInterval * 2f));
@@ -597,6 +614,9 @@ public sealed class GameplayHUD : MonoBehaviour
             && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, k_DmrScopeVignetteAlpha));
         SetDmrAimState(false, false);
         Debug.Assert(m_crosshairImage.enabled && Mathf.Approximately(m_dmrScopeVignetteTargetAlpha, 0f));
+        Debug.Assert(m_scoreLabel.text == "SCORE");
+        RefreshScore(12480);
+        Debug.Assert(m_scoreText.text == "012480");
         Debug.Assert(GetVisibleComboBulletCount(5f) == 5);
         Debug.Assert(GetVisibleComboBulletCount(4.999f) == 5);
         Debug.Assert(GetVisibleComboBulletCount(4f) == 4);
@@ -607,7 +627,8 @@ public sealed class GameplayHUD : MonoBehaviour
         Debug.Assert(GetComboDecayColor(5) == Color.white);
         Debug.Assert(GetComboDecayColor(1) == k_MaxComboColor);
         RefreshCombo(11, 5f);
-        Debug.Assert(m_comboPanel.gameObject.activeSelf && m_comboText.text.Contains("x11"));
+        Debug.Assert(m_comboPanel.gameObject.activeSelf && m_comboText.text == "x11");
+        Debug.Assert(Mathf.Approximately(m_comboProgressFill.fillAmount, 1f));
         for (int index = 0; index < m_comboBulletImages.Length; index++)
         {
             Debug.Assert(m_comboBulletImages[index].sprite == m_comboBulletSprite);
@@ -615,12 +636,10 @@ public sealed class GameplayHUD : MonoBehaviour
             Debug.Assert(m_comboBulletImages[index].color == Color.white);
             Debug.Assert(m_comboBulletImages[index].enabled == (m_comboBulletSprite != null));
         }
-        Debug.Assert(m_comboClipImage.sprite == m_comboClipSprite);
-        Debug.Assert(m_comboClipImage.preserveAspect);
-        Debug.Assert(m_comboClipImage.transform.GetSiblingIndex()
-            == m_comboClipImage.transform.parent.childCount - 1);
         RefreshCombo(11, 4f);
-        Debug.Assert(!m_comboBulletImages[4].enabled);
+        Debug.Assert(m_comboBulletImages[4].sprite == m_comboBulletEmptySprite);
+        Debug.Assert(m_comboBulletImages[4].enabled == (m_comboBulletEmptySprite != null));
+        Debug.Assert(Mathf.Approximately(m_comboProgressFill.fillAmount, 1f));
         TextMeshProUGUI editorConfiguredScoreFeedback = m_scoreFeedbackTexts[0];
         Vector2 editorConfiguredScoreFeedbackSize = editorConfiguredScoreFeedback.rectTransform.sizeDelta;
         float editorConfiguredScoreFeedbackFontSize = editorConfiguredScoreFeedback.fontSize;
@@ -886,6 +905,13 @@ public sealed class GameplayHUD : MonoBehaviour
             TextMeshProUGUI popup = popups[index];
             m_pickupPopupSlotPositions[index] = popup.rectTransform.anchoredPosition;
             m_pickupPopupBaseColors[index] = popup.color;
+            popup.font = m_font;
+            popup.fontSize = 17f;
+            popup.fontStyle = FontStyles.Normal;
+            popup.alignment = TextAlignmentOptions.Center;
+            popup.enableAutoSizing = false;
+            popup.textWrappingMode = TextWrappingModes.NoWrap;
+            popup.overflowMode = TextOverflowModes.Overflow;
             popup.text = string.Empty;
             popup.gameObject.SetActive(false);
             m_pickupPopups[index] = popup;
@@ -894,14 +920,6 @@ public sealed class GameplayHUD : MonoBehaviour
 
     private void InitializeScoreHud()
     {
-        m_scoreText = GetOrCreateText(
-            "Layer_ScoreCombo/ScoreText", Vector2.one, Vector2.one,
-            new Vector2(-48f, -34f), new Vector2(360f, 38f), 30, TextAlignmentOptions.MidlineRight);
-        m_comboText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboText")?.GetComponent<TextMeshProUGUI>();
-        Debug.Assert(m_comboText != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboText");
-        m_comboDecayText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboDecayText")?.GetComponent<TextMeshProUGUI>();
-        Debug.Assert(m_comboDecayText != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboDecayText");
-
         Transform layer = transform.Find("Layer_ScoreCombo");
         Debug.Assert(layer != null);
         if (layer == null)
@@ -909,9 +927,33 @@ public sealed class GameplayHUD : MonoBehaviour
             return;
         }
 
-        DisableLegacyScoreObject(layer, "ComboGaugeBackground");
-        DisableLegacyScoreObject(layer, "ComboGaugeFill");
-        DisableLegacyScoreObject(layer, "ScoreFeedbackText");
+        m_scoreLabel = layer.Find("ScoreLabel")?.GetComponent<TextMeshProUGUI>();
+        m_scoreText = layer.Find("ScoreText")?.GetComponent<TextMeshProUGUI>();
+        Debug.Assert(m_scoreLabel != null, "Missing HUD Text: Layer_ScoreCombo/ScoreLabel");
+        Debug.Assert(m_scoreText != null, "Missing HUD Text: Layer_ScoreCombo/ScoreText");
+
+        if (m_scoreLabel != null)
+        {
+            m_scoreLabel.text = "SCORE";
+            m_scoreLabel.font = m_font;
+            m_scoreLabel.fontSize = 18f;
+            m_scoreLabel.alignment = TextAlignmentOptions.MidlineRight;
+            m_scoreLabel.raycastTarget = false;
+        }
+        if (m_scoreText != null)
+        {
+            m_scoreText.font = m_font;
+            m_scoreText.fontSize = 40f;
+            m_scoreText.alignment = TextAlignmentOptions.MidlineRight;
+            m_scoreText.raycastTarget = false;
+        }
+
+        m_comboText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboText")?.GetComponent<TextMeshProUGUI>();
+        Debug.Assert(m_comboText != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboText");
+        m_comboLabel = transform.Find("Layer_ScoreCombo/ComboPanel/ComboLabel")?.GetComponent<TextMeshProUGUI>();
+        Debug.Assert(m_comboLabel != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboLabel");
+        m_comboDecayText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboDecayText")?.GetComponent<TextMeshProUGUI>();
+        Debug.Assert(m_comboDecayText != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboDecayText");
         InitializeComboPanel(layer);
 
         RefreshScore(0);
@@ -923,37 +965,134 @@ public sealed class GameplayHUD : MonoBehaviour
     private void InitializeComboPanel(Transform layer)
     {
         Transform existingPanel = layer.Find("ComboPanel");
+        Debug.Assert(existingPanel != null, "Missing HUD Transform: Layer_ScoreCombo/ComboPanel");
         if (existingPanel == null)
         {
-            GameObject panelObject = new("ComboPanel", typeof(RectTransform));
-            panelObject.transform.SetParent(layer, false);
-            existingPanel = panelObject.transform;
+            return;
         }
 
         m_comboPanel = (RectTransform)existingPanel;
+        if (m_comboLabel != null)
+        {
+            m_comboLabel.text = "COMBO";
+            m_comboLabel.font = m_font;
+            m_comboLabel.fontSize = 20f;
+            m_comboLabel.alignment = TextAlignmentOptions.MidlineLeft;
+            m_comboLabel.color = new Color32(75, 226, 255, 255);
+            m_comboLabel.raycastTarget = false;
+        }
+        if (m_comboText != null)
+        {
+            m_comboText.font = m_font;
+            m_comboText.fontSize = 36f;
+            m_comboText.alignment = TextAlignmentOptions.MidlineLeft;
+            m_comboText.raycastTarget = false;
+        }
+        if (m_comboDecayText != null)
+        {
+            m_comboDecayText.font = m_font;
+            m_comboDecayText.fontSize = 18f;
+            m_comboDecayText.alignment = TextAlignmentOptions.MidlineRight;
+            m_comboDecayText.raycastTarget = false;
+        }
 
         for (int index = 0; index < k_ComboBulletCount; index++)
         {
-            Image bullet = GetOrCreateImage(
-                m_comboPanel, $"ComboBullet{index}",
-                k_ComboBulletStartPosition + Vector2.down * index * k_ComboBulletPitch,
-                k_ComboBulletSize, Color.white);
+            Transform bulletTransform = m_comboPanel.Find($"ComboBullet{index}");
+            Image bullet = bulletTransform != null ? bulletTransform.GetComponent<Image>() : null;
+            Debug.Assert(bullet != null, $"Missing HUD Image: Layer_ScoreCombo/ComboPanel/ComboBullet{index}");
+            if (bullet == null)
+            {
+                continue;
+            }
             bullet.sprite = m_comboBulletSprite;
             bullet.type = Image.Type.Simple;
             bullet.preserveAspect = true;
             bullet.enabled = false;
+            bullet.raycastTarget = false;
             m_comboBulletImages[index] = bullet;
         }
 
-        m_comboClipImage = GetOrCreateImage(
-            m_comboPanel, "ComboClip", k_ComboClipPosition, k_ComboClipSize, Color.white);
-        m_comboClipImage.sprite = m_comboClipSprite;
-        m_comboClipImage.type = Image.Type.Simple;
-        m_comboClipImage.preserveAspect = true;
-        m_comboClipImage.enabled = m_comboClipSprite != null;
-        m_comboClipImage.transform.SetAsLastSibling();
+        Transform progressTrackTransform = m_comboPanel.Find("ComboProgressTrack");
+        m_comboProgressTrack = progressTrackTransform != null
+            ? progressTrackTransform.GetComponent<Image>() : null;
+        Debug.Assert(m_comboProgressTrack != null,
+            "Missing HUD Image: Layer_ScoreCombo/ComboPanel/ComboProgressTrack");
+        if (m_comboProgressTrack != null)
+        {
+            if (m_comboProgressTrack.sprite == null)
+            {
+                m_comboProgressTrack.sprite = m_comboBulletEmptySprite;
+            }
+            m_comboProgressTrack.type = Image.Type.Simple;
+            m_comboProgressTrack.preserveAspect = false;
+            m_comboProgressTrack.color = new Color(0.22f, 0.28f, 0.31f, 0.9f);
+            m_comboProgressTrack.raycastTarget = false;
+        }
+
+        Transform progressFillTransform = m_comboPanel.Find("ComboProgressFill");
+        m_comboProgressFill = progressFillTransform != null
+            ? progressFillTransform.GetComponent<Image>() : null;
+        Debug.Assert(m_comboProgressFill != null,
+            "Missing HUD Image: Layer_ScoreCombo/ComboPanel/ComboProgressFill");
+        if (m_comboProgressFill != null)
+        {
+            if (m_comboProgressFill.sprite == null)
+            {
+                m_comboProgressFill.sprite = m_comboBulletSprite;
+            }
+            m_comboProgressFill.type = Image.Type.Filled;
+            m_comboProgressFill.fillMethod = Image.FillMethod.Horizontal;
+            m_comboProgressFill.fillOrigin = 0;
+            m_comboProgressFill.fillAmount = 0f;
+            m_comboProgressFill.preserveAspect = false;
+            m_comboProgressFill.raycastTarget = false;
+        }
 
         m_comboPanel.gameObject.SetActive(false);
+    }
+
+    private void SetWeaponBackgroundState(int row, bool isActive, bool isEmpty)
+    {
+        if (row < 0 || row >= m_weaponBackgroundImages.Length)
+        {
+            return;
+        }
+
+        Image background = m_weaponBackgroundImages[row];
+        if (background == null)
+        {
+            return;
+        }
+
+        Sprite stateSprite = isActive && isEmpty ? m_weaponRowEmptySprite
+            : isActive ? m_weaponRowActiveSprite
+            : m_weaponRowInactiveSprite;
+        if (stateSprite != null)
+        {
+            background.sprite = stateSprite;
+            background.type = Image.Type.Sliced;
+            background.color = Color.white;
+        }
+    }
+
+    private void SetSkillBackgroundState(bool highlighted)
+    {
+        Image background = m_weaponBackgroundImages[k_HudRowCount - 1];
+        if (background == null)
+        {
+            return;
+        }
+
+        Sprite stateSprite = highlighted && m_skillRowReadySprite != null
+            ? m_skillRowReadySprite
+            : m_weaponRowInactiveSprite;
+        if (stateSprite != null)
+        {
+            background.sprite = stateSprite;
+            background.type = Image.Type.Sliced;
+            background.color = Color.white;
+        }
     }
 
     private void InitializeScoreFeedbackPool()
@@ -1128,7 +1267,8 @@ public sealed class GameplayHUD : MonoBehaviour
                 k_PickupPopupMoveSpeed * GameplayClock.DeltaTime);
 
             Color color = m_pickupPopupBaseColors[index];
-            color.a *= Mathf.Clamp01((m_pickupPopupExpiry[index] - GameplayClock.Now) / k_PickupPopupFadeDuration);
+            float alpha = Mathf.Clamp01((m_pickupPopupExpiry[index] - GameplayClock.Now) / k_PickupPopupFadeDuration);
+            color.a *= alpha;
             popup.color = color;
         }
     }
@@ -1200,15 +1340,6 @@ public sealed class GameplayHUD : MonoBehaviour
         return Mathf.Clamp01((expiryTime - now) / k_ScoreFeedbackFadeDuration);
     }
 
-    private static void DisableLegacyScoreObject(Transform layer, string objectName)
-    {
-        Transform legacy = layer.Find(objectName);
-        if (legacy != null)
-        {
-            legacy.gameObject.SetActive(false);
-        }
-    }
-
     private static Color GetWeaponColor(WeaponId weapon)
     {
         return weapon switch
@@ -1247,32 +1378,6 @@ public sealed class GameplayHUD : MonoBehaviour
     {
         int index = (int)weapon - 1;
         return index >= 0 && index < m_weaponSprites.Length ? m_weaponSprites[index] : null;
-    }
-
-    private static Image GetOrCreateImage(Transform parent, string objectName, Vector2 position, Vector2 size, Color color)
-    {
-        Transform existing = parent.Find(objectName);
-        Image image = existing != null ? existing.GetComponent<Image>() : null;
-        bool created = image == null;
-        if (image == null)
-        {
-            GameObject imageObject = new(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-            imageObject.transform.SetParent(parent, false);
-            image = imageObject.GetComponent<Image>();
-        }
-
-        if (created)
-        {
-            RectTransform rectTransform = image.rectTransform;
-            rectTransform.anchorMin = Vector2.one;
-            rectTransform.anchorMax = Vector2.one;
-            rectTransform.pivot = Vector2.one;
-            rectTransform.anchoredPosition = position;
-            rectTransform.sizeDelta = size;
-            image.color = color;
-            image.raycastTarget = false;
-        }
-        return image;
     }
 
     private Image GetImage(string objectPath)

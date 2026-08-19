@@ -16,6 +16,7 @@ public sealed class StartMenuController : MonoBehaviour
     };
 
     private Button m_playButton;
+    private Button m_confirmButton;
     private Button m_settingsButton;
     private Button[] m_classButtons;
     private TMP_Text m_selectedClassName;
@@ -35,12 +36,18 @@ public sealed class StartMenuController : MonoBehaviour
     {
         RunResultStore.Clear();
         InitializeBuildVersion();
-        m_playButton = FindPlayButton();
-        if (m_playButton == null)
+        m_playButton = FindButton("PlayButton");
+        m_confirmButton = FindButton("ConfirmButton");
+        if (m_playButton == null || m_confirmButton == null)
         {
-            Debug.LogError("[StartMenu] PlayButton was not found.");
+            Debug.LogError("[StartMenu] PlayButton or ConfirmButton was not found.");
             return;
         }
+
+        m_playButton.onClick.RemoveAllListeners();
+        m_playButton.onClick.AddListener(Play);
+        m_confirmButton.onClick.RemoveAllListeners();
+        m_confirmButton.onClick.AddListener(ConfirmClassSelection);
 
         m_settingsButton = FindButton("SettingsButton");
         m_settingsPanel = GetComponentInChildren<SettingsPanelController>(true);
@@ -63,7 +70,9 @@ public sealed class StartMenuController : MonoBehaviour
         if (m_title != null) m_title.SetActive(true);
         if (m_controls != null) m_controls.SetActive(true);
         m_playButton.interactable = true;
-        SetPlayButtonLabel("PLAY");
+        m_playButton.gameObject.SetActive(true);
+        m_confirmButton.gameObject.SetActive(false);
+        m_confirmButton.interactable = false;
         m_selectedClassName = FindText("SelectedClassName");
         m_selectedClassLoadout = FindText("SelectedClassLoadout");
         m_selectedClassSkill = FindText("SelectedClassSkill");
@@ -127,6 +136,7 @@ public sealed class StartMenuController : MonoBehaviour
             return;
         }
         m_showingSettings = true;
+        if (m_controls != null) m_controls.SetActive(false);
         m_settingsPanel.Show(CloseSettings);
     }
 
@@ -134,6 +144,7 @@ public sealed class StartMenuController : MonoBehaviour
     {
         m_showingSettings = false;
         m_settingsPanel?.Hide();
+        if (!m_showingClassSelection && m_controls != null) m_controls.SetActive(true);
     }
 
     internal static string FormatBuildVersion(string version, string buildGuid, bool isEditor)
@@ -186,22 +197,10 @@ public sealed class StartMenuController : MonoBehaviour
         return null;
     }
 
-    private Button FindPlayButton()
-    {
-        foreach (Button button in GetComponentsInChildren<Button>(true))
-        {
-            if (button.name == "PlayButton")
-            {
-                return button;
-            }
-        }
-        return null;
-    }
-
     private void SelectClass(PlayerClassId playerClass)
     {
         RunResultStore.SelectClass(playerClass);
-        m_playButton.interactable = true;
+        m_confirmButton.interactable = true;
         UpdateSelectionVisuals(playerClass);
     }
 
@@ -279,13 +278,17 @@ public sealed class StartMenuController : MonoBehaviour
         {
             return;
         }
-        if (!m_showingClassSelection)
+        if (m_showingClassSelection)
         {
-            ShowClassSelection();
             return;
         }
 
-        if (RunResultStore.SelectedClass == PlayerClassId.Unknown)
+        ShowClassSelection();
+    }
+
+    public void ConfirmClassSelection()
+    {
+        if (!m_showingClassSelection || RunResultStore.SelectedClass == PlayerClassId.Unknown)
         {
             return;
         }
@@ -302,33 +305,9 @@ public sealed class StartMenuController : MonoBehaviour
         if (m_controls != null) m_controls.SetActive(false);
         if (m_settingsButton != null) m_settingsButton.gameObject.SetActive(false);
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(true);
-        m_playButton.interactable = false;
-        SetPlayButtonLabel("CONFIRM");
-        ConfigurePlayButton(true);
-    }
-
-    private void SetPlayButtonLabel(string value)
-    {
-        SetButtonLabel(m_playButton, value);
-    }
-
-    private static void SetButtonLabel(Button button, string value)
-    {
-        TMP_Text tmp = button.GetComponentInChildren<TMP_Text>(true);
-        if (tmp != null) tmp.text = value;
-        Text legacy = button.GetComponentInChildren<Text>(true);
-        if (legacy != null) legacy.text = value;
-    }
-
-    private void ConfigurePlayButton(bool classSelectionLayout)
-    {
-        RectTransform rect = m_playButton.GetComponent<RectTransform>();
-        rect.anchorMin = rect.anchorMax = classSelectionLayout
-            ? new Vector2(1f, 0f)
-            : new Vector2(1f, 0.5f);
-        rect.pivot = classSelectionLayout ? new Vector2(1f, 0f) : new Vector2(1f, 0.5f);
-        rect.anchoredPosition = classSelectionLayout ? new Vector2(-64f, 36f) : new Vector2(-82f, 220f);
-        rect.sizeDelta = classSelectionLayout ? new Vector2(350f, 90f) : new Vector2(350f, 100f);
+        m_playButton.gameObject.SetActive(false);
+        m_confirmButton.gameObject.SetActive(true);
+        m_confirmButton.interactable = false;
     }
 
     [ContextMenu("Run Class Selection Self Check")]

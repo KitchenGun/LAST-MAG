@@ -6,6 +6,10 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class SettingsPanelController : MonoBehaviour
 {
+    [Header("UI Skin")]
+    [SerializeField] private Sprite m_toggleOnSprite;
+    [SerializeField] private Sprite m_toggleOffSprite;
+
     private Button m_backButton;
     private Button m_toggleButton;
     private Button m_holdButton;
@@ -119,14 +123,24 @@ public sealed class SettingsPanelController : MonoBehaviour
         SetSelected(m_holdButton, GameSettings.ZoomInputMode == ZoomInputMode.Hold);
     }
 
-    private static void SetSelected(Button button, bool selected)
+    private void SetSelected(Button button, bool selected)
     {
         Image image = button.GetComponent<Image>();
         if (image != null)
         {
-            image.color = selected
-                ? new Color(0.035f, 0.26f, 0.29f, 1f)
-                : new Color(0.035f, 0.14f, 0.16f, 1f);
+            Sprite stateSprite = selected ? m_toggleOnSprite : m_toggleOffSprite;
+            if (stateSprite != null)
+            {
+                image.sprite = stateSprite;
+                image.type = Image.Type.Sliced;
+                image.color = Color.white;
+            }
+            else
+            {
+                image.color = selected
+                    ? new Color(0.035f, 0.26f, 0.29f, 1f)
+                    : new Color(0.035f, 0.14f, 0.16f, 1f);
+            }
         }
 
         Outline outline = button.GetComponent<Outline>();
