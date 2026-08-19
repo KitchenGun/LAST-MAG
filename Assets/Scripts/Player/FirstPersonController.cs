@@ -155,11 +155,6 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_DeathCameraSkin = 0.03f;
     private const float k_DeathGroundSearchDistance = 3f;
     private const int k_DeathRaycastBufferSize = 16;
-    private const float k_DamageAimPunchKickSpeed = 30f;
-    private const float k_DamageAimPunchReturnSpeed = 8f;
-    private const float k_DamageAimPunchSoftCap = 3f;
-    private const float k_DamageAimPunchHardCapPitch = 4f;
-    private const float k_DamageAimPunchHardCapYaw = 2f;
     private const float k_ExplosionShakeRangeMultiplier = 2f;
     private const float k_ExplosionShakeFrequency = 32f;
     private const float k_RocketExplosionShakeAngle = 3f;
@@ -189,6 +184,21 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
+    [Header("Damage Aim Punch")]
+    [Tooltip("피격 카메라 흔들림이 목표 강도에 도달하는 속도입니다.")]
+    [SerializeField, Min(0.1f)] private float m_damageAimPunchKickSpeed = 30f;
+    [Tooltip("피격 카메라 흔들림이 원래 조준으로 돌아오는 속도입니다.")]
+    [SerializeField, Min(0.1f)] private float m_damageAimPunchReturnSpeed = 8f;
+    [Tooltip("연속 피격 시 흔들림 추가량이 줄어들기 시작하는 누적 Pitch입니다.")]
+    [SerializeField, Min(0.01f)] private float m_damageAimPunchSoftCap = 3f;
+    [Tooltip("피격 흔들림의 최대 상하 각도입니다.")]
+    [SerializeField, Min(0f)] private float m_damageAimPunchHardCapPitch = 4f;
+    [Tooltip("피격 흔들림의 최대 좌우 각도입니다.")]
+    [SerializeField, Min(0f)] private float m_damageAimPunchHardCapYaw = 2f;
+    [Tooltip("각 항목은 상하 Pitch, 좌우 Yaw 각도입니다.")]
+    [SerializeField] private Vector2 m_suicideDamageAimPunch = new(2.8f, 1.2f);
+    [SerializeField] private Vector2 m_meleeDamageAimPunch = new(1.7f, 0.75f);
+    [SerializeField] private Vector2 m_rangedDamageAimPunch = new(1.6f, 0.7f);
     [Header("Weapon Ammo Capacity")]
     [Tooltip("Starting and maximum owned ammo. This game does not use magazines or reloading.")]
     [SerializeField, Min(1)] private int m_pistolAmmoCapacity = 15;
@@ -840,7 +850,7 @@ public sealed class FirstPersonController : MonoBehaviour
         float deltaTime = Time.deltaTime;
         if (m_damageAimPunchTargetPitch > 0f)
         {
-            float kickBlend = Mathf.Clamp01(k_DamageAimPunchKickSpeed * deltaTime);
+            float kickBlend = Mathf.Clamp01(m_damageAimPunchKickSpeed * deltaTime);
             m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, m_damageAimPunchTargetPitch, kickBlend);
             m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, m_damageAimPunchTargetYaw, kickBlend);
             if (Mathf.Abs(m_damageAimPunchPitch - m_damageAimPunchTargetPitch) < 0.01f
@@ -852,7 +862,7 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        float returnBlend = Mathf.Clamp01(k_DamageAimPunchReturnSpeed * deltaTime);
+        float returnBlend = Mathf.Clamp01(m_damageAimPunchReturnSpeed * deltaTime);
         m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, 0f, returnBlend);
         m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, 0f, returnBlend);
     }
@@ -982,7 +992,7 @@ public sealed class FirstPersonController : MonoBehaviour
                 bool killed = enemy.ApplyDamage(damage, KillContext.Direct(weapon, isHeadshot));
                 if (killed)
                 {
-                    m_scoreSystem.RegisterDirectKill(enemy.Type, weapon, isHeadshot);
+                    RegisterDirectKill(enemy.Type, weapon, isHeadshot);
                 }
                 m_gameplayHUD?.ShowHitMarker(isHeadshot, killed);
                 PlayHumanoidHitMarkerFeedback(enemy.Type, isHeadshot, killed, isHeadshot && killed);
@@ -1044,7 +1054,7 @@ public sealed class FirstPersonController : MonoBehaviour
                     KillContext.Direct(WeaponId.DMR, isHeadshot));
                 if (killed)
                 {
-                    m_scoreSystem.RegisterDirectKill(enemy.Type, WeaponId.DMR, isHeadshot);
+                    RegisterDirectKill(enemy.Type, WeaponId.DMR, isHeadshot);
                 }
                 anyHeadshot |= isHeadshot;
                 anyKill |= killed;
@@ -1153,7 +1163,7 @@ public sealed class FirstPersonController : MonoBehaviour
             bool killed = hit.Key.ApplyDamage(hit.Value, KillContext.Direct(WeaponId.Shotgun, isHeadshot));
             if (killed)
             {
-                m_scoreSystem.RegisterDirectKill(hit.Key.Type, WeaponId.Shotgun, isHeadshot);
+                RegisterDirectKill(hit.Key.Type, WeaponId.Shotgun, isHeadshot);
             }
             anyHeadshot |= isHeadshot;
             anyKill |= killed;
@@ -1170,6 +1180,15 @@ public sealed class FirstPersonController : MonoBehaviour
             m_gameplayHUD?.ShowHitMarker(anyHeadshot, anyKill);
             PlayHumanoidHitMarkerFeedback(anyHumanoidHit, anyHumanoidHeadshot, anyHumanoidKill,
                 anyHumanoidHeadshotKill);
+        }
+    }
+
+    private void RegisterDirectKill(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
+    {
+        m_scoreSystem?.RegisterDirectKill(enemyType, weapon, isHeadshot);
+        if (isHeadshot)
+        {
+            m_skillController?.RegisterBulletTimeHeadshotKill();
         }
     }
 
@@ -1467,21 +1486,21 @@ public sealed class FirstPersonController : MonoBehaviour
 
         float currentPitch = Mathf.Max(m_damageAimPunchPitch, m_damageAimPunchTargetPitch);
         float addScale = Mathf.Lerp(1f, 0.25f,
-            Mathf.Clamp01(currentPitch / k_DamageAimPunchSoftCap));
-        m_damageAimPunchTargetPitch = Mathf.Min(k_DamageAimPunchHardCapPitch,
+            Mathf.Clamp01(currentPitch / m_damageAimPunchSoftCap));
+        m_damageAimPunchTargetPitch = Mathf.Min(m_damageAimPunchHardCapPitch,
             currentPitch + strength.x * addScale);
         m_damageAimPunchTargetYaw = Mathf.Clamp(m_damageAimPunchTargetYaw
             + UnityEngine.Random.Range(-strength.y, strength.y) * addScale,
-            -k_DamageAimPunchHardCapYaw, k_DamageAimPunchHardCapYaw);
+            -m_damageAimPunchHardCapYaw, m_damageAimPunchHardCapYaw);
     }
 
-    private static Vector2 GetDamageAimPunchStrength(PlayerDeathCause deathCause)
+    private Vector2 GetDamageAimPunchStrength(PlayerDeathCause deathCause)
     {
         return deathCause switch
         {
-            PlayerDeathCause.SuicideBacteriophage => new Vector2(2.8f, 1.2f),
-            PlayerDeathCause.MeleeHumanoid => new Vector2(1.7f, 0.75f),
-            PlayerDeathCause.RangedHumanoid => new Vector2(0.8f, 0.35f),
+            PlayerDeathCause.SuicideBacteriophage => m_suicideDamageAimPunch,
+            PlayerDeathCause.MeleeHumanoid => m_meleeDamageAimPunch,
+            PlayerDeathCause.RangedHumanoid => m_rangedDamageAimPunch,
             _ => Vector2.zero
         };
     }
@@ -1675,7 +1694,20 @@ public sealed class FirstPersonController : MonoBehaviour
         m_dmrThirdHitDamage = Mathf.Max(0.01f, m_dmrThirdHitDamage);
         m_dmrShotsPerSecond = Mathf.Max(0.01f, m_dmrShotsPerSecond);
         m_dmrHeadshotMultiplier = Mathf.Max(1f, m_dmrHeadshotMultiplier);
+        m_damageAimPunchKickSpeed = Mathf.Max(0.1f, m_damageAimPunchKickSpeed);
+        m_damageAimPunchReturnSpeed = Mathf.Max(0.1f, m_damageAimPunchReturnSpeed);
+        m_damageAimPunchSoftCap = Mathf.Max(0.01f, m_damageAimPunchSoftCap);
+        m_damageAimPunchHardCapPitch = Mathf.Max(0f, m_damageAimPunchHardCapPitch);
+        m_damageAimPunchHardCapYaw = Mathf.Max(0f, m_damageAimPunchHardCapYaw);
+        m_suicideDamageAimPunch = ClampAimPunchStrength(m_suicideDamageAimPunch);
+        m_meleeDamageAimPunch = ClampAimPunchStrength(m_meleeDamageAimPunch);
+        m_rangedDamageAimPunch = ClampAimPunchStrength(m_rangedDamageAimPunch);
         m_wallImpactMaxDistance = Mathf.Max(0.1f, m_wallImpactMaxDistance);
+    }
+
+    private static Vector2 ClampAimPunchStrength(Vector2 value)
+    {
+        return new Vector2(Mathf.Max(0f, value.x), Mathf.Max(0f, value.y));
     }
 
     private bool IsAmmoConfigurationValid()

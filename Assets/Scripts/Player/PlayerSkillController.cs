@@ -7,6 +7,7 @@ public sealed class PlayerSkillController : MonoBehaviour
 {
     private const float k_BulletTimeScale = 0.35f;
     private const float k_BulletTimeDuration = 5f;
+    private const float k_BulletTimeHeadshotExtension = 0.5f;
     private const float k_BulletTimeSaturation = -100f;
     private const float k_BulletTimeVisualTransition = 0.15f;
     private const float k_GrenadeFuseDuration = 4.5f;
@@ -46,6 +47,8 @@ public sealed class PlayerSkillController : MonoBehaviour
     private PlayerSkillProjectile m_projectile;
     private PlayerSkillState m_state = PlayerSkillState.Ready;
     private float m_stateEndsAt;
+    private int m_bulletTimeHeadshotsForNextExtension = 1;
+    private int m_bulletTimeHeadshotProgress;
     private float m_cooldownDuration;
     private bool m_controlsTimeScale;
     private ColorAdjustments m_colorAdjustments;
@@ -94,6 +97,7 @@ public sealed class PlayerSkillController : MonoBehaviour
         m_rocketProjectile?.Initialize(this, playerHealth, scoreSystem);
         m_state = PlayerSkillState.Ready;
         m_stateEndsAt = 0f;
+        ResetBulletTimeHeadshotProgress();
         m_cooldownDuration = 0f;
         ResetRocketLauncherPresentation();
         InitializeBulletTimeVisual();
@@ -137,6 +141,7 @@ public sealed class PlayerSkillController : MonoBehaviour
             SetBulletTimeVisual(true);
             m_state = PlayerSkillState.Active;
             m_stateEndsAt = GameplayClock.Now + k_BulletTimeDuration;
+            ResetBulletTimeHeadshotProgress();
             if (m_scoreSystem != null)
             {
                 m_scoreSystem.SetBulletTimeActive(true);
@@ -208,6 +213,24 @@ public sealed class PlayerSkillController : MonoBehaviour
         return true;
     }
 
+    internal void RegisterBulletTimeHeadshotKill()
+    {
+        if (m_playerClass != PlayerClassId.Sniper || m_state != PlayerSkillState.Active)
+        {
+            return;
+        }
+
+        m_bulletTimeHeadshotProgress++;
+        if (m_bulletTimeHeadshotProgress < m_bulletTimeHeadshotsForNextExtension)
+        {
+            return;
+        }
+
+        m_stateEndsAt += k_BulletTimeHeadshotExtension;
+        m_bulletTimeHeadshotProgress = 0;
+        m_bulletTimeHeadshotsForNextExtension++;
+    }
+
     public void CancelArmedSkill()
     {
         if (m_rocketRecoilActive)
@@ -228,7 +251,14 @@ public sealed class PlayerSkillController : MonoBehaviour
         m_state = PlayerSkillState.Ready;
         m_stateEndsAt = 0f;
         m_cooldownDuration = 0f;
+        ResetBulletTimeHeadshotProgress();
         RefreshHud();
+    }
+
+    private void ResetBulletTimeHeadshotProgress()
+    {
+        m_bulletTimeHeadshotsForNextExtension = 1;
+        m_bulletTimeHeadshotProgress = 0;
     }
 
     internal bool BeginDeathPresentation(Vector3 inheritedVelocity)
@@ -456,6 +486,7 @@ public sealed class PlayerSkillController : MonoBehaviour
         m_state = PlayerSkillState.Ready;
         m_stateEndsAt = 0f;
         m_cooldownDuration = 0f;
+        ResetBulletTimeHeadshotProgress();
         RefreshHud();
     }
 
@@ -537,6 +568,7 @@ public sealed class PlayerSkillController : MonoBehaviour
     {
         Debug.Assert(Mathf.Approximately(k_BulletTimeScale, 0.35f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeDuration, 5f));
+        Debug.Assert(Mathf.Approximately(k_BulletTimeHeadshotExtension, 0.5f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeSaturation, -100f));
         Debug.Assert(Mathf.Approximately(k_BulletTimeVisualTransition, 0.15f));
         Debug.Assert(Mathf.Approximately(k_GrenadeFuseDuration, 4.5f));
