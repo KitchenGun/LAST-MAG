@@ -54,7 +54,7 @@ public sealed class AmmoPickup : MonoBehaviour
 
     internal static WeaponId ChooseAmmoWeapon(WeaponId primary, float roll)
     {
-        return roll < 0.7f ? primary : WeaponId.Pistol;
+        return roll < 0.6f ? primary : WeaponId.Pistol;
     }
 
     public void Configure(WeaponId weapon, int amount)
@@ -141,12 +141,12 @@ public sealed class AmmoPickup : MonoBehaviour
         Debug.Assert(GetAmount(WeaponId.Rifle) == 20);
         Debug.Assert(GetAmount(WeaponId.DMR) == 5);
         Debug.Assert(GetColor(WeaponId.DMR) == GetColor(WeaponId.Rifle));
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.6999f) == WeaponId.Rifle);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.6999f) == WeaponId.Shotgun);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.6999f) == WeaponId.DMR);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.7f) == WeaponId.Pistol);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.7f) == WeaponId.Pistol);
-        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.7f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.5999f) == WeaponId.Rifle);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.5999f) == WeaponId.Shotgun);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.5999f) == WeaponId.DMR);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Rifle, 0.6f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.Shotgun, 0.6f) == WeaponId.Pistol);
+        Debug.Assert(ChooseAmmoWeapon(WeaponId.DMR, 0.6f) == WeaponId.Pistol);
     }
 
     internal static Vector3 FindGroundPosition(Vector3 deathPosition)
