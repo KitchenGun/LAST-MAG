@@ -30,6 +30,10 @@ public sealed class RangedEnemy : MonoBehaviour
     [SerializeField] private Animator m_animator;
     [SerializeField] private Transform m_projectileOrigin;
     [SerializeField] private GameObject m_chargeVisual;
+    [Header("Attack Voice")]
+    [SerializeField] private AudioClip[] m_attackClips;
+    [SerializeField] private float m_attackVoiceMaxDistance = 25f;
+    [SerializeField, Range(0f, 1f)] private float m_attackVoiceVolume = 1f;
 
     private NavMeshPath m_searchPath;
     private EnemyHealth m_health;
@@ -169,6 +173,8 @@ public sealed class RangedEnemy : MonoBehaviour
         m_fireTime = Time.time + m_attackWarning;
         m_nextChargePuffTime = Time.time;
         m_nextAttackTime = Time.time + m_attackInterval;
+        SpatialAudio.PlayRandomOneShot(m_attackClips, transform.position,
+            m_attackVoiceMaxDistance, m_attackVoiceVolume);
         if (m_animator != null && m_animator.runtimeAnimatorController != null)
         {
             m_animator.SetTrigger(s_Attack);
@@ -391,5 +397,7 @@ public sealed class RangedEnemy : MonoBehaviour
         m_projectileSpeed = Mathf.Max(0.1f, m_projectileSpeed);
         m_projectileRadius = Mathf.Max(0.05f, m_projectileRadius);
         m_projectileLifetime = Mathf.Max(0.1f, m_projectileLifetime);
+        m_attackVoiceMaxDistance = Mathf.Max(0.1f, m_attackVoiceMaxDistance);
+        m_attackVoiceVolume = Mathf.Clamp01(m_attackVoiceVolume);
     }
 }

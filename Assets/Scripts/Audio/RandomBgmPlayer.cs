@@ -24,6 +24,7 @@ public sealed class RandomBgmPlayer : MonoBehaviour
     private int m_lastClipIndex = -1;
     private Coroutine m_nowPlayingCoroutine;
     private Vector3 m_nowPlayingIconRestScale = Vector3.one;
+    private bool m_audioPaused;
 
     private void Awake()
     {
@@ -56,6 +57,21 @@ public sealed class RandomBgmPlayer : MonoBehaviour
 
     private void Update()
     {
+        bool shouldPauseAudio = GameplayClock.IsPaused;
+        if (shouldPauseAudio != m_audioPaused)
+        {
+            if (shouldPauseAudio)
+            {
+                m_audioSource.Pause();
+            }
+            else
+            {
+                m_audioSource.UnPause();
+            }
+
+            m_audioPaused = shouldPauseAudio;
+        }
+
         m_audioSource.pitch = Mathf.Max(k_MinPlaybackPitch, Time.timeScale);
     }
 
@@ -63,12 +79,17 @@ public sealed class RandomBgmPlayer : MonoBehaviour
     {
         while (TrySelectClip(out AudioClip clip, out int clipIndex))
         {
+            while (GameplayClock.IsPaused)
+            {
+                yield return null;
+            }
+
             m_lastClipIndex = clipIndex;
             m_audioSource.clip = clip;
             m_audioSource.Play();
             ShowNowPlaying(clip.name);
 
-            while (m_audioSource.isPlaying)
+            while (GameplayClock.IsPaused || m_audioSource.isPlaying)
             {
                 yield return null;
             }
