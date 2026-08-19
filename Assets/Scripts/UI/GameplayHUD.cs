@@ -18,6 +18,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private const float k_ScoreFeedbackDuration = 2.25f;
     private const float k_ScoreFeedbackFadeDuration = 0.3f;
     private const float k_ComboDuration = 5f;
+    private const float k_ComboPopDuration = 0.14f;
     private const float k_HitMarkerDuration = 0.12f;
     private const float k_HitMarkerFadeDuration = 0.04f;
     private const float k_HitMarkerPulseDuration = 0.06f;
@@ -82,6 +83,8 @@ public sealed class GameplayHUD : MonoBehaviour
     private TextMeshProUGUI m_comboLabel;
     private TextMeshProUGUI m_comboText;
     private TextMeshProUGUI m_comboDecayText;
+    private RectTransform m_comboTextRect;
+    private Vector3 m_comboTextBaseScale = Vector3.one;
     private RectTransform m_comboPanel;
     private Image m_comboProgressTrack;
     private Image m_comboProgressFill;
@@ -101,6 +104,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private float m_emptyAmmoFeedbackUntil;
     private float m_emptyAmmoBlinkStartedAt;
     private float m_hitMarkerUntil;
+    private float m_comboPopStartedAt = -1f;
     private float m_hitMarkerPulseScale = 1f;
     private float m_damageVignetteTargetAlpha;
     private float m_dmrScopeVignetteTargetAlpha;
@@ -179,6 +183,7 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         UpdateEmptyAmmoText();
+        UpdateComboTextScale();
         UpdatePickupPopups();
         UpdateScoreFeedbacks();
         UpdateHitMarker();
@@ -365,6 +370,7 @@ public sealed class GameplayHUD : MonoBehaviour
         int safeCount = Mathf.Max(0, comboCount);
         int visibleBullets = GetVisibleComboBulletCount(remainingSeconds);
         bool isVisible = safeCount > 0 && remainingSeconds > 0f;
+        bool wasVisible = m_comboPanel != null && m_comboPanel.gameObject.activeSelf;
         if (m_comboPanel != null)
         {
             m_comboPanel.gameObject.SetActive(isVisible);
@@ -376,13 +382,23 @@ public sealed class GameplayHUD : MonoBehaviour
             {
                 m_comboProgressFill.fillAmount = 0f;
             }
+            m_comboPopStartedAt = -1f;
+            if (m_comboTextRect != null)
+            {
+                m_comboTextRect.localScale = m_comboTextBaseScale;
+            }
             return;
         }
 
-        if (m_comboText != null && m_lastComboCount != safeCount)
+        if (m_comboText != null && (m_lastComboCount != safeCount || !wasVisible))
         {
             m_comboText.text = $"x{safeCount}";
             m_lastComboCount = safeCount;
+            m_comboPopStartedAt = GameplayClock.Now;
+            if (m_comboTextRect != null)
+            {
+                m_comboTextRect.localScale = m_comboTextBaseScale * 2f;
+            }
         }
 
         Color comboDecayColor = GetComboDecayColor(visibleBullets);
@@ -950,6 +966,7 @@ public sealed class GameplayHUD : MonoBehaviour
 
         m_comboText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboText")?.GetComponent<TextMeshProUGUI>();
         Debug.Assert(m_comboText != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboText");
+        m_comboTextRect = m_comboText != null ? m_comboText.rectTransform : null;
         m_comboLabel = transform.Find("Layer_ScoreCombo/ComboPanel/ComboLabel")?.GetComponent<TextMeshProUGUI>();
         Debug.Assert(m_comboLabel != null, "Missing HUD Text: Layer_ScoreCombo/ComboPanel/ComboLabel");
         m_comboDecayText = transform.Find("Layer_ScoreCombo/ComboPanel/ComboDecayText")?.GetComponent<TextMeshProUGUI>();
@@ -972,6 +989,10 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         m_comboPanel = (RectTransform)existingPanel;
+        if (m_comboTextRect != null)
+        {
+            m_comboTextBaseScale = m_comboTextRect.localScale;
+        }
         if (m_comboLabel != null)
         {
             m_comboLabel.text = "COMBO";
@@ -1050,6 +1071,23 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         m_comboPanel.gameObject.SetActive(false);
+    }
+
+    private void UpdateComboTextScale()
+    {
+        if (m_comboTextRect == null || m_comboPopStartedAt < 0f)
+        {
+            return;
+        }
+
+        float progress = Mathf.Clamp01((GameplayClock.Now - m_comboPopStartedAt) / k_ComboPopDuration);
+        float scale = Mathf.Lerp(2f, 1f, Mathf.SmoothStep(0f, 1f, progress));
+        m_comboTextRect.localScale = m_comboTextBaseScale * scale;
+        if (progress >= 1f)
+        {
+            m_comboTextRect.localScale = m_comboTextBaseScale;
+            m_comboPopStartedAt = -1f;
+        }
     }
 
     private void SetWeaponBackgroundState(int row, bool isActive, bool isEmpty)
