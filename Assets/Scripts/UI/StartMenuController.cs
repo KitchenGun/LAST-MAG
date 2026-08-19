@@ -63,6 +63,7 @@ public sealed class StartMenuController : MonoBehaviour
         m_classSelectionPanel = FindChildObject("ClassSelectionPanel");
         m_title = FindChildObject("Title");
         m_controls = FindChildObject("Controls");
+        InitializeFlashlightControlHint();
         m_showingClassSelection = false;
         m_showingSettings = false;
         m_settingsPanel.Hide();
@@ -127,6 +128,57 @@ public sealed class StartMenuController : MonoBehaviour
         versionText.text = FormatBuildVersion(Application.version, Application.buildGUID, Application.isEditor);
         versionText.raycastTarget = false;
         versionText.overflowMode = TextOverflowModes.Overflow;
+    }
+
+    private void InitializeFlashlightControlHint()
+    {
+        if (m_controls == null
+            || m_controls.transform.Find("FlashlightIcon") != null
+            || m_controls.transform.Find("FlashlightLabel") != null)
+        {
+            return;
+        }
+
+        TMP_Text template = null;
+        foreach (TMP_Text candidate in m_controls.GetComponentsInChildren<TMP_Text>(true))
+        {
+            template = candidate;
+            break;
+        }
+
+        if (template == null)
+        {
+            Debug.LogWarning("[StartMenu] Controls text template was not found.");
+            return;
+        }
+
+        GameObject hintObject = new("FlashlightControlHint");
+        hintObject.transform.SetParent(m_controls.transform, false);
+
+        TMP_Text keyHint = CreateHintText(hintObject.transform, template, "V", new Vector2(0f, -396f), new Vector2(64f, 64f));
+        keyHint.alignment = TextAlignmentOptions.Center;
+        TMP_Text descriptionHint = CreateHintText(hintObject.transform, template, "FLASHLIGHT    TOGGLE", new Vector2(104f, -396f), new Vector2(500f, 64f));
+        descriptionHint.alignment = template.alignment;
+    }
+
+    private TMP_Text CreateHintText(Transform parent, TMP_Text template, string text, Vector2 position, Vector2 size)
+    {
+        GameObject textObject = new(text);
+        textObject.transform.SetParent(parent, false);
+        RectTransform rect = textObject.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        TMP_Text hint = textObject.AddComponent<TextMeshProUGUI>();
+        hint.font = template.font;
+        hint.fontSize = template.fontSize;
+        hint.color = template.color;
+        hint.raycastTarget = false;
+        hint.text = text;
+        return hint;
     }
 
     private void OpenSettings()

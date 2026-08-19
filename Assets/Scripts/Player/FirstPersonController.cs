@@ -176,6 +176,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
     [SerializeField] private InputActionAsset m_inputActions;
     [SerializeField] private Camera m_playerCamera;
+    [SerializeField] private Light m_flashLight;
     [SerializeField] private GameplayHUD m_gameplayHUD;
     [SerializeField] private WeaponViewmodelController m_weaponViewmodel;
     [SerializeField] private PlayerSkillController m_skillController;
@@ -353,7 +354,12 @@ public sealed class FirstPersonController : MonoBehaviour
         {
             m_defaultCameraFieldOfView = m_playerCamera.fieldOfView;
         }
+        if (m_flashLight != null)
+        {
+            m_flashLight.enabled = false;
+        }
         m_gameplayHUD?.BindPlayerHealth(m_playerHealth);
+        m_gameplayHUD?.SetFlashlightState(false);
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
         SelectWeapon(1);
@@ -395,6 +401,11 @@ public sealed class FirstPersonController : MonoBehaviour
     private void OnDisable()
     {
         m_isRifleFiring = false;
+        if (m_flashLight != null)
+        {
+            m_flashLight.enabled = false;
+        }
+        m_gameplayHUD?.SetFlashlightState(false);
         ResetCameraRecoil();
         m_damageAimPunchPitch = 0f;
         m_damageAimPunchTargetPitch = 0f;
@@ -451,6 +462,14 @@ public sealed class FirstPersonController : MonoBehaviour
             m_skillController?.TryActivateOrArm();
         }
 
+        if (Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame
+            && m_flashLight != null
+            && (m_skillController == null || m_skillController.State is PlayerSkillState.Ready or PlayerSkillState.Cooldown))
+        {
+            m_flashLight.enabled = !m_flashLight.enabled;
+            m_gameplayHUD?.SetFlashlightState(m_flashLight.enabled);
+        }
+
         HandleLook();
         HandleMovement();
     }
@@ -464,6 +483,11 @@ public sealed class FirstPersonController : MonoBehaviour
 
         m_isDeathPresentation = true;
         m_isRifleFiring = false;
+        if (m_flashLight != null)
+        {
+            m_flashLight.enabled = false;
+        }
+        m_gameplayHUD?.SetFlashlightState(false);
         m_playerMap?.Disable();
         ResetDmrZoom(true);
         ResetCameraRecoil();

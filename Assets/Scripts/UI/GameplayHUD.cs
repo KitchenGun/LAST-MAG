@@ -49,6 +49,7 @@ public sealed class GameplayHUD : MonoBehaviour
     [SerializeField] private Sprite m_bulletTimeSkillSilhouette;
     [SerializeField] private Sprite m_comboBulletSprite;
     [SerializeField] private Sprite m_comboBulletEmptySprite;
+    [SerializeField] private Sprite m_flashlightIcon;
     [Header("HUD Skin")]
     [SerializeField] private Sprite m_weaponRowInactiveSprite;
     [SerializeField] private Sprite m_weaponRowActiveSprite;
@@ -96,6 +97,7 @@ public sealed class GameplayHUD : MonoBehaviour
     private Image m_crosshairImage;
     private TextMeshProUGUI m_emptyAmmoText;
     private Image m_dmrScopeVignetteImage;
+    private Image m_flashlightImage;
     private PlayerHealth m_playerHealth;
     private Texture2D m_damageVignetteTexture;
     private Sprite m_damageVignetteSprite;
@@ -169,10 +171,12 @@ public sealed class GameplayHUD : MonoBehaviour
         InitializeDamageVignette();
         InitializeDeathTint();
         InitializeDmrScopeVignette();
+        InitializeFlashlightIcon();
 
         RefreshWeapon(1, WeaponId.Rifle, 0, false);
         RefreshWeapon(2, WeaponId.Pistol, 0, false);
         RefreshSkill("GRENADE", PlayerSkillState.Ready, 0f);
+        SetFlashlightState(false);
     }
 
     private void Update()
@@ -282,6 +286,19 @@ public sealed class GameplayHUD : MonoBehaviour
             }
             UpdateEmptyAmmoText();
         }
+    }
+
+    public void SetFlashlightState(bool isOn)
+    {
+        if (m_flashlightImage == null)
+        {
+            return;
+        }
+
+        m_flashlightImage.enabled = true;
+        m_flashlightImage.color = isOn
+            ? new Color(0.0509804f, 0.74902f, 0.627451f, 1f)
+            : new Color(0.18f, 0.24f, 0.28f, 0.35f);
     }
 
     public void SetDmrAimState(bool dmrEquipped, bool zoomed)
@@ -537,6 +554,10 @@ public sealed class GameplayHUD : MonoBehaviour
     private void RunHudSelfCheck()
     {
         Debug.Assert(k_WeaponSlotCount == 2);
+        SetFlashlightState(false);
+        Debug.Assert(m_flashlightImage == null || m_flashlightImage.enabled);
+        SetFlashlightState(true);
+        Debug.Assert(m_flashlightImage == null || m_flashlightImage.color.a > 0.99f);
         Debug.Assert(FormatSurvivalTime(3599) == "59:59");
         Debug.Assert(FormatSurvivalTime(3600) == "60:00");
         Debug.Assert(FormatSurvivalTime(-1) == "00:00");
@@ -769,6 +790,41 @@ public sealed class GameplayHUD : MonoBehaviour
         m_dmrScopeVignetteImage.color = new Color(0f, 0f, 0f, 0f);
         m_dmrScopeVignetteImage.enabled = false;
         m_dmrScopeVignetteImage.transform.SetAsFirstSibling();
+    }
+
+    private void InitializeFlashlightIcon()
+    {
+        Transform existing = null;
+        foreach (Transform child in GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == "FlashlightIcon")
+            {
+                existing = child;
+                break;
+            }
+        }
+
+        if (existing == null)
+        {
+            Debug.LogError("GameplayHUD requires a scene FlashlightIcon Image.");
+            return;
+        }
+
+        m_flashlightImage = existing.GetComponent<Image>();
+        if (m_flashlightImage == null)
+        {
+            Debug.LogError("GameplayHUD FlashlightIcon requires an Image component.");
+            return;
+        }
+        if (m_flashlightImage.sprite == null)
+        {
+            m_flashlightImage.sprite = m_flashlightIcon != null
+                ? m_flashlightIcon
+                : Resources.Load<Sprite>("UI/InGame/T_UI_HUD_Flashlight");
+        }
+        m_flashlightImage.preserveAspect = true;
+        m_flashlightImage.raycastTarget = false;
+        Debug.Assert(m_flashlightImage.sprite != null, "Missing HUD Sprite: T_UI_HUD_Flashlight");
     }
 
     private void InitializeDeathTint()
