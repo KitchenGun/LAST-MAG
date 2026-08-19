@@ -1,0 +1,50 @@
+{
+  "referenceResolution": { "width": 1920, "height": 1080, "match": 0.5 },
+  "font": "Tomorrow-SemiBold",
+  "naming": "T_UI_<Feature>_<Element>_<State>[_9S]",
+  "common": [
+    { "asset": "T_UI_Common_Panel_Default_9S", "border": 12 },
+    { "asset": "T_UI_Common_Row_Normal_9S", "border": 8 },
+    { "asset": "T_UI_Common_Row_Focused_9S", "border": 8 },
+    { "asset": "T_UI_Common_Button_Normal_9S", "border": 8 },
+    { "asset": "T_UI_Common_Button_Focused_9S", "border": 8 },
+    { "asset": "T_UI_Common_Button_Pressed_9S", "border": 8 },
+    { "asset": "T_UI_Common_CornerAccent_TL", "border": 0 },
+    { "asset": "T_UI_Common_CornerAccent_BR", "border": 0 },
+    { "asset": "T_UI_Common_FocusMarker_Default", "border": 0 },
+    { "asset": "T_UI_Common_WarningIcon_Default", "border": 0 }
+  ],
+  "startMenu": [
+    { "asset": "T_UI_Start_SettingsPanel_Default_9S", "border": 12 },
+    { "asset": "T_UI_Start_SettingsRow_Normal_9S", "border": 8 },
+    { "asset": "T_UI_Start_SettingsRow_Focused_9S", "border": 8 },
+    { "asset": "T_UI_Start_Toggle_Off_9S", "border": 8 },
+    { "asset": "T_UI_Start_Toggle_On_9S", "border": 8 },
+    { "asset": "T_UI_Start_SliderTrack_Default_9S", "border": 6 },
+    { "asset": "T_UI_Start_SliderFill_Default_9S", "border": 6 },
+    { "asset": "T_UI_Start_SliderHandle_Default", "border": 0 },
+    { "asset": "T_UI_Start_ValueBox_Default_9S", "border": 8 }
+  ],
+  "hud": [
+    { "asset": "T_UI_HUD_TimerPanel_Default_9S", "border": 8 },
+    { "asset": "T_UI_HUD_ScorePanel_Default_9S", "border": 8 },
+    { "asset": "T_UI_HUD_ComboPanel_Active_9S", "border": 8 },
+    { "asset": "T_UI_HUD_WeaponRow_Inactive_9S", "border": 8 },
+    { "asset": "T_UI_HUD_WeaponRow_Active_9S", "border": 8 },
+    { "asset": "T_UI_HUD_WeaponRow_Empty_9S", "border": 8 },
+    { "asset": "T_UI_HUD_SkillRow_Ready_9S", "border": 8 },
+    { "asset": "T_UI_HUD_PickupToast_Default_9S", "border": 8 },
+    { "asset": "T_UI_HUD_ComboPip_Filled", "border": 0 },
+    { "asset": "T_UI_HUD_ComboPip_Empty", "border": 0 }
+  ],
+  "result": [
+    { "asset": "T_UI_Result_SummaryPanel_Default_9S", "border": 12 },
+    { "asset": "T_UI_Result_DataPanel_Default_9S", "border": 12 },
+    { "asset": "T_UI_Result_DataRow_Normal_9S", "border": 8 },
+    { "asset": "T_UI_Result_RankingRow_Normal_9S", "border": 8 },
+    { "asset": "T_UI_Result_RankingRow_Player_9S", "border": 8 },
+    { "asset": "T_UI_Result_Input_Default_9S", "border": 8 },
+    { "asset": "T_UI_Result_Button_Primary_9S", "border": 8 },
+    { "asset": "T_UI_Result_Button_Secondary_9S", "border": 8 }
+  ]
+}
