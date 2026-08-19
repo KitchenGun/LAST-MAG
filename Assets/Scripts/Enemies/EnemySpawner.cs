@@ -376,7 +376,8 @@ public sealed class EnemySpawner : MonoBehaviour
         if (elapsedMinutes <= 3f) return Mathf.Lerp(2.4f, 1.6f, (elapsedMinutes - 1f) / 2f);
         if (elapsedMinutes <= 5f) return Mathf.Lerp(1.6f, 1.1f, (elapsedMinutes - 3f) / 2f);
         if (elapsedMinutes <= 8f) return Mathf.Lerp(0.7f, 0.5f, (elapsedMinutes - 5f) / 3f);
-        return 0.5f;
+        // 8분 이후에도 생성 압박이 계속 증가하도록 점진적으로 간격을 줄인다.
+        return 0.5f * Mathf.Exp(-(elapsedMinutes - 8f) * 0.18f);
     }
 
     [ContextMenu("Run Enemy Spawner Self Check")]
@@ -391,6 +392,8 @@ public sealed class EnemySpawner : MonoBehaviour
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(3f), 1.6f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(5f), 0.7f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(8f), 0.5f));
+        Debug.Assert(EvaluateSpawnInterval(10f) < EvaluateSpawnInterval(8f)
+            && EvaluateSpawnInterval(20f) < EvaluateSpawnInterval(10f));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=48") == 48);
         Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=108") == 108);
