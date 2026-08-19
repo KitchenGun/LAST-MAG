@@ -375,8 +375,8 @@ public sealed class EnemySpawner : MonoBehaviour
         if (elapsedMinutes <= 1f) return Mathf.Lerp(3f, 2.4f, elapsedMinutes);
         if (elapsedMinutes <= 3f) return Mathf.Lerp(2.4f, 1.6f, (elapsedMinutes - 1f) / 2f);
         if (elapsedMinutes <= 5f) return Mathf.Lerp(1.6f, 1.1f, (elapsedMinutes - 3f) / 2f);
-        if (elapsedMinutes <= 8f) return Mathf.Lerp(1.1f, 0.7f, (elapsedMinutes - 5f) / 3f);
-        return 0.7f;
+        if (elapsedMinutes <= 8f) return Mathf.Lerp(0.7f, 0.5f, (elapsedMinutes - 5f) / 3f);
+        return 0.5f;
     }
 
     [ContextMenu("Run Enemy Spawner Self Check")]
@@ -389,8 +389,8 @@ public sealed class EnemySpawner : MonoBehaviour
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(0f), 3f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(1f), 2.4f));
         Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(3f), 1.6f));
-        Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(5f), 1.1f));
-        Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(8f), 0.7f));
+        Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(5f), 0.7f));
+        Debug.Assert(Mathf.Approximately(EvaluateSpawnInterval(8f), 0.5f));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=48") == 48);
         Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=108") == 108);
