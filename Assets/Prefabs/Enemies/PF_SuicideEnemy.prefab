@@ -428,3 +428,4 @@ MonoBehaviour:
   - {fileID: 8300000, guid: eb8678329e21ee34ea238f2ec9628f08, type: 3}
   m_volume: 0.65
   m_movementSource: {fileID: 6010385386296230468}
+  m_isPriorityFootstep: 1

@@ -32,6 +32,7 @@ public sealed class EnemySpawner : MonoBehaviour
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     private const int k_StressSampleCapacity = 12000;
     private int m_stressEnemyTarget;
+    private bool m_stressModeEnabled;
     private readonly float[] m_stressFrameSamples = new float[k_StressSampleCapacity];
     private readonly float[] m_stressCpuSamples = new float[k_StressSampleCapacity];
     private readonly float[] m_stressGpuSamples = new float[k_StressSampleCapacity];
@@ -70,9 +71,9 @@ public sealed class EnemySpawner : MonoBehaviour
         m_startTime = Time.time;
         m_nextAttemptTime = m_startTime + m_initialDelay;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        m_stressEnemyTarget = ParseStressTarget(Application.absoluteURL);
-        IsStressTestActive = m_stressEnemyTarget > 0;
-        if (m_stressEnemyTarget > 0)
+        m_stressModeEnabled = TryParseStressTarget(Application.absoluteURL, out m_stressEnemyTarget);
+        IsStressTestActive = m_stressModeEnabled;
+        if (m_stressModeEnabled)
         {
             m_nextAttemptTime = Time.time;
         }
@@ -83,6 +84,10 @@ public sealed class EnemySpawner : MonoBehaviour
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         UpdateStressMeasurement();
+        if (m_stressModeEnabled && m_stressEnemyTarget == 0)
+        {
+            return;
+        }
 #endif
         if (Time.time < m_nextAttemptTime || !HasRequiredReferences())
         {
@@ -92,7 +97,7 @@ public sealed class EnemySpawner : MonoBehaviour
         float elapsedMinutes = (Time.time - m_startTime) / 60f;
         int activeTarget = EvaluateActiveTarget(elapsedMinutes);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        bool isStressFill = m_stressEnemyTarget > 0 && m_objectPool.ActiveEnemyCount < m_stressEnemyTarget;
+        bool isStressFill = m_stressModeEnabled && m_objectPool.ActiveEnemyCount < m_stressEnemyTarget;
         if (isStressFill)
         {
             activeTarget = m_stressEnemyTarget;
@@ -246,6 +251,8 @@ public sealed class EnemySpawner : MonoBehaviour
         if (m_stressSampleStartedAt <= 0f)
         {
             m_stressSampleStartedAt = now;
+            SpatialAudio.ResetDiagnostics();
+            FootstepAudio.ResetDiagnostics();
         }
 
         // ponytail: 12000 samples cover 60 seconds at up to 200 FPS.
@@ -283,7 +290,12 @@ public sealed class EnemySpawner : MonoBehaviour
         Debug.Log($"[WebGL Stress] target={m_stressEnemyTarget} duration={duration:F1}s "
             + $"averageFps={averageFps:F1} frameP95Ms={CalculateP95(m_stressFrameSamples, m_stressFrameSampleCount):F2} "
             + $"cpuP95Ms={CalculateP95(m_stressCpuSamples, m_stressCpuSampleCount):F2} "
-            + $"gpuP95Ms={CalculateP95(m_stressGpuSamples, m_stressGpuSampleCount):F2} over33Ms={over33Ms}");
+            + $"gpuP95Ms={CalculateP95(m_stressGpuSamples, m_stressGpuSampleCount):F2} over33Ms={over33Ms} "
+            + $"audioRequests={SpatialAudio.DiagnosticRequestCount} audioPlayed={SpatialAudio.DiagnosticPlayedCount} "
+            + $"audioDropped={SpatialAudio.DiagnosticDroppedCount} audioReplaced={SpatialAudio.DiagnosticReplacedCount} "
+            + $"footstepsAccepted={FootstepAudio.DiagnosticAcceptedCount} "
+            + $"footstepsDistanceCulled={FootstepAudio.DiagnosticDistanceRejectedCount} "
+            + $"footstepsBudgetDropped={FootstepAudio.DiagnosticBudgetRejectedCount}");
     }
 
     private static float CalculateP95(float[] samples, int count)
@@ -296,11 +308,12 @@ public sealed class EnemySpawner : MonoBehaviour
         return samples[Mathf.Clamp(Mathf.CeilToInt(count * 0.95f) - 1, 0, count - 1)];
     }
 
-    private static int ParseStressTarget(string absoluteUrl)
+    private static bool TryParseStressTarget(string absoluteUrl, out int target)
     {
+        target = 0;
         if (string.IsNullOrEmpty(absoluteUrl) || !Uri.TryCreate(absoluteUrl, UriKind.Absolute, out Uri uri))
         {
-            return 0;
+            return false;
         }
 
         string[] parameters = uri.Query.TrimStart('?').Split('&');
@@ -308,12 +321,13 @@ public sealed class EnemySpawner : MonoBehaviour
         {
             string[] pair = parameters[index].Split('=');
             if (pair.Length == 2 && pair[0] == "stressEnemies"
-                && int.TryParse(pair[1], out int target) && (target == 48 || target == 108))
+                && int.TryParse(pair[1], out target) && (target == 0 || target == 48 || target == 108))
             {
-                return target;
+                return true;
             }
         }
-        return 0;
+        target = 0;
+        return false;
     }
 #endif
 
@@ -395,9 +409,13 @@ public sealed class EnemySpawner : MonoBehaviour
         Debug.Assert(EvaluateSpawnInterval(10f) < EvaluateSpawnInterval(8f)
             && EvaluateSpawnInterval(20f) < EvaluateSpawnInterval(10f));
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=48") == 48);
-        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=108") == 108);
-        Debug.Assert(ParseStressTarget("https://localhost/?stressEnemies=99") == 0);
+        Debug.Assert(TryParseStressTarget("https://localhost/?stressEnemies=0", out int zeroTarget)
+            && zeroTarget == 0);
+        Debug.Assert(TryParseStressTarget("https://localhost/?stressEnemies=48", out int mediumTarget)
+            && mediumTarget == 48);
+        Debug.Assert(TryParseStressTarget("https://localhost/?stressEnemies=108", out int highTarget)
+            && highTarget == 108);
+        Debug.Assert(!TryParseStressTarget("https://localhost/?stressEnemies=99", out _));
 #endif
         Debug.Assert(HasRequiredReferences());
     }

@@ -109,12 +109,14 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_body.angularVelocity = useGravity ? new Vector3(4f, 2f, 3f) : Vector3.zero;
         if (useGravity)
         {
-            SpatialAudio.PlayRandomOneShot(m_throwClips, position, m_throwMaxDistance, m_throwVolume);
+            SpatialAudio.PlayRandomOneShot(m_throwClips, position, m_throwMaxDistance, m_throwVolume,
+                SpatialAudio.CuePriority.Gameplay);
             m_vfxEmitter?.EmitGrenadeTrail(position);
         }
         else
         {
-            SpatialAudio.PlayRandomOneShot(m_launchClips, position, m_launchMaxDistance, m_launchVolume);
+            SpatialAudio.PlayRandomOneShot(m_launchClips, position, m_launchMaxDistance, m_launchVolume,
+                SpatialAudio.CuePriority.Gameplay);
             m_vfxEmitter?.EmitRocketLaunch(position, direction);
         }
     }
@@ -177,7 +179,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             if (!hitEnemy)
             {
                 SpatialAudio.PlayRandomOneShot(m_collisionClips, collision.GetContact(0).point,
-                    m_collisionMaxDistance, m_collisionVolume);
+                    m_collisionMaxDistance, m_collisionVolume, SpatialAudio.CuePriority.Gameplay);
             }
             return;
         }
@@ -208,7 +210,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         FirstPersonController.CurrentInstance?.ApplyExplosionShake(
             transform.position, m_radius, !m_usesGravity);
         SpatialAudio.PlayRandomOneShot(m_explosionClips, transform.position,
-            m_explosionMaxDistance, m_explosionVolume);
+            m_explosionMaxDistance, m_explosionVolume, SpatialAudio.CuePriority.Gameplay);
         m_damagedEnemies.Clear();
         m_killedEnemies.Clear();
         int hitCount = Physics.OverlapSphereNonAlloc(transform.position, m_radius, s_ExplosionHits,

@@ -249,8 +249,10 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_hasExploded = true;
         m_health.DisableColliders();
         SetMoving(false);
-        SpatialAudio.PlayRandomOneShot(m_preExplosionClips, transform.position, m_explosionMaxDistance, m_explosionVolume);
-        SpatialAudio.PlayOneShot(m_explosionClip, transform.position, m_explosionMaxDistance, m_explosionVolume);
+        SpatialAudio.PlayRandomOneShot(m_preExplosionClips, transform.position, m_explosionMaxDistance,
+            m_explosionVolume, SpatialAudio.CuePriority.Gameplay);
+        SpatialAudio.PlayOneShot(m_explosionClip, transform.position, m_explosionMaxDistance,
+            m_explosionVolume, SpatialAudio.CuePriority.Gameplay);
         if (m_gasEmitter == null)
         {
             m_gasEmitter = FindFirstObjectByType<SuicideGasEmitter>();

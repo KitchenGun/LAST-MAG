@@ -154,7 +154,8 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_hitTime = Time.time + m_attackWarning;
         m_nextAttackTime = Time.time + m_attackInterval;
         SetMoving(false);
-        SpatialAudio.PlayRandomOneShot(m_attackClips, transform.position, m_attackVoiceMaxDistance, m_attackVoiceVolume);
+        SpatialAudio.PlayRandomOneShot(m_attackClips, transform.position, m_attackVoiceMaxDistance,
+            m_attackVoiceVolume, SpatialAudio.CuePriority.Gameplay);
         if (m_animator != null && m_animator.runtimeAnimatorController != null)
         {
             m_animator.SetTrigger(s_Attack);

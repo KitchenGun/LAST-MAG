@@ -218,7 +218,7 @@ public sealed class AmmoPickup : MonoBehaviour
         }
 
         s_Player = player;
-        SpatialAudio.PlayOneShot2D(s_CollectClip, 0.75f);
+        SpatialAudio.PlayOneShot2D(s_CollectClip, 0.75f, SpatialAudio.CuePriority.Gameplay);
         if (m_pool != null)
         {
             m_pool.ReleaseAmmo(this);

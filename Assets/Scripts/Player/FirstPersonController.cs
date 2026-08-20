@@ -1024,7 +1024,8 @@ public sealed class FirstPersonController : MonoBehaviour
             else
             {
                 m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
-                SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
+                SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance,
+                    m_wallImpactVolume, SpatialAudio.CuePriority.Gameplay);
             }
         }
         Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.red, 0.1f);
@@ -1093,7 +1094,8 @@ public sealed class FirstPersonController : MonoBehaviour
             else if (!playedWallImpact)
             {
                 m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
-                SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
+                SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance,
+                    m_wallImpactVolume, SpatialAudio.CuePriority.Gameplay);
                 playedWallImpact = true;
             }
             else
@@ -1162,7 +1164,8 @@ public sealed class FirstPersonController : MonoBehaviour
                 else if (!playedWallImpact)
                 {
                     m_impactSparkEmitter?.EmitSurfaceAt(hit.point, hit.normal);
-                    SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance, m_wallImpactVolume);
+                    SpatialAudio.PlayOneShot(m_wallImpactClip, hit.point, m_wallImpactMaxDistance,
+                        m_wallImpactVolume, SpatialAudio.CuePriority.Gameplay);
                     playedWallImpact = true;
                     break;
                 }
