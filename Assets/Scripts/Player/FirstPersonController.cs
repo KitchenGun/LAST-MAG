@@ -168,6 +168,8 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_PistolContinuousWindow = 0.24f;
     private const float k_RifleContinuousWindow = 0.32f;
     private const float k_DmrContinuousWindow = 0.42f;
+    private const float k_MouseLookSmoothingTime = 0.012f;
+    private const float k_MaxMouseDeltaPerUpdate = 1200f;
     // ponytail: fixed buffer avoids WebGL GC; raise only if one shot can cross 64 solid colliders.
     private const int k_DmrRaycastBufferSize = 64;
     private const int k_ShotgunEnemyHitsPerPellet = 2;
@@ -269,6 +271,8 @@ public sealed class FirstPersonController : MonoBehaviour
     private float m_verticalVelocity;
     private float m_pitch;
     private float m_yaw;
+    private Vector2 m_smoothedMouseVelocity;
+    private bool m_ignoreNextMouseDelta;
     private float m_defaultCameraFieldOfView;
     private float m_cameraRecoilPitch;
     private float m_cameraRecoilYaw;
@@ -736,8 +740,10 @@ public sealed class FirstPersonController : MonoBehaviour
         float sensitivity = CalculateLookSensitivity(
             m_lookSensitivity, GameSettings.MouseSensitivity, m_isDmrZoomed);
         bool isGamepad = m_lookAction.activeControl?.device is Gamepad;
-        Vector2 look = m_lookAction.ReadValue<Vector2>() * sensitivity
-            * GetLookInputTimeScale(isGamepad, GameplayClock.DeltaTime);
+        Vector2 rawLook = m_lookAction.ReadValue<Vector2>();
+        Vector2 look = isGamepad
+            ? rawLook * sensitivity * GetLookInputTimeScale(true, GameplayClock.DeltaTime)
+            : FilterMouseLook(rawLook, GameplayClock.DeltaTime) * sensitivity;
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
         UpdateCameraRecoil();
         UpdateFireImpulse();
@@ -768,6 +774,39 @@ public sealed class FirstPersonController : MonoBehaviour
     private static float GetLookInputTimeScale(bool isGamepad, float deltaTime)
     {
         return isGamepad ? Mathf.Max(0f, deltaTime) * 60f : 1f;
+    }
+
+    private Vector2 FilterMouseLook(Vector2 rawDelta, float deltaTime)
+    {
+        if (m_ignoreNextMouseDelta)
+        {
+            m_ignoreNextMouseDelta = false;
+            m_smoothedMouseVelocity = Vector2.zero;
+            return Vector2.zero;
+        }
+
+        return SmoothMouseDelta(rawDelta, deltaTime, ref m_smoothedMouseVelocity);
+    }
+
+    private static Vector2 SmoothMouseDelta(Vector2 rawDelta, float deltaTime,
+        ref Vector2 smoothedVelocity)
+    {
+        float safeDeltaTime = Mathf.Max(0.0001f, deltaTime);
+        rawDelta = Vector2.ClampMagnitude(rawDelta, k_MaxMouseDeltaPerUpdate);
+        Vector2 rawVelocity = rawDelta / safeDeltaTime;
+        float blend = 1f - Mathf.Exp(-safeDeltaTime / k_MouseLookSmoothingTime);
+        smoothedVelocity = Vector2.LerpUnclamped(smoothedVelocity, rawVelocity, blend);
+        if (rawDelta == Vector2.zero && smoothedVelocity.sqrMagnitude < 0.0001f)
+        {
+            smoothedVelocity = Vector2.zero;
+        }
+        return smoothedVelocity * safeDeltaTime;
+    }
+
+    private void ResetMouseLookFilter(bool ignoreNextDelta)
+    {
+        m_smoothedMouseVelocity = Vector2.zero;
+        m_ignoreNextMouseDelta = ignoreNextDelta;
     }
 
     private void UpdateCameraRecoil()
@@ -1374,6 +1413,26 @@ public sealed class FirstPersonController : MonoBehaviour
         return shots;
     }
 
+    private static float SimulateMouseImpulse(float framesPerSecond, float rawDelta)
+    {
+        if (framesPerSecond <= 0f)
+        {
+            return 0f;
+        }
+
+        float deltaTime = 1f / framesPerSecond;
+        Vector2 smoothedVelocity = Vector2.zero;
+        float accumulatedDelta = 0f;
+        int frameCount = Mathf.CeilToInt(framesPerSecond);
+        for (int frame = 0; frame < frameCount; frame++)
+        {
+            Vector2 input = frame == 0 ? new Vector2(rawDelta, 0f) : Vector2.zero;
+            accumulatedDelta += SmoothMouseDelta(
+                input, deltaTime, ref smoothedVelocity).x;
+        }
+        return accumulatedDelta;
+    }
+
     private static float SimulateJumpApex(float framesPerSecond, float jumpHeight, float gravity)
     {
         if (framesPerSecond <= 0f || jumpHeight <= 0f || gravity >= 0f)
@@ -1672,6 +1731,16 @@ public sealed class FirstPersonController : MonoBehaviour
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 60f) * 60f, 60f)
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 144f) * 144f, 60f)
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 500f) * 500f, 60f));
+        float mouseImpulse30Fps = SimulateMouseImpulse(30f, 600f);
+        float mouseImpulse60Fps = SimulateMouseImpulse(60f, 600f);
+        float mouseImpulse144Fps = SimulateMouseImpulse(144f, 600f);
+        float mouseImpulse500Fps = SimulateMouseImpulse(500f, 600f);
+        Debug.Assert(Mathf.Abs(mouseImpulse30Fps - 600f) < 0.01f
+            && Mathf.Abs(mouseImpulse60Fps - mouseImpulse30Fps) < 0.01f
+            && Mathf.Abs(mouseImpulse144Fps - mouseImpulse30Fps) < 0.01f
+            && Mathf.Abs(mouseImpulse500Fps - mouseImpulse30Fps) < 0.01f);
+        Debug.Assert(Mathf.Abs(SimulateMouseImpulse(500f, 2400f)
+            - k_MaxMouseDeltaPerUpdate) < 0.01f);
         Debug.Assert(SimulateAutomaticShots(30f, 4f, m_rifleShotsPerSecond) == 44
             && SimulateAutomaticShots(60f, 4f, m_rifleShotsPerSecond) == 44
             && SimulateAutomaticShots(144f, 4f, m_rifleShotsPerSecond) == 44
@@ -1803,12 +1872,14 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void LockCursor()
     {
+        ResetMouseLookFilter(true);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     private void UnlockCursor()
     {
+        ResetMouseLookFilter(false);
         m_isRifleFiring = false;
         m_skillController?.CancelArmedSkill();
         ResetDmrZoom(true);
