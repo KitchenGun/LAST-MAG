@@ -17,12 +17,14 @@ public sealed class GameplayObjectPool : MonoBehaviour
     [SerializeField] private RangedProjectileGasEmitter m_projectileGasEmitter;
     [SerializeField] private AmmoPickup m_ammoPickupPrefab;
 
+    private readonly List<EnemyHealth> m_activeEnemies = new(128);
     private readonly LinkedList<AmmoPickup> m_activeAmmo = new();
     private ObjectPool<EnemyHealth>[] m_enemyPools;
     private ObjectPool<RangedProjectile> m_projectilePool;
     private ObjectPool<AmmoPickup> m_ammoPool;
 
-    public int ActiveEnemyCount { get; private set; }
+    public IReadOnlyList<EnemyHealth> ActiveEnemies => m_activeEnemies;
+    public int ActiveEnemyCount => m_activeEnemies.Count;
     public bool IsConfigured => m_suicideEnemyPrefab != null && m_meleeEnemyPrefab != null
         && m_rangedEnemyPrefab != null && m_projectilePrefab != null
         && m_projectileGasEmitter != null && m_ammoPickupPrefab != null;
@@ -53,7 +55,7 @@ public sealed class GameplayObjectPool : MonoBehaviour
         EnemyHealth enemy = m_enemyPools[index].Get();
         enemy.PrepareForSpawn(position, rotation, this);
         enemy.gameObject.SetActive(true);
-        ActiveEnemyCount++;
+        m_activeEnemies.Add(enemy);
         return enemy;
     }
 
@@ -65,7 +67,7 @@ public sealed class GameplayObjectPool : MonoBehaviour
         }
 
         enemy.MarkPooled();
-        ActiveEnemyCount = Mathf.Max(0, ActiveEnemyCount - 1);
+        m_activeEnemies.Remove(enemy);
         m_enemyPools[(int)enemy.Type].Release(enemy);
     }
 
