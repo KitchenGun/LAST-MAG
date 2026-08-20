@@ -134,7 +134,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 7861206098026486429, guid: c6933301e4bf1984198f68aac8e0663e, type: 3}
     - target: {fileID: 7418174499068084754, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Materials.Array.size
@@ -811,7 +811,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1080,7 +1080,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 3
   m_AspectRatio: 1.7777778
@@ -1197,8 +1197,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -1259,8 +1259,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -1353,7 +1353,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -2004,7 +2004,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2151988451557909348, guid: ee11abc5e90bcd64d9121cc0ffd644cb, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -2086,7 +2086,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -2546,7 +2546,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -3529,8 +3529,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -3863,8 +3863,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -4152,7 +4152,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.17254902, g: 0.5294118, b: 0.9098039, a: 1}
@@ -4251,7 +4251,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -4330,7 +4330,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -4664,8 +4664,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -4862,7 +4862,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.75, g: 0.05, b: 0.05, a: 1}
@@ -5069,8 +5069,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -5276,7 +5276,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &144516159 stripped
 Transform:
@@ -5416,7 +5416,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -6625,7 +6625,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -6729,7 +6729,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2151988451557909348, guid: ee11abc5e90bcd64d9121cc0ffd644cb, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -6811,7 +6811,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -6912,7 +6912,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -6981,6 +6981,173 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 7924048816905949036, guid: 251287724d56b8a4296719976af3eabe, type: 3}
   m_PrefabInstance: {fileID: 341355991}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &193948381
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 193948382}
+  - component: {fileID: 193948384}
+  - component: {fileID: 193948383}
+  m_Layer: 0
+  m_Name: FlashlightHUD
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &193948382
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 193948381}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4178451002}
+  m_Father: {fileID: 925255842}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 128, y: 260}
+  m_SizeDelta: {x: 64, y: 64}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &193948383
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 193948381}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: c11b6094554d37549b9e78bfb12e010f, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &193948384
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 193948381}
+  m_CullTransparentMesh: 1
+--- !u!1 &199141311
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 199141312}
+  - component: {fileID: 199141314}
+  - component: {fileID: 199141313}
+  - component: {fileID: 199141315}
+  m_Layer: 0
+  m_Name: PulseRing
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &199141312
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199141311}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 654935898}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &199141313
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199141311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.8}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: d81f66c1ee3d4c6fb5a1e64cdf887c27, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &199141314
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199141311}
+  m_CullTransparentMesh: 1
+--- !u!114 &199141315
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 199141311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 1, g: 1, b: 1, a: 0.8}
+  m_EffectDistance: {x: 4, y: 4}
+  m_UseGraphicAlpha: 1
 --- !u!4 &200283846 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4074332436735979703, guid: 469c1994827e49a40b86c4587d0fb277, type: 3}
@@ -7193,7 +7360,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &202005573 stripped
 Transform:
@@ -7280,7 +7447,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -7406,7 +7573,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 3
   m_AspectRatio: 1.7777778
@@ -7743,7 +7910,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -7991,8 +8158,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -8427,8 +8594,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -8611,7 +8778,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d67aa0a8f8734ba4ab5eea928dacfb5a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RangedProjectileGasEmitter
 --- !u!199 &223726806
 ParticleSystemRenderer:
@@ -13648,7 +13815,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2643922531758513432, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 3817422271107163767, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: m_RootOrder
@@ -14292,7 +14459,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -14458,7 +14625,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6331231854004831163, guid: c7ba12ac0df0103468b7c53c233c11d9, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 2816c958b541d30439a6eee15331e784, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -14822,8 +14989,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -14983,7 +15150,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -15193,7 +15360,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 7861206098026486429, guid: c6933301e4bf1984198f68aac8e0663e, type: 3}
     - target: {fileID: 7418174499068084754, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Materials.Array.size
@@ -15515,7 +15682,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -15587,79 +15754,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8805112686610752147, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
   m_PrefabInstance: {fileID: 288490134}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &289274204
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 326936180}
-    m_Modifications:
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -24.871
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.66
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -14.34
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8859039824212176600, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_Name
-      value: EnemySpawnPoint_08 (1)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
---- !u!4 &289274205 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 289274204}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &289274206 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6272749143769706059, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 289274204}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!1 &290242418
 GameObject:
   m_ObjectHideFlags: 0
@@ -15768,8 +15862,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -15875,7 +15969,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -16055,8 +16149,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -16181,7 +16275,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -16759,7 +16853,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2004557380822761765, guid: 372ad00c2a4ea514db6153c11c86c67b, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: ce7d933da597e0c42abdd7e1e7082f5b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -17102,7 +17196,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -17275,7 +17369,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0d973d6017e2fa1438124c3118a41fd4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   m_player: {fileID: 2007720552}
   m_playerCamera: {fileID: 1072916270}
@@ -17288,9 +17382,6 @@ MonoBehaviour:
   - {fileID: 1867612507}
   - {fileID: 436457990}
   - {fileID: 942150166}
-  - {fileID: 289274206}
-  - {fileID: 1651881449}
-  - {fileID: 662533594}
   - {fileID: 777012947}
   - {fileID: 2057647709}
   - {fileID: 1072743273}
@@ -17323,9 +17414,6 @@ Transform:
   - {fileID: 436457991}
   - {fileID: 942150167}
   - {fileID: 777012948}
-  - {fileID: 289274205}
-  - {fileID: 1651881448}
-  - {fileID: 662533593}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &326936181
@@ -17338,7 +17426,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7913459fc5cbd6408e084e483542eed, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameplayObjectPool
   m_suicideEnemyPrefab: {fileID: 4252198854786110117, guid: 9fd307fcfdbbc5449b4b5726cf85554a, type: 3}
   m_meleeEnemyPrefab: {fileID: 5808992251298208523, guid: a682ff87429b3054c97a9278375a5ec5, type: 3}
@@ -17346,6 +17434,81 @@ MonoBehaviour:
   m_projectilePrefab: {fileID: 4667814638146693548, guid: 533bc94dbe741d6488233a9d69b6d98e, type: 3}
   m_projectileGasEmitter: {fileID: 223726805}
   m_ammoPickupPrefab: {fileID: 6828838491640195042, guid: bc8f9529ed5e3754dbe77a263a9f9a56, type: 3}
+--- !u!1 &329975498
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 329975499}
+  - component: {fileID: 329975501}
+  - component: {fileID: 329975500}
+  m_Layer: 0
+  m_Name: Grid
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &329975499
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329975498}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 654935898}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &329975500
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329975498}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 6f22444d5b614de3bcebb6ab0e63b1f0, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &329975501
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 329975498}
+  m_CullTransparentMesh: 1
 --- !u!1001 &330595326
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17421,7 +17584,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5756382421441184135, guid: 5ba8b4e9b1e3e0e4e96dea194edf6672, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: ceeeb31951eab2b43ac4d48df42aaed0, type: 2}
     - target: {fileID: 6116516254625931346, guid: 5ba8b4e9b1e3e0e4e96dea194edf6672, type: 3}
       propertyPath: m_Name
@@ -17552,7 +17715,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4762317021681278914, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 6307708066295486168, guid: e8d0ca3ddcf16f747a06cb2866b7e6f9, type: 3}
     - target: {fileID: 8482808676813688935, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_RootOrder
@@ -17937,7 +18100,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -18084,7 +18247,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -18424,7 +18587,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -18800,7 +18963,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -19223,7 +19386,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -20164,8 +20327,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -20541,7 +20704,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8860980394328969848, guid: a6f20ee374b220a42a86b5c97bc1ab58, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1492340912968763084, guid: 8042039a56bbf8d4386419719ebde1cf, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -20991,7 +21154,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.2, g: 0.75, b: 1, a: 0.55}
@@ -21560,7 +21723,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -21696,7 +21859,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &436457991 stripped
 Transform:
@@ -22621,7 +22784,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1208549021125123099, guid: 1d3cd282d3375904cb54c67472ebce29, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -22898,6 +23061,42 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8526226209140429433, guid: 3d8a0948a420b254faed100c9e05c99b, type: 3}
   m_PrefabInstance: {fileID: 472988911}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &475083186
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 475083187}
+  m_Layer: 0
+  m_Name: Blips
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &475083187
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 475083186}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2088312292}
+  m_Father: {fileID: 654935898}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &475929105
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23725,7 +23924,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -23873,7 +24072,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -24057,7 +24256,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -24223,7 +24422,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7867306613972191778, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 8515943914623691767, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: m_Name
@@ -24331,8 +24530,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -25031,7 +25230,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a5ac11cc976e418e8d13136b07e1f52, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshSurface
   m_AgentTypeID: 0
   m_CollectObjects: 0
@@ -25077,7 +25276,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 3752274000526091486, guid: e8d2a12106a734e4792d0746fb94dd5f, type: 3}
     - target: {fileID: 8555021507071277437, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_LocalScale.y
@@ -25390,7 +25589,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -26007,7 +26206,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -26934,8 +27133,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -27273,8 +27472,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -27609,7 +27808,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2004557380822761765, guid: 372ad00c2a4ea514db6153c11c86c67b, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: ce7d933da597e0c42abdd7e1e7082f5b, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -27809,7 +28008,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5630040181685426987, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: cc0bffb5d72842745b76b3423528e9af, type: 2}
     - target: {fileID: 6134210312970615550, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: m_Name
@@ -27944,7 +28143,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4762317021681278914, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 6307708066295486168, guid: e8d0ca3ddcf16f747a06cb2866b7e6f9, type: 3}
     - target: {fileID: 8482808676813688935, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_RootOrder
@@ -28810,8 +29009,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -28905,7 +29104,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -29110,6 +29309,59 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8594169373606398491, guid: b2fa7cbf7beb39342acd8b4660569dd0, type: 3}
   m_PrefabInstance: {fileID: 654232088}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &654935897
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 654935898}
+  - component: {fileID: 654935899}
+  m_Layer: 0
+  m_Name: PlotArea
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &654935898
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654935897}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 329975499}
+  - {fileID: 199141312}
+  - {fileID: 475083187}
+  m_Father: {fileID: 1289569300}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -16, y: -16}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &654935899
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 654935897}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3312d7739989d2b4e91e6319e9a96d76, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RectMask2D
+  m_Padding: {x: 0, y: 0, z: 0, w: 0}
+  m_Softness: {x: 0, y: 0}
 --- !u!1 &656450874
 GameObject:
   m_ObjectHideFlags: 0
@@ -29157,7 +29409,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -29317,79 +29569,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3602fd7ee9233f245847f66162b689b7, type: 3}
---- !u!1001 &662533592
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 326936180}
-    m_Modifications:
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -9.871
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.66
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -1.3400002
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8859039824212176600, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_Name
-      value: EnemySpawnPoint_08 (3)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
---- !u!4 &662533593 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 662533592}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &662533594 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6272749143769706059, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 662533592}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &663884643 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2772889974749908098, guid: 3602fd7ee9233f245847f66162b689b7, type: 3}
@@ -29719,7 +29898,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -29989,7 +30168,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -9014143204643846661, guid: bb72b1261482f6d4680bfa6ae143c5e0, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -30198,7 +30377,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3303902508854899464, guid: e48add5046ebb8a47b4c268c67878b7d, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 0ae669c770147fa4abb398f28c76c689, type: 2}
     - target: {fileID: 3952240328286589661, guid: e48add5046ebb8a47b4c268c67878b7d, type: 3}
       propertyPath: m_Name
@@ -30466,7 +30645,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -30558,7 +30737,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -31768,7 +31947,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -31860,7 +32039,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7867306613972191778, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 8515943914623691767, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: m_Name
@@ -31947,7 +32126,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5378328377644663892, guid: a32aaee8c72db3444b690625cd3b7b4c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 0ae669c770147fa4abb398f28c76c689, type: 2}
     - target: {fileID: 5882639382309397889, guid: a32aaee8c72db3444b690625cd3b7b4c, type: 3}
       propertyPath: m_Name
@@ -33021,7 +33200,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -33202,7 +33381,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -33610,7 +33789,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &777012948 stripped
 Transform:
@@ -33796,7 +33975,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -33884,7 +34063,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 3
   m_AspectRatio: 1.7777778
@@ -34174,7 +34353,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -34256,7 +34435,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -34326,7 +34505,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4924186512713960800, guid: 6d365371c6e178b429e15328f5c159f6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 9bf46b55acb89d745a285322c34155d6, type: 2}
     - target: {fileID: 6061024139434145295, guid: 6d365371c6e178b429e15328f5c159f6, type: 3}
       propertyPath: m_RootOrder
@@ -34719,7 +34898,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -35052,7 +35231,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -35389,7 +35568,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -35583,8 +35762,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -36424,7 +36603,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -36496,6 +36675,97 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8805112686610752147, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
   m_PrefabInstance: {fileID: 850872642}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &851504811
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 851504812}
+  - component: {fileID: 851504815}
+  - component: {fileID: 851504814}
+  - component: {fileID: 851504813}
+  m_Layer: 0
+  m_Name: Frame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &851504812
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851504811}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1289569300}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &851504813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851504811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0.050980393, g: 0.7490196, b: 0.627451, a: 0.74509805}
+  m_EffectDistance: {x: 2, y: -2}
+  m_UseGraphicAlpha: 1
+--- !u!114 &851504814
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851504811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.011764706, g: 0.09411765, b: 0.12156863, a: 0.8627451}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &851504815
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 851504811}
+  m_CullTransparentMesh: 1
 --- !u!4 &852121152 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2772889974749908098, guid: 3602fd7ee9233f245847f66162b689b7, type: 3}
@@ -36740,7 +37010,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -37083,7 +37353,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -37290,7 +37560,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -38124,7 +38394,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -38299,7 +38569,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2151988451557909348, guid: ee11abc5e90bcd64d9121cc0ffd644cb, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -38704,7 +38974,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -39163,7 +39433,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -39271,7 +39541,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
@@ -39327,7 +39597,7 @@ RectTransform:
   - {fileID: 176661550}
   - {fileID: 1885576510}
   - {fileID: 1974916000}
-  - {fileID: 4178451002}
+  - {fileID: 193948382}
   - {fileID: 1289569300}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -39346,7 +39616,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b73ea96878174bf48bf4c2fda6198ddc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameplayHUD
   m_font: {fileID: 11400000, guid: d7832efb32275d44a966da5e48f1040b, type: 2}
   m_dmrSilhouette: {fileID: 21300000, guid: 04666b39a3912d44ca14bbaabad8a839, type: 3}
@@ -39355,6 +39625,7 @@ MonoBehaviour:
   m_bulletTimeSkillSilhouette: {fileID: 21300000, guid: 973c163b27c32a74e9450ab1c83290f0, type: 3}
   m_comboBulletSprite: {fileID: 21300000, guid: eb148d01197e9234b99aaef03241f724, type: 3}
   m_comboBulletEmptySprite: {fileID: 21300000, guid: 80c5db5091263494eafb71a83937297a, type: 3}
+  m_flashlightIcon: {fileID: 0}
   m_weaponRowInactiveSprite: {fileID: 21300000, guid: b9a2ffacffd663a47b4a711e032b3c1e, type: 3}
   m_weaponRowActiveSprite: {fileID: 21300000, guid: 1635d19d9be39d64aa9b3c3f96f2a48c, type: 3}
   m_weaponRowEmptySprite: {fileID: 21300000, guid: 45018e20158c22a47a79217a6cc2f97d, type: 3}
@@ -39373,7 +39644,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eff5d77fa9acaa442aca2cc9a04aadd3, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameplayPauseController
   m_settingsPanel: {fileID: 1885576509}
   m_player: {fileID: 7374439900579291335}
@@ -39387,7 +39658,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
   m_IgnoreReversedGraphics: 1
   m_BlockingObjects: 0
@@ -39475,7 +39746,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -39983,7 +40254,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -40168,7 +40439,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.28, g: 0.34, b: 0.37, a: 0.85}
@@ -40472,7 +40743,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &942150167 stripped
 Transform:
@@ -40526,7 +40797,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -41297,7 +41568,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &962100088 stripped
 Transform:
@@ -42044,7 +42315,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -42309,8 +42580,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -42647,8 +42918,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -42676,7 +42947,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7807186428951975095, guid: f056a5ee5447b6245992a0dd0b6be567, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 8599710080746747234, guid: f056a5ee5447b6245992a0dd0b6be567, type: 3}
       propertyPath: m_Name
@@ -43003,7 +43274,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 739351637894231141, guid: dd3bd18665e9ff94b8b83ba153acb10b, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 1243635704461153712, guid: dd3bd18665e9ff94b8b83ba153acb10b, type: 3}
       propertyPath: m_Name
@@ -43114,7 +43385,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -43455,7 +43726,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -43882,7 +44153,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7807186428951975095, guid: f056a5ee5447b6245992a0dd0b6be567, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 8599710080746747234, guid: f056a5ee5447b6245992a0dd0b6be567, type: 3}
       propertyPath: m_Name
@@ -44090,7 +44361,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5630040181685426987, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 6134210312970615550, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: m_Name
@@ -44358,7 +44629,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2643922531758513432, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 3817422271107163767, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: m_RootOrder
@@ -44563,7 +44834,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -45012,7 +45283,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!20 &1072916270 stripped
 Camera:
@@ -45138,8 +45409,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -45265,8 +45536,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -45898,8 +46169,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -46328,7 +46599,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -46540,7 +46811,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5630040181685426987, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 6134210312970615550, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: m_Name
@@ -47295,7 +47566,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4924186512713960800, guid: 6d365371c6e178b429e15328f5c159f6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 9bf46b55acb89d745a285322c34155d6, type: 2}
     - target: {fileID: 6061024139434145295, guid: 6d365371c6e178b429e15328f5c159f6, type: 3}
       propertyPath: m_RootOrder
@@ -47558,7 +47829,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -47826,8 +48097,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -49015,7 +49286,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -49320,8 +49591,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -49674,7 +49945,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0e1e7f7e5f64cb4a696750680c1d1d4, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FacilityLockdownAnnouncement
   m_gameplayHud: {fileID: 925255843}
   m_subtitlePosition: {x: 0, y: 110}
@@ -49693,15 +49964,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c7abacb87194c4e9f89949e7da3035c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_clips:
   - {fileID: 8300000, guid: eb2844e6db4252c4aa3168c300d73585, type: 3}
   - {fileID: 8300000, guid: 6f514775c2b102c4abbf9189ee82aee2, type: 3}
   - {fileID: 8300000, guid: c1d2ffd2b7b4711468ddfc2c1b5ddb4d, type: 3}
   - {fileID: 8300000, guid: f7885554da0bd5641b768be31e56fabb, type: 3}
   - {fileID: 8300000, guid: c178276447674cb8ba71194a8cb1b0a7, type: 3}
-  m_volume: 0.45
+  m_volume: 0.4
   m_facilityLockdownAnnouncement: {fileID: 1180638448}
   m_nowPlayingRoot: {fileID: 1974915999}
   m_nowPlayingIcon: {fileID: 134256373}
@@ -50389,8 +50660,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_IsGlobal: 1
   priority: 0
   blendDistance: 0
@@ -50505,8 +50776,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -50641,7 +50912,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 3
   m_AspectRatio: 1.7777778
@@ -50655,7 +50926,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 838268026702917746, guid: 8be4bf3e560ef924b9b5b910215b5c9c, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 2816c958b541d30439a6eee15331e784, type: 2}
     - target: {fileID: 1198762498021282215, guid: 8be4bf3e560ef924b9b5b910215b5c9c, type: 3}
       propertyPath: m_Name
@@ -50805,7 +51076,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5378328377644663892, guid: a32aaee8c72db3444b690625cd3b7b4c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 0ae669c770147fa4abb398f28c76c689, type: 2}
     - target: {fileID: 5882639382309397889, guid: a32aaee8c72db3444b690625cd3b7b4c, type: 3}
       propertyPath: m_Name
@@ -51785,8 +52056,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -52465,7 +52736,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -9014143204643846661, guid: bb72b1261482f6d4680bfa6ae143c5e0, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -52857,7 +53128,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -53603,6 +53874,69 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a870f7e37a65ee842b5494b6d01c8162, type: 3}
+--- !u!1 &1289569299
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1289569300}
+  - component: {fileID: 1289569301}
+  m_Layer: 0
+  m_Name: ScannerHUD
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1289569300
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289569299}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 851504812}
+  - {fileID: 654935898}
+  m_Father: {fileID: 925255842}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 128, y: 24}
+  m_SizeDelta: {x: 220, y: 220}
+  m_Pivot: {x: 0, y: 0}
+--- !u!114 &1289569301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1289569299}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f52c4bfa36f4b04b486d0d2ab1622f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyScannerHUD
+  m_playerCamera: {fileID: 1072916270}
+  m_objectPool: {fileID: 326936181}
+  m_plotArea: {fileID: 654935898}
+  m_pulseImage: {fileID: 199141313}
+  m_blipTemplate: {fileID: 2088312293}
+  m_scanRange: 40
+  m_pulseInterval: 2.5
+  m_pulseDuration: 0.8
+  m_pulseThickness: 4
+  m_pulseAlpha: 0.8
+  m_fadeStart: 1.5
+  m_fadeDuration: 0.5
+  m_blipSize: 25
 --- !u!1001 &1289760002
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53867,7 +54201,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &1296700382 stripped
 Transform:
@@ -54672,7 +55006,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -54801,7 +55135,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -54951,7 +55285,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1438856127478098967, guid: f05e47bdee1b10f4f9204cc3342b5659, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 9bf46b55acb89d745a285322c34155d6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -54976,7 +55310,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -55144,7 +55478,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -55443,7 +55777,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -55582,7 +55916,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7867306613972191778, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 8515943914623691767, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: m_Name
@@ -55696,7 +56030,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -56279,7 +56613,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 162134c995bb6904bad641d8661114c9, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuicideGasEmitter
 --- !u!199 &1362688357
 ParticleSystemRenderer:
@@ -61415,7 +61749,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.20784314, g: 0.78039217, b: 0.34901962, a: 1}
@@ -61678,8 +62012,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -62070,7 +62404,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 739351637894231141, guid: dd3bd18665e9ff94b8b83ba153acb10b, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 1243635704461153712, guid: dd3bd18665e9ff94b8b83ba153acb10b, type: 3}
       propertyPath: m_Name
@@ -62181,7 +62515,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -62800,7 +63134,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -63292,7 +63626,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 7861206098026486429, guid: c6933301e4bf1984198f68aac8e0663e, type: 3}
     - target: {fileID: 7418174499068084754, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Materials.Array.size
@@ -64002,7 +64336,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -64266,7 +64600,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -64858,7 +65192,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1427839293058454737, guid: 8359b9001a7be4d4194909f48b98ca0e, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -64883,7 +65217,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -65408,8 +65742,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -65665,7 +65999,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5630040181685426987, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 6134210312970615550, guid: 03efc6d639028b84ea55ac25abc22844, type: 3}
       propertyPath: m_Name
@@ -66086,7 +66420,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -66544,6 +66878,47 @@ Light:
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
+    m_CullingMatrixOverride:
+      e00: 1
+      e01: 0
+      e02: 0
+      e03: 0
+      e10: 0
+      e11: 1
+      e12: 0
+      e13: 0
+      e20: 0
+      e21: 0
+      e22: 1
+      e23: 0
+      e30: 0
+      e31: 0
+      e32: 0
+      e33: 1
+    m_UseCullingMatrixOverride: 0
+  m_Cookie: {fileID: 0}
+  m_DrawHalo: 0
+  m_Flare: {fileID: 0}
+  m_RenderMode: 0
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingLayerMask: 1
+  m_Lightmapping: 4
+  m_LightShadowCasterMode: 0
+  m_AreaSize: {x: 1, y: 1}
+  m_BounceIntensity: 1
+  m_ColorTemperature: 6570
+  m_UseColorTemperature: 0
+  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
+  m_UseBoundingSphereOverride: 0
+  m_UseViewFrustumForShadowCasterCull: 1
+  m_ForceVisible: 0
+  m_ShadowRadius: 0
+  m_ShadowAngle: 0
+  m_LightUnit: 1
+  m_LuxAtDistance: 1
+  m_EnableSpotReflector: 1
 --- !u!4 &1506384114
 Transform:
   m_ObjectHideFlags: 0
@@ -66569,7 +66944,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
@@ -67265,7 +67640,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -67588,7 +67963,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -67956,7 +68331,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -9014143204643846661, guid: bb72b1261482f6d4680bfa6ae143c5e0, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -68075,7 +68450,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -68245,7 +68620,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1208549021125123099, guid: 1d3cd282d3375904cb54c67472ebce29, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -68393,7 +68768,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -68533,7 +68908,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 962359467661418096, guid: 3346b6b3110109d4c9751c6df27974a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2470447401219137860, guid: a8c796604cd051b4bac140751f391f82, type: 3}
     - target: {fileID: 3584574961795074927, guid: 3346b6b3110109d4c9751c6df27974a6, type: 3}
       propertyPath: m_Name
@@ -68934,47 +69309,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3690105998122550631, guid: f260ea74358ba36499737756b8e5a6f6, type: 3}
   m_PrefabInstance: {fileID: 1564048246}
   m_PrefabAsset: {fileID: 0}
-    m_CullingMatrixOverride:
-      e00: 1
-      e01: 0
-      e02: 0
-      e03: 0
-      e10: 0
-      e11: 1
-      e12: 0
-      e13: 0
-      e20: 0
-      e21: 0
-      e22: 1
-      e23: 0
-      e30: 0
-      e31: 0
-      e32: 0
-      e33: 1
-    m_UseCullingMatrixOverride: 0
-  m_Cookie: {fileID: 0}
-  m_DrawHalo: 0
-  m_Flare: {fileID: 0}
-  m_RenderMode: 0
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingLayerMask: 1
-  m_Lightmapping: 4
-  m_LightShadowCasterMode: 0
-  m_AreaSize: {x: 1, y: 1}
-  m_BounceIntensity: 1
-  m_ColorTemperature: 6570
-  m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_UseBoundingSphereOverride: 0
-  m_UseViewFrustumForShadowCasterCull: 1
-  m_ForceVisible: 0
-  m_ShadowRadius: 0
-  m_ShadowAngle: 0
-  m_LightUnit: 1
-  m_LuxAtDistance: 1
-  m_EnableSpotReflector: 1
 --- !u!1001 &1565318270
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -69079,8 +69413,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -69736,7 +70070,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -69954,7 +70288,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -70254,7 +70588,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -70656,7 +70990,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eeb5dc026fdf4b488bc7ae0138ab719, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshLink
   m_AgentTypeID: 0
   m_StartPoint: {x: 0, y: 0, z: 0}
@@ -70872,7 +71206,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -71478,8 +71812,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -71833,7 +72167,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -71923,7 +72257,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1438856127478098967, guid: f05e47bdee1b10f4f9204cc3342b5659, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a894681e35a61614e9240f8557ec5767, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -72144,7 +72478,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8773592265303269141, guid: 5fd38d0130de04c4780b322615ed6c72, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -1501227283131257255, guid: cc241eb7d1c72ad4bb0b61ed653b5d00, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -72586,79 +72920,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5651406457548771504, guid: 5fd38d0130de04c4780b322615ed6c72, type: 3}
   m_PrefabInstance: {fileID: 1651600595}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1651881447
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 326936180}
-    m_Modifications:
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -9.871
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0.66
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -14.34
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8859039824212176600, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-      propertyPath: m_Name
-      value: EnemySpawnPoint_08 (2)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
---- !u!4 &1651881448 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7720629812360200757, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 1651881447}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1651881449 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6272749143769706059, guid: bce339fcf499aeb4fab39906778ac680, type: 3}
-  m_PrefabInstance: {fileID: 1651881447}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!1001 &1652326568
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -73210,7 +73471,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &1669489040 stripped
 Transform:
@@ -73227,7 +73488,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -73962,8 +74223,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -74773,7 +75034,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a11bb7deeaba8a24c9443ca7f5d66658, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -75213,7 +75474,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.88, g: 0.91, b: 0.94, a: 0.9}
@@ -75907,7 +76168,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7123265467936937240, guid: e12cd5442f4fd88479a1ee342b452a6c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 9178523031276947670, guid: e12cd5442f4fd88479a1ee342b452a6c, type: 3}
       propertyPath: m_Enabled
@@ -75934,7 +76195,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5756382421441184135, guid: 5ba8b4e9b1e3e0e4e96dea194edf6672, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: ceeeb31951eab2b43ac4d48df42aaed0, type: 2}
     - target: {fileID: 6116516254625931346, guid: 5ba8b4e9b1e3e0e4e96dea194edf6672, type: 3}
       propertyPath: m_Name
@@ -76177,7 +76438,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -76717,8 +76978,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -76926,7 +77187,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1208549021125123099, guid: 1d3cd282d3375904cb54c67472ebce29, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -77121,7 +77382,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 3752274000526091486, guid: e8d2a12106a734e4792d0746fb94dd5f, type: 3}
     - target: {fileID: 8555021507071277437, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_LocalScale.y
@@ -77329,7 +77590,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -77582,7 +77843,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -77689,7 +77950,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 838268026702917746, guid: 8be4bf3e560ef924b9b5b910215b5c9c, type: 3}
       propertyPath: 'm_Materials.Array.data[2]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 2816c958b541d30439a6eee15331e784, type: 2}
     - target: {fileID: 1198762498021282215, guid: 8be4bf3e560ef924b9b5b910215b5c9c, type: 3}
       propertyPath: m_Name
@@ -77876,7 +78137,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -78079,7 +78340,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &1797603111 stripped
 Transform:
@@ -78441,11 +78702,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f0a81731cb7f56a4095556ffa08ee77a, type: 3}
---- !u!4 &1802871777 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 6236479432322048262, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
-  m_PrefabInstance: {fileID: 7374439900579291334}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1807852754
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -78779,8 +79035,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -79362,7 +79618,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2643922531758513432, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 3817422271107163767, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: m_RootOrder
@@ -79531,7 +79787,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -79745,7 +80001,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: -968962186869716134, guid: 8d48485280cc61e4dabbffce0a9d50a9, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -79933,7 +80189,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 86710e43de46f6f4bac7c8e50813a599, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 3
   m_AspectRatio: 1.7777778
@@ -79989,7 +80245,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -80094,7 +80350,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 433238750422386205, guid: 6a973bc614e12fc4f84cfcee77fc99a4, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -80316,7 +80572,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -80451,7 +80707,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7867306613972191778, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 8515943914623691767, guid: 7f380da215bd8164c9c132b81c3a4ad6, type: 3}
       propertyPath: m_Name
@@ -80533,7 +80789,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -80652,7 +80908,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.28, g: 0.34, b: 0.37, a: 0.85}
@@ -80727,7 +80983,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -81418,7 +81674,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01614664b831546d2ae94a42149d80ac, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.InputSystem::UnityEngine.InputSystem.UI.InputSystemUIInputModule
   m_SendPointerHoverToParent: 1
   m_MoveRepeatDelay: 0.5
@@ -81449,7 +81705,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 76c392e42b5098c458856cdf6ecaaaa1, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.EventSystems.EventSystem
   m_FirstSelected: {fileID: 0}
   m_sendNavigationEvents: 1
@@ -81479,7 +81735,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2151988451557909348, guid: ee11abc5e90bcd64d9121cc0ffd644cb, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -81739,7 +81995,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -81895,7 +82151,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &1867612508 stripped
 Transform:
@@ -82181,7 +82437,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -82419,8 +82675,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -82530,7 +82786,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f89240b6b5cded44a5fdaf65fed464c, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SettingsPanelController
 --- !u!224 &1885576510 stripped
 RectTransform:
@@ -82547,7 +82803,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -83141,7 +83397,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 8582406360282241277, guid: 24044eec235e216439a83fa192cbad9b, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -83630,7 +83886,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5592855848246783286, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2151988451557909348, guid: ee11abc5e90bcd64d9121cc0ffd644cb, type: 3}
     - target: {fileID: 8176808468981250089, guid: e97dcafa54833ee4eabd18d90d1ec3a1, type: 3}
       propertyPath: m_Name
@@ -83946,7 +84202,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -85015,7 +85271,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8277018806328033586, guid: 20557198143b5134fadbace2e8591e6d, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 2816c958b541d30439a6eee15331e784, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -85169,7 +85425,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1208549021125123099, guid: 1d3cd282d3375904cb54c67472ebce29, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -85943,7 +86199,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3723114544803114715, guid: ae198d5aac8701d4cbc98d9c1dd1df11, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 9bf46b55acb89d745a285322c34155d6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -86165,7 +86421,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &1959411831 stripped
 Transform:
@@ -86579,7 +86835,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -86926,8 +87182,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -87302,7 +87558,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -87495,8 +87751,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -87594,7 +87850,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4690025322928699096, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 7861206098026486429, guid: c6933301e4bf1984198f68aac8e0663e, type: 3}
     - target: {fileID: 7418174499068084754, guid: 129db16229128884cbb1ce9cc30376a6, type: 3}
       propertyPath: m_Materials.Array.size
@@ -88091,7 +88347,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1438856127478098967, guid: f05e47bdee1b10f4f9204cc3342b5659, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: a894681e35a61614e9240f8557ec5767, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -88176,7 +88432,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3308342174984972095, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: db23094aaeea1894fbf545eaa0ff24d7, type: 2}
     - target: {fileID: 3956812349683500778, guid: a74c8205fd090a24aafc5f8cb78e0ff3, type: 3}
       propertyPath: m_Name
@@ -88365,7 +88621,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -88702,7 +88958,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2643922531758513432, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: 'm_Materials.Array.data[1]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: 03cf6fc3787d4644d9ee0ba019ae5c62, type: 2}
     - target: {fileID: 3817422271107163767, guid: a9aab1a81911ec948b646da25c7bb63f, type: 3}
       propertyPath: m_RootOrder
@@ -89419,8 +89675,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -89946,7 +90202,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5791476492452200067, guid: 13ca1a40ff9817446a577e7d90346cac, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 6995137598627953392, guid: 13ca1a40ff9817446a577e7d90346cac, type: 3}
       propertyPath: m_RootOrder
@@ -90128,7 +90384,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.91764706, g: 0.2509804, b: 0.2784314, a: 1}
@@ -90401,7 +90657,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 653aa01986ced794a9b43f480a716197, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawnPoint
 --- !u!4 &2057647710 stripped
 Transform:
@@ -90613,7 +90869,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -90717,7 +90973,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1e3fdca004f2d45fe8abbed571a8abd5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_OverrideArea: 0
   m_Area: 0
@@ -91184,7 +91440,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -91293,6 +91549,81 @@ RectTransform:
   m_AnchoredPosition: {x: 50, y: -20}
   m_SizeDelta: {x: 590, y: 40}
   m_Pivot: {x: 0, y: 0.5}
+--- !u!1 &2088312291
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2088312292}
+  - component: {fileID: 2088312294}
+  - component: {fileID: 2088312293}
+  m_Layer: 0
+  m_Name: BlipTemplate
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &2088312292
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2088312291}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 475083187}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 25, y: 25}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2088312293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2088312291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: df601c7d6fd674d4c979c5c8f38d5f3b, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2088312294
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2088312291}
+  m_CullTransparentMesh: 1
 --- !u!1001 &2091703528
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -91505,7 +91836,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1165443052101840914, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 1689743749164545183, guid: 9ecd04fad6a2be0408421172b14c92b8, type: 3}
     - target: {fileID: 2847303912773730231, guid: 4fd0ee89f4ec2ee438891c5d0c66623d, type: 3}
       propertyPath: m_RootOrder
@@ -91704,7 +92035,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 4762317021681278914, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_Mesh
-      value:
+      value: 
       objectReference: {fileID: 2470447401219137860, guid: a8c796604cd051b4bac140751f391f82, type: 3}
     - target: {fileID: 8482808676813688935, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
       propertyPath: m_RootOrder
@@ -92168,7 +92499,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0.29, g: 0.88, b: 1, a: 1}
@@ -92206,7 +92537,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 0.29, g: 0.88, b: 1, a: 1}
@@ -92343,7 +92674,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 0.29, g: 0.88, b: 1, a: 1}
@@ -92710,7 +93041,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3145943517697911282, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: dd9514ad3bb4919418b71d2625229c2b, type: 2}
     - target: {fileID: 3221122309900655743, guid: 98ae3c453a7e8f845ada9b28ec4f4444, type: 3}
       propertyPath: m_Enabled
@@ -93858,6 +94189,81 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8482808676813688935, guid: cc22f3cb50636d74786d3e9058db7e8b, type: 3}
   m_PrefabInstance: {fileID: 2144427202}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4178451001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4178451002}
+  - component: {fileID: 4178451003}
+  - component: {fileID: 4178451004}
+  m_Layer: 0
+  m_Name: FlashlightIcon
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &4178451002
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4178451001}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 193948382}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 56, y: 56}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &4178451003
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4178451001}
+  m_CullTransparentMesh: 1
+--- !u!114 &4178451004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4178451001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 0.18, g: 0.24, b: 0.28, a: 0.35}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: 6f6800b0eab549e2b0a34781ac9c1941, type: 3}
+  m_Type: 0
+  m_PreserveAspect: 1
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
 --- !u!1001 &7374439900579291334
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -93960,7 +94366,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2337511797882548981, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_gameplayHUD
-      value:
+      value: 
       objectReference: {fileID: 925255843}
     - target: {fileID: 2337511797882548981, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_dmrThirdHitDamage
@@ -94000,7 +94406,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2620176595684157082, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_Material
-      value:
+      value: 
       objectReference: {fileID: 898121586}
     - target: {fileID: 2801128069784040500, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_IsActive
@@ -94008,11 +94414,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3668781440361344697, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_gameplayVolume
-      value:
+      value: 
       objectReference: {fileID: 1192802413}
     - target: {fileID: 3668781440361344697, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_engineerCooldown
-      value: 15
+      value: 12
       objectReference: {fileID: 0}
     - target: {fileID: 3668781440361344697, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_grenadierCooldown
@@ -94216,207 +94622,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d0444412876661748b410c6f8361154d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FirstPersonController
---- !u!1 &4178451001
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 4178451002}
-  - component: {fileID: 4178451003}
-  - component: {fileID: 4178451004}
-  m_Layer: 0
-  m_Name: FlashlightIcon
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!224 &4178451002
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4178451001}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 925255842}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 28, y: 28}
-  m_SizeDelta: {x: 56, y: 56}
-  m_Pivot: {x: 0, y: 0}
---- !u!222 &4178451003
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4178451001}
-  m_CullTransparentMesh: 1
---- !u!114 &4178451004
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4178451001}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
-  m_Color: {r: 0.18, g: 0.24, b: 0.28, a: 0.35}
-  m_RaycastTarget: 0
-  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
-  m_Maskable: 1
-  m_OnCullStateChanged:
-    m_PersistentCalls:
-      m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 6f6800b0eab549e2b0a34781ac9c1941, type: 3}
-  m_Type: 0
-  m_PreserveAspect: 1
-  m_FillCenter: 1
-  m_FillMethod: 4
-  m_FillAmount: 1
-  m_FillClockwise: 1
-  m_FillOrigin: 0
-  m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
---- !u!1 &851504811
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 851504812}
-  - component: {fileID: 851504815}
-  - component: {fileID: 851504814}
-  - component: {fileID: 851504813}
-  m_Layer: 0
-  m_Name: Frame
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &199141311
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 199141312}
-  - component: {fileID: 199141314}
-  - component: {fileID: 199141313}
-  - component: {fileID: 199141315}
-  m_Layer: 0
-  m_Name: PulseRing
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &329975498
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 329975499}
-  - component: {fileID: 329975501}
-  - component: {fileID: 329975500}
-  m_Layer: 0
-  m_Name: Grid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &475083186
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 475083187}
-  m_Layer: 0
-  m_Name: Blips
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &654935897
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 654935898}
-  - component: {fileID: 654935899}
-  m_Layer: 0
-  m_Name: PlotArea
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &1289569299
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1289569300}
-  - component: {fileID: 1289569301}
-  m_Layer: 0
-  m_Name: ScannerHUD
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!1 &2088312291
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2088312292}
-  - component: {fileID: 2088312294}
-  - component: {fileID: 2088312293}
-  m_Layer: 0
-  m_Name: BlipTemplate
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
