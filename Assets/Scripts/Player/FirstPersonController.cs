@@ -366,6 +366,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
         SelectWeapon(1);
+        LockCursor();
     }
 
     private void OnEnable()
@@ -455,8 +456,13 @@ public sealed class FirstPersonController : MonoBehaviour
             HandleDmrZoomInput();
         }
         UpdateDmrZoom();
-        if (m_playerMap == null || Cursor.lockState != CursorLockMode.Locked)
+        if (m_playerMap == null)
         {
+            return;
+        }
+        if (Cursor.lockState != CursorLockMode.Locked)
+        {
+            HandleAttackInput();
             return;
         }
 
