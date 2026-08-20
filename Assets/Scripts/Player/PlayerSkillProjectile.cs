@@ -63,6 +63,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_body ??= GetComponent<Rigidbody>();
         m_collider ??= GetComponent<SphereCollider>();
         m_homeParent ??= transform.parent;
+        m_body.interpolation = RigidbodyInterpolation.Interpolate;
         m_body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         if (m_player != null && m_player.TryGetComponent(out CharacterController controller))
         {
@@ -99,7 +100,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_isGrenadePulsing = false;
         m_explosionsRemaining = useGravity ? k_GrenadeExplosionCount : 1;
         m_lastTrailPosition = position;
-        m_explodeAt = Time.time + lifetime;
+        m_explodeAt = Time.fixedTime + lifetime;
         m_isLaunched = true;
         m_collider.enabled = true;
         m_body.isKinematic = false;
@@ -155,7 +156,11 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
             }
         }
 
-        if (m_isLaunched && Time.time >= m_explodeAt)
+    }
+
+    private void FixedUpdate()
+    {
+        if (m_isLaunched && Time.fixedTime >= m_explodeAt)
         {
             Explode();
         }

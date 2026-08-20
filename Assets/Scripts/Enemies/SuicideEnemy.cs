@@ -82,7 +82,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_damagedEnemies.Clear();
         m_explosionTime = 0f;
         m_nextWarningGasTime = 0f;
-        m_nextPathUpdateTime = Time.time
+        m_nextPathUpdateTime = Time.fixedTime
             + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         m_sourceWeapon = WeaponId.Unknown;
         m_hasPlayerAttribution = false;
@@ -124,6 +124,20 @@ public sealed class SuicideEnemy : MonoBehaviour
 
     private void Update()
     {
+        if (m_hasExploded || !m_isDying && !m_isWarning)
+        {
+            return;
+        }
+
+        UpdateWarningMaterial();
+        if (m_isWarning && !m_isDying)
+        {
+            EmitWarningGas();
+        }
+    }
+
+    private void FixedUpdate()
+    {
         if (m_hasExploded)
         {
             return;
@@ -131,12 +145,7 @@ public sealed class SuicideEnemy : MonoBehaviour
 
         if (m_isDying || m_isWarning)
         {
-            UpdateWarningMaterial();
-            if (m_isWarning && !m_isDying)
-            {
-                EmitWarningGas();
-            }
-            if (Time.time >= m_explosionTime)
+            if (Time.fixedTime >= m_explosionTime)
             {
                 Explode();
             }
@@ -160,9 +169,9 @@ public sealed class SuicideEnemy : MonoBehaviour
         Vector3 targetPosition = m_target.transform.position;
         bool destinationChanged = !m_hasPathDestination
             || (targetPosition - m_lastPathDestination).sqrMagnitude >= k_PathDestinationThresholdSqr;
-        if (Time.time >= m_nextPathUpdateTime && destinationChanged)
+        if (Time.fixedTime >= m_nextPathUpdateTime && destinationChanged)
         {
-            m_nextPathUpdateTime = Time.time + k_PathUpdateInterval;
+            m_nextPathUpdateTime = Time.fixedTime + k_PathUpdateInterval;
             m_lastPathDestination = targetPosition;
             m_hasPathDestination = m_agent.SetDestination(targetPosition);
         }
@@ -193,7 +202,7 @@ public sealed class SuicideEnemy : MonoBehaviour
     {
         m_isWarning = true;
         StopAgentForExplosion();
-        m_explosionTime = Time.time + m_warningDuration;
+        m_explosionTime = Time.fixedTime + m_warningDuration;
         m_nextWarningGasTime = Time.time;
         SetMoving(false);
         PlayWarningAnimation(1f);
@@ -220,7 +229,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_hasClassSkillAttribution = ResolveClassSkillAttribution(
             context, m_scoreSystem != null && m_scoreSystem.IsBulletTimeActive);
         StopAgentForExplosion();
-        m_explosionTime = Time.time + m_deathExplosionDelay;
+        m_explosionTime = Time.fixedTime + m_deathExplosionDelay;
         SetMoving(false);
         PlayWarningAnimation(4f);
         UpdateWarningMaterial();

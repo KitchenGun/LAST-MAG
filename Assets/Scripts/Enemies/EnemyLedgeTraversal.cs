@@ -46,7 +46,7 @@ public sealed class EnemyLedgeTraversal : MonoBehaviour
         RestoreState();
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (!IsTraversing)
         {
@@ -57,7 +57,7 @@ public sealed class EnemyLedgeTraversal : MonoBehaviour
             return;
         }
 
-        m_elapsed += Time.deltaTime;
+        m_elapsed += Time.fixedDeltaTime;
         if (m_elapsed < k_ClimbDuration)
         {
             Move(Vector3.Lerp(m_start, m_crest,

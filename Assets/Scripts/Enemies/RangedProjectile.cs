@@ -22,6 +22,7 @@ public sealed class RangedProjectile : MonoBehaviour
         m_collider.isTrigger = true;
         m_body = GetComponent<Rigidbody>();
         m_body.useGravity = false;
+        m_body.interpolation = RigidbodyInterpolation.Interpolate;
         m_body.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
     }
 
@@ -34,20 +35,26 @@ public sealed class RangedProjectile : MonoBehaviour
         transform.localScale = Vector3.one * radius * 2f;
         m_collider.radius = k_UnitSphereRadius * k_ColliderToVisualRadiusRatio;
         m_damage = damage;
-        m_releaseTime = Time.time + lifetime;
+        m_releaseTime = Time.fixedTime + lifetime;
         m_lastTrailPosition = position;
         m_collider.enabled = true;
         m_body.linearVelocity = direction.normalized * speed;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
-        if (Time.time >= m_releaseTime)
+        if (Time.fixedTime >= m_releaseTime)
         {
             ReturnToPool(false);
+        }
+    }
+
+    private void Update()
+    {
+        if (IsPooled)
+        {
             return;
         }
-
         if ((transform.position - m_lastTrailPosition).sqrMagnitude >= k_TrailSpacing * k_TrailSpacing)
         {
             m_pool?.EmitProjectileTrail(transform.position);

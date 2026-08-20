@@ -61,7 +61,7 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_hasPathDestination = false;
         m_hitTime = 0f;
         m_nextAttackTime = 0f;
-        m_nextPathUpdateTime = Time.time
+        m_nextPathUpdateTime = Time.fixedTime
             + Mathf.Abs(GetInstanceID() % 1000) / 1000f * k_PathUpdateInterval;
         if (m_animator != null)
         {
@@ -91,7 +91,7 @@ public sealed class MeleeEnemy : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         if (m_health.IsDisabled)
         {
@@ -116,7 +116,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
         if (m_isAttacking)
         {
-            if (Time.time >= m_hitTime)
+            if (Time.fixedTime >= m_hitTime)
             {
                 ResolveAttack();
             }
@@ -125,7 +125,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
         Vector3 toTarget = m_target.transform.position - transform.position;
         toTarget.y = 0f;
-        if (toTarget.magnitude <= m_attackRange && Time.time >= m_nextAttackTime)
+        if (toTarget.magnitude <= m_attackRange && Time.fixedTime >= m_nextAttackTime)
         {
             BeginAttack(toTarget);
             return;
@@ -134,9 +134,9 @@ public sealed class MeleeEnemy : MonoBehaviour
         Vector3 targetPosition = m_target.transform.position;
         bool destinationChanged = !m_hasPathDestination
             || (targetPosition - m_lastPathDestination).sqrMagnitude >= k_PathDestinationThresholdSqr;
-        if (Time.time >= m_nextPathUpdateTime && destinationChanged)
+        if (Time.fixedTime >= m_nextPathUpdateTime && destinationChanged)
         {
-            m_nextPathUpdateTime = Time.time + k_PathUpdateInterval;
+            m_nextPathUpdateTime = Time.fixedTime + k_PathUpdateInterval;
             m_lastPathDestination = targetPosition;
             m_hasPathDestination = m_agent.SetDestination(targetPosition);
         }
@@ -151,8 +151,8 @@ public sealed class MeleeEnemy : MonoBehaviour
         m_agent.isStopped = true;
         m_lockedAttackDirection = toTarget.sqrMagnitude > 0.001f ? toTarget.normalized : transform.forward;
         transform.forward = m_lockedAttackDirection;
-        m_hitTime = Time.time + m_attackWarning;
-        m_nextAttackTime = Time.time + m_attackInterval;
+        m_hitTime = Time.fixedTime + m_attackWarning;
+        m_nextAttackTime = Time.fixedTime + m_attackInterval;
         SetMoving(false);
         SpatialAudio.PlayRandomOneShot(m_attackClips, transform.position, m_attackVoiceMaxDistance,
             m_attackVoiceVolume, SpatialAudio.CuePriority.Gameplay);

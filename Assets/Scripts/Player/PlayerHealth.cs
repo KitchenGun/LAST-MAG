@@ -29,6 +29,7 @@ public sealed class PlayerHealth : MonoBehaviour
     public event Action<float> HealthNormalizedChanged;
 
     private float m_regenerationStartTime;
+    private float m_lastRegenerationSampleTime;
     private bool m_isDead;
     private ScoreSystem m_scoreSystem;
     private FirstPersonController m_firstPersonController;
@@ -50,26 +51,17 @@ public sealed class PlayerHealth : MonoBehaviour
         m_firstPersonController = GetComponent<FirstPersonController>();
         Debug.Assert(m_firstPersonController != null, "PF_Player is missing FirstPersonController.");
         CurrentHealth = m_maxHealth;
+        m_lastRegenerationSampleTime = GameplayClock.Now;
         InitializeSystemVoice();
     }
 
     private void Update()
     {
-        if (m_isDead || CurrentHealth >= m_maxHealth || GameplayClock.Now < m_regenerationStartTime)
+        if (m_isDead)
         {
             return;
         }
-
-        float previousHealth = CurrentHealth;
-        CurrentHealth = Mathf.Min(m_maxHealth, CurrentHealth + m_regenerationPerSecond * GameplayClock.DeltaTime);
-        if (!Mathf.Approximately(previousHealth, CurrentHealth))
-        {
-            NotifyHealthChanged();
-        }
-        if (CurrentHealth / m_maxHealth >= k_CriticalTraumaRearmThreshold)
-        {
-            m_criticalTraumaAnnounced = false;
-        }
+        AdvanceRegeneration(GameplayClock.Now);
     }
 
     public void ApplyDamage(float damage, PlayerDeathCause deathCause)
@@ -85,10 +77,13 @@ public sealed class PlayerHealth : MonoBehaviour
             return;
         }
 
+        float now = GameplayClock.Now;
+        AdvanceRegeneration(now);
         CurrentHealth = Mathf.Max(0f, CurrentHealth - damage);
         NotifyHealthChanged();
         m_firstPersonController?.ApplyDamageAimPunch(deathCause);
-        m_regenerationStartTime = GameplayClock.Now + m_regenerationDelay;
+        m_regenerationStartTime = now + m_regenerationDelay;
+        m_lastRegenerationSampleTime = m_regenerationStartTime;
         if (CurrentHealth > 0f)
         {
             PlayCriticalTraumaWarning();
@@ -107,6 +102,41 @@ public sealed class PlayerHealth : MonoBehaviour
     private void NotifyHealthChanged()
     {
         HealthNormalizedChanged?.Invoke(CurrentHealth / m_maxHealth);
+    }
+
+    private void AdvanceRegeneration(float now)
+    {
+        if (CurrentHealth >= m_maxHealth)
+        {
+            m_lastRegenerationSampleTime = now;
+            return;
+        }
+
+        float sampleStart = Mathf.Max(m_lastRegenerationSampleTime, m_regenerationStartTime);
+        if (now <= sampleStart)
+        {
+            return;
+        }
+
+        float previousHealth = CurrentHealth;
+        CurrentHealth = CalculateRegeneratedHealth(
+            CurrentHealth, m_maxHealth, m_regenerationPerSecond, now - sampleStart);
+        m_lastRegenerationSampleTime = now;
+        if (!Mathf.Approximately(previousHealth, CurrentHealth))
+        {
+            NotifyHealthChanged();
+        }
+        if (CurrentHealth / m_maxHealth >= k_CriticalTraumaRearmThreshold)
+        {
+            m_criticalTraumaAnnounced = false;
+        }
+    }
+
+    private static float CalculateRegeneratedHealth(
+        float currentHealth, float maxHealth, float regenerationPerSecond, float elapsed)
+    {
+        return Mathf.Min(maxHealth,
+            currentHealth + Mathf.Max(0f, regenerationPerSecond) * Mathf.Max(0f, elapsed));
     }
 
     private void InitializeSystemVoice()
@@ -253,6 +283,8 @@ public sealed class PlayerHealth : MonoBehaviour
     {
         Debug.Assert(Mathf.Min(100f, 80f + 20f) == 100f);
         Debug.Assert(Mathf.Max(0f, 20f - 30f) == 0f);
+        Debug.Assert(Mathf.Approximately(CalculateRegeneratedHealth(50f, 100f, 20f, 1f), 70f)
+            && Mathf.Approximately(CalculateRegeneratedHealth(90f, 100f, 20f, 1f), 100f));
         Debug.Assert(Mathf.Approximately(k_CriticalTraumaThreshold, 0.5f));
         Debug.Assert(Mathf.Approximately(k_CriticalTraumaRearmThreshold, 0.6f));
         Debug.Assert(0.5f <= k_CriticalTraumaThreshold && 0.51f > k_CriticalTraumaThreshold);

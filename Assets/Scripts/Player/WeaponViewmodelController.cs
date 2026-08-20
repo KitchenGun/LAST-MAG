@@ -307,6 +307,19 @@ public sealed class WeaponViewmodelController : MonoBehaviour
         Debug.Assert(CrossedPhase(1f, 2f, Mathf.PI * 0.5f));
         Debug.Assert(CrossedPhase(4f, 5f, Mathf.PI * 1.5f));
         Debug.Assert(!CrossedPhase(6f, 0.2f, Mathf.PI * 0.5f));
+        float blend30Fps = 0f;
+        float blend500Fps = 0f;
+        for (int step = 0; step < 30; step++)
+        {
+            blend30Fps = Mathf.Lerp(blend30Fps, 1f,
+                CalculateFrameIndependentBlend(m_movementLerpSpeed, 1f / 30f));
+        }
+        for (int step = 0; step < 500; step++)
+        {
+            blend500Fps = Mathf.Lerp(blend500Fps, 1f,
+                CalculateFrameIndependentBlend(m_movementLerpSpeed, 1f / 500f));
+        }
+        Debug.Assert(Mathf.Abs(blend30Fps - blend500Fps) < 0.0001f);
         RestoreRestPose();
     }
 
@@ -529,9 +542,9 @@ public sealed class WeaponViewmodelController : MonoBehaviour
     private void UpdateFireAnimation()
     {
         StepSpring(ref m_firePositionOffset, ref m_firePositionVelocity,
-            k_PositionSpringFrequency, k_PositionSpringDamping, Time.deltaTime);
+            k_PositionSpringFrequency, k_PositionSpringDamping, GameplayClock.DeltaTime);
         StepSpring(ref m_fireRotationOffset, ref m_fireRotationVelocity,
-            k_RotationSpringFrequency, k_RotationSpringDamping, Time.deltaTime);
+            k_RotationSpringFrequency, k_RotationSpringDamping, GameplayClock.DeltaTime);
         ClampFireSpring();
 
         if (m_firePositionOffset.sqrMagnitude + m_firePositionVelocity.sqrMagnitude
@@ -613,7 +626,7 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             Vector3 localDirection = m_characterController.transform.InverseTransformDirection(planarVelocity.normalized);
             float previousBobPhase = m_bobPhase;
             m_bobPhase = Mathf.Repeat(
-                m_bobPhase + Mathf.PI * 2f * m_bobFrequency * speedRatio * Time.deltaTime,
+                m_bobPhase + Mathf.PI * 2f * m_bobFrequency * speedRatio * GameplayClock.DeltaTime,
                 Mathf.PI * 2f);
             PlayCrossedFootsteps(previousBobPhase, m_bobPhase);
 
@@ -635,9 +648,16 @@ public sealed class WeaponViewmodelController : MonoBehaviour
             m_bobPhase = 0f;
         }
 
-        float lerpAmount = Mathf.Clamp01(m_movementLerpSpeed * Time.deltaTime);
+        float lerpAmount = CalculateFrameIndependentBlend(
+            m_movementLerpSpeed, GameplayClock.DeltaTime);
         m_movementPositionOffset = Vector3.Lerp(m_movementPositionOffset, targetPosition, lerpAmount);
         m_movementRotationOffset = Vector3.Lerp(m_movementRotationOffset, targetRotation, lerpAmount);
+    }
+
+    private static float CalculateFrameIndependentBlend(float speed, float deltaTime)
+    {
+        float blendAt60Fps = Mathf.Clamp01(Mathf.Max(0f, speed) / 60f);
+        return 1f - Mathf.Pow(1f - blendAt60Fps, Mathf.Max(0f, deltaTime) * 60f);
     }
 
     private void UpdateLandingFootstep()

@@ -106,29 +106,42 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void Update()
     {
-        if ((m_state == PlayerSkillState.Active || m_state == PlayerSkillState.Cooldown)
-            && m_stateEndsAt > 0f && GameplayClock.Now >= m_stateEndsAt)
-        {
-            if (m_state == PlayerSkillState.Active && m_playerClass == PlayerClassId.Sniper)
-            {
-                RestoreTimeScale();
-                BeginCooldown(m_sniperCooldown);
-            }
-            else if (m_state == PlayerSkillState.Cooldown)
-            {
-                m_state = PlayerSkillState.Ready;
-                m_stateEndsAt = 0f;
-                m_cooldownDuration = 0f;
-                m_playerHealth?.PlayAbilityReadyAnnouncement();
-            }
-        }
+        AdvanceTimedState(GameplayClock.Now);
         UpdateRocketRecoil();
         UpdateBulletTimeVisual();
         RefreshHud();
     }
 
+    internal void AdvanceTimedState(float now)
+    {
+        if (!HasTimedStateExpired(m_state, m_stateEndsAt, now))
+        {
+            return;
+        }
+
+        float expiredAt = m_stateEndsAt;
+        if (m_state == PlayerSkillState.Active && m_playerClass == PlayerClassId.Sniper)
+        {
+            RestoreTimeScale();
+            BeginCooldown(m_sniperCooldown, expiredAt);
+            return;
+        }
+
+        m_state = PlayerSkillState.Ready;
+        m_stateEndsAt = 0f;
+        m_cooldownDuration = 0f;
+        m_playerHealth?.PlayAbilityReadyAnnouncement();
+    }
+
+    private static bool HasTimedStateExpired(PlayerSkillState state, float endsAt, float now)
+    {
+        return state is PlayerSkillState.Active or PlayerSkillState.Cooldown
+            && endsAt > 0f && now >= endsAt;
+    }
+
     public bool TryActivateOrArm()
     {
+        AdvanceTimedState(GameplayClock.Now);
         if (m_state != PlayerSkillState.Ready || m_camera == null)
         {
             return false;
@@ -215,6 +228,7 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     internal void RegisterBulletTimeHeadshotKill()
     {
+        AdvanceTimedState(GameplayClock.Now);
         if (m_playerClass != PlayerClassId.Sniper || m_state != PlayerSkillState.Active)
         {
             return;
@@ -319,9 +333,14 @@ public sealed class PlayerSkillController : MonoBehaviour
 
     private void BeginCooldown(float duration)
     {
+        BeginCooldown(duration, GameplayClock.Now);
+    }
+
+    private void BeginCooldown(float duration, float startedAt)
+    {
         m_state = PlayerSkillState.Cooldown;
         m_cooldownDuration = duration;
-        m_stateEndsAt = GameplayClock.Now + duration;
+        m_stateEndsAt = startedAt + duration;
         RefreshHud();
     }
 
@@ -582,6 +601,10 @@ public sealed class PlayerSkillController : MonoBehaviour
             && m_engineerCooldown >= 0f
             && m_sniperCooldown >= 0f);
         Debug.Assert(m_state is >= PlayerSkillState.Ready and <= PlayerSkillState.Cooldown);
+        Debug.Assert(!HasTimedStateExpired(PlayerSkillState.Active, 5f, 4.999f)
+            && HasTimedStateExpired(PlayerSkillState.Active, 5f, 5f)
+            && HasTimedStateExpired(PlayerSkillState.Cooldown, 5f, 5f)
+            && !HasTimedStateExpired(PlayerSkillState.Armed, 5f, 6f));
     }
 
     private void OnValidate()

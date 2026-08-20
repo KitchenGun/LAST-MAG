@@ -68,14 +68,14 @@ public sealed class EnemySpawner : MonoBehaviour
 
     private void Start()
     {
-        m_startTime = Time.time;
+        m_startTime = Time.fixedTime;
         m_nextAttemptTime = m_startTime + m_initialDelay;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         m_stressModeEnabled = TryParseStressTarget(Application.absoluteURL, out m_stressEnemyTarget);
         IsStressTestActive = m_stressModeEnabled;
         if (m_stressModeEnabled)
         {
-            m_nextAttemptTime = Time.time;
+            m_nextAttemptTime = Time.fixedTime;
         }
 #endif
     }
@@ -84,17 +84,23 @@ public sealed class EnemySpawner : MonoBehaviour
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         UpdateStressMeasurement();
+#endif
+    }
+
+    private void FixedUpdate()
+    {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (m_stressModeEnabled && m_stressEnemyTarget == 0)
         {
             return;
         }
 #endif
-        if (Time.time < m_nextAttemptTime || !HasRequiredReferences())
+        if (Time.fixedTime < m_nextAttemptTime || !HasRequiredReferences())
         {
             return;
         }
 
-        float elapsedMinutes = (Time.time - m_startTime) / 60f;
+        float elapsedMinutes = (Time.fixedTime - m_startTime) / 60f;
         int activeTarget = EvaluateActiveTarget(elapsedMinutes);
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         bool isStressFill = m_stressModeEnabled && m_objectPool.ActiveEnemyCount < m_stressEnemyTarget;
@@ -107,7 +113,7 @@ public sealed class EnemySpawner : MonoBehaviour
 #endif
         if (m_objectPool.ActiveEnemyCount >= activeTarget)
         {
-            m_nextAttemptTime = Time.time + k_RetryInterval;
+            m_nextAttemptTime = Time.fixedTime + k_RetryInterval;
             return;
         }
 
@@ -126,7 +132,9 @@ public sealed class EnemySpawner : MonoBehaviour
         m_lastSpawnPoint = pointIndex;
         AdvanceCycle();
         m_retryInterval = k_RetryInterval;
-        m_nextAttemptTime = isStressFill ? Time.time : Time.time + EvaluateSpawnInterval(elapsedMinutes);
+        m_nextAttemptTime = isStressFill
+            ? Time.fixedTime
+            : Time.fixedTime + EvaluateSpawnInterval(elapsedMinutes);
     }
 
     private bool TryChooseSpawnPosition(out int pointIndex, out Vector3 spawnPosition)
@@ -224,7 +232,7 @@ public sealed class EnemySpawner : MonoBehaviour
 
     private void ScheduleRetry()
     {
-        m_nextAttemptTime = Time.time + m_retryInterval;
+        m_nextAttemptTime = Time.fixedTime + m_retryInterval;
         m_retryInterval = Mathf.Min(k_MaxRetryInterval, m_retryInterval * 2f);
     }
 

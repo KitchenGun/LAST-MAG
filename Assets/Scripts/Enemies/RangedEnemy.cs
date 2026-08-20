@@ -88,8 +88,8 @@ public sealed class RangedEnemy : MonoBehaviour
         m_nextChargePuffTime = 0f;
         m_nextAttackTime = 0f;
         float stagger = Mathf.Abs(GetInstanceID() % 1000) / 1000f;
-        m_nextLineOfSightCheckTime = Time.time + stagger * k_LineOfSightInterval;
-        m_nextRepositionTime = Time.time + stagger * k_RepositionInterval;
+        m_nextLineOfSightCheckTime = Time.fixedTime + stagger * k_LineOfSightInterval;
+        m_nextRepositionTime = Time.fixedTime + stagger * k_RepositionInterval;
         m_cachedCanFire = false;
         if (m_chargeVisual != null)
         {
@@ -125,6 +125,16 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private void Update()
     {
+        if (m_health.IsDisabled || !m_isAiming || Time.time < m_nextChargePuffTime)
+        {
+            return;
+        }
+        m_health.Pool?.EmitProjectileCharge(m_projectileOrigin.position);
+        m_nextChargePuffTime = Time.time + k_ChargePuffInterval;
+    }
+
+    private void FixedUpdate()
+    {
         if (m_health.IsDisabled)
         {
             return;
@@ -157,7 +167,7 @@ public sealed class RangedEnemy : MonoBehaviour
             m_agent.isStopped = true;
             SetMoving(false);
             FaceTarget();
-            if (Time.time >= m_nextAttackTime)
+            if (Time.fixedTime >= m_nextAttackTime)
             {
                 BeginAim();
             }
@@ -170,9 +180,9 @@ public sealed class RangedEnemy : MonoBehaviour
     private void BeginAim()
     {
         m_isAiming = true;
-        m_fireTime = Time.time + m_attackWarning;
+        m_fireTime = Time.fixedTime + m_attackWarning;
         m_nextChargePuffTime = Time.time;
-        m_nextAttackTime = Time.time + m_attackInterval;
+        m_nextAttackTime = Time.fixedTime + m_attackInterval;
         SpatialAudio.PlayRandomOneShot(m_attackClips, transform.position,
             m_attackVoiceMaxDistance, m_attackVoiceVolume, SpatialAudio.CuePriority.Gameplay);
         if (m_animator != null && m_animator.runtimeAnimatorController != null)
@@ -195,12 +205,7 @@ public sealed class RangedEnemy : MonoBehaviour
         }
 
         FaceTarget();
-        if (Time.time >= m_nextChargePuffTime)
-        {
-            m_health.Pool?.EmitProjectileCharge(m_projectileOrigin.position);
-            m_nextChargePuffTime = Time.time + k_ChargePuffInterval;
-        }
-        if (Time.time < m_fireTime)
+        if (Time.fixedTime < m_fireTime)
         {
             return;
         }
@@ -228,12 +233,12 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private void Reposition()
     {
-        if (Time.time < m_nextRepositionTime)
+        if (Time.fixedTime < m_nextRepositionTime)
         {
             SetMoving(m_agent.velocity.sqrMagnitude > 0.01f);
             return;
         }
-        m_nextRepositionTime = Time.time + k_RepositionInterval;
+        m_nextRepositionTime = Time.fixedTime + k_RepositionInterval;
 
         Vector3 toTarget = m_target.transform.position - transform.position;
         toTarget.y = 0f;
@@ -287,9 +292,9 @@ public sealed class RangedEnemy : MonoBehaviour
 
     private bool CanFireFromCached()
     {
-        if (Time.time >= m_nextLineOfSightCheckTime)
+        if (Time.fixedTime >= m_nextLineOfSightCheckTime)
         {
-            m_nextLineOfSightCheckTime = Time.time + k_LineOfSightInterval;
+            m_nextLineOfSightCheckTime = Time.fixedTime + k_LineOfSightInterval;
             m_cachedCanFire = CanFireFrom(transform.position);
         }
         return m_cachedCanFire;

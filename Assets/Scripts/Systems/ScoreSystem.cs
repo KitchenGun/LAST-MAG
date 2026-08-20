@@ -61,6 +61,7 @@ public sealed class ScoreSystem : MonoBehaviour
     private const float k_SwapKillWindow = 2f;
 
     private GameplayHUD m_hud;
+    private float m_survivalStartedAt;
     private float m_survivalAccumulator;
     private float m_comboExpiresAt;
     private int m_combatScore;
@@ -86,6 +87,7 @@ public sealed class ScoreSystem : MonoBehaviour
         RunResultStore.ClearResult();
         m_hud = hud;
         m_bulletTimeActive = false;
+        m_survivalStartedAt = GameplayClock.Now;
         m_survivalAccumulator = 0f;
         m_survivalScore = 0;
         ComboCount = 0;
@@ -107,15 +109,7 @@ public sealed class ScoreSystem : MonoBehaviour
             return;
         }
 
-        m_survivalAccumulator += GameplayClock.DeltaTime;
-        if (m_survivalAccumulator >= 1f)
-        {
-            int elapsedSeconds = Mathf.FloorToInt(m_survivalAccumulator);
-            m_survivalAccumulator -= elapsedSeconds;
-            m_survivalScore += elapsedSeconds;
-            m_hud?.RefreshScore(TotalScore);
-            m_hud?.RefreshSurvivalTime(m_survivalScore + m_survivalAccumulator);
-        }
+        RefreshSurvivalTime(GameplayClock.Now);
 
         ExpireCombo(GameplayClock.Now);
         m_hud?.RefreshCombo(ComboCount, GetComboRemainingSeconds(GameplayClock.Now));
@@ -196,6 +190,7 @@ public sealed class ScoreSystem : MonoBehaviour
             return;
         }
 
+        RefreshSurvivalTime(GameplayClock.Now);
         m_runComplete = true;
         int previousBest = RunResultStore.PersonalBest;
         bool isNewPersonalBest = TotalScore > previousBest;
@@ -223,6 +218,24 @@ public sealed class ScoreSystem : MonoBehaviour
             deathCause,
             m_weaponKills[(int)WeaponId.DMR - 1],
             m_skillKills));
+    }
+
+    private void RefreshSurvivalTime(float now)
+    {
+        float elapsed = GetSurvivalElapsed(m_survivalStartedAt, now);
+        int previousScore = m_survivalScore;
+        m_survivalScore = Mathf.FloorToInt(elapsed);
+        m_survivalAccumulator = elapsed - m_survivalScore;
+        if (m_survivalScore != previousScore)
+        {
+            m_hud?.RefreshScore(TotalScore);
+        }
+        m_hud?.RefreshSurvivalTime(elapsed);
+    }
+
+    private static float GetSurvivalElapsed(float startedAt, float now)
+    {
+        return Mathf.Max(0f, now - startedAt);
     }
 
     public static int CalculateKillScore(
@@ -357,6 +370,8 @@ public sealed class ScoreSystem : MonoBehaviour
     private void RunSelfCheck()
     {
         Debug.Assert(GetBaseScore(EnemyType.Suicide) == 50);
+        Debug.Assert(Mathf.Approximately(GetSurvivalElapsed(10f, 70f), 60f)
+            && Mathf.Approximately(GetSurvivalElapsed(10f, 9f), 0f));
         Debug.Assert(GetBaseScore(EnemyType.Melee) == 70);
         Debug.Assert(GetBaseScore(EnemyType.Ranged) == 100);
         Debug.Assert(CalculateKillScore(EnemyType.Ranged, 1, false, false, false) == 100);

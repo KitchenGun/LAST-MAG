@@ -268,6 +268,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private ScoreSystem m_scoreSystem;
     private float m_verticalVelocity;
     private float m_pitch;
+    private float m_yaw;
     private float m_defaultCameraFieldOfView;
     private float m_cameraRecoilPitch;
     private float m_cameraRecoilYaw;
@@ -320,6 +321,8 @@ public sealed class FirstPersonController : MonoBehaviour
     private void Awake()
     {
         CurrentInstance = this;
+        m_yaw = transform.eulerAngles.y;
+        ApplyWorldYaw(0f);
         m_characterController = GetComponent<CharacterController>();
         m_playerHealth = GetComponent<PlayerHealth>();
         m_scoreSystem = GetComponent<ScoreSystem>();
@@ -445,8 +448,8 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
+        m_skillController?.AdvanceTimedState(GameplayClock.Now);
         HandleWeaponSelection();
-        HandleAttackInput();
         if (m_playerMap != null && Cursor.lockState == CursorLockMode.Locked)
         {
             HandleDmrZoomInput();
@@ -456,6 +459,9 @@ public sealed class FirstPersonController : MonoBehaviour
         {
             return;
         }
+
+        HandleLook();
+        HandleAttackInput();
 
         if (Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame)
         {
@@ -470,7 +476,6 @@ public sealed class FirstPersonController : MonoBehaviour
             m_gameplayHUD?.SetFlashlightState(m_flashLight.enabled);
         }
 
-        HandleLook();
         HandleMovement();
     }
 
@@ -724,7 +729,9 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         float sensitivity = CalculateLookSensitivity(
             m_lookSensitivity, GameSettings.MouseSensitivity, m_isDmrZoomed);
-        Vector2 look = m_lookAction.ReadValue<Vector2>() * sensitivity;
+        bool isGamepad = m_lookAction.activeControl?.device is Gamepad;
+        Vector2 look = m_lookAction.ReadValue<Vector2>() * sensitivity
+            * GetLookInputTimeScale(isGamepad, GameplayClock.DeltaTime);
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
         UpdateCameraRecoil();
         UpdateFireImpulse();
@@ -736,7 +743,13 @@ public sealed class FirstPersonController : MonoBehaviour
             m_cameraRecoilYaw + m_fireImpulse.y + m_damageAimPunchYaw
                 + explosionShake.y,
             m_fireImpulse.z + explosionShake.z);
-        transform.Rotate(Vector3.up * look.x);
+        ApplyWorldYaw(look.x);
+    }
+
+    private void ApplyWorldYaw(float delta)
+    {
+        m_yaw = Mathf.Repeat(m_yaw + delta, 360f);
+        transform.rotation = Quaternion.Euler(0f, m_yaw, 0f);
     }
 
     internal static float CalculateLookSensitivity(float baseSensitivity,
@@ -744,6 +757,11 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         return Mathf.Max(0f, baseSensitivity) * Mathf.Clamp01(sensitivitySetting)
             * (zoomed ? k_DmrZoomSensitivityMultiplier : 1f);
+    }
+
+    private static float GetLookInputTimeScale(bool isGamepad, float deltaTime)
+    {
+        return isGamepad ? Mathf.Max(0f, deltaTime) * 60f : 1f;
     }
 
     private void UpdateCameraRecoil()
@@ -839,7 +857,7 @@ public sealed class FirstPersonController : MonoBehaviour
         {
             Vector2 residual = m_cameraRecoilReturnTarget;
             m_pitch = Mathf.Clamp(m_pitch - residual.x, -k_MaxPitch, k_MaxPitch);
-            transform.Rotate(Vector3.up * residual.y);
+            ApplyWorldYaw(residual.y);
         }
         ResetCameraRecoil();
     }
@@ -871,10 +889,10 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void UpdateDamageAimPunch()
     {
-        float deltaTime = Time.deltaTime;
+        float deltaTime = GameplayClock.DeltaTime;
         if (m_damageAimPunchTargetPitch > 0f)
         {
-            float kickBlend = Mathf.Clamp01(m_damageAimPunchKickSpeed * deltaTime);
+            float kickBlend = CalculateFrameIndependentBlend(m_damageAimPunchKickSpeed, deltaTime);
             m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, m_damageAimPunchTargetPitch, kickBlend);
             m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, m_damageAimPunchTargetYaw, kickBlend);
             if (Mathf.Abs(m_damageAimPunchPitch - m_damageAimPunchTargetPitch) < 0.01f
@@ -886,9 +904,15 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
 
-        float returnBlend = Mathf.Clamp01(m_damageAimPunchReturnSpeed * deltaTime);
+        float returnBlend = CalculateFrameIndependentBlend(m_damageAimPunchReturnSpeed, deltaTime);
         m_damageAimPunchPitch = Mathf.Lerp(m_damageAimPunchPitch, 0f, returnBlend);
         m_damageAimPunchYaw = Mathf.Lerp(m_damageAimPunchYaw, 0f, returnBlend);
+    }
+
+    private static float CalculateFrameIndependentBlend(float speed, float deltaTime)
+    {
+        float blendAt60Fps = Mathf.Clamp01(Mathf.Max(0f, speed) / 60f);
+        return 1f - Mathf.Pow(1f - blendAt60Fps, Mathf.Max(0f, deltaTime) * 60f);
     }
 
     private void HandleMovement()
@@ -898,12 +922,14 @@ public sealed class FirstPersonController : MonoBehaviour
             m_verticalVelocity = -2f;
         }
 
-        float deltaTime = Time.deltaTime;
+        float deltaTime = GameplayClock.DeltaTime;
+        float previousVerticalVelocity = m_verticalVelocity;
         m_verticalVelocity += m_gravity * deltaTime;
         Vector2 move = m_moveAction.ReadValue<Vector2>();
-        Vector3 velocity = transform.TransformDirection(new Vector3(move.x, 0f, move.y)) * m_moveSpeed;
-        velocity.y = m_verticalVelocity;
-        m_characterController.Move(velocity * deltaTime);
+        Vector3 displacement = transform.TransformDirection(new Vector3(move.x, 0f, move.y))
+            * m_moveSpeed * deltaTime;
+        displacement.y = (previousVerticalVelocity + m_verticalVelocity) * 0.5f * deltaTime;
+        m_characterController.Move(displacement);
     }
 
     private void HandleAttackInput()
@@ -972,12 +998,14 @@ public sealed class FirstPersonController : MonoBehaviour
             return false;
         }
 
-        if (GameplayClock.Now < m_nextAllowedFireTime)
+        float now = GameplayClock.Now;
+        if (now < m_nextAllowedFireTime)
         {
             return false;
         }
 
-        m_nextAllowedFireTime = GameplayClock.Now + GetFireInterval(CurrentWeapon);
+        m_nextAllowedFireTime = CalculateNextFireTime(
+            m_nextAllowedFireTime, now, GetFireInterval(CurrentWeapon));
         m_weaponAmmo[index]--;
         m_gameplayHUD?.RefreshWeapon(m_activeWeaponSlot, CurrentWeapon, m_weaponAmmo[index], true);
         RecoilSample recoil = GetRecoilProfile(CurrentWeapon).CreateSample(GetRecoilYawDirection(CurrentWeapon));
@@ -1212,6 +1240,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void RegisterDirectKill(EnemyType enemyType, WeaponId weapon, bool isHeadshot)
     {
+        m_skillController?.AdvanceTimedState(GameplayClock.Now);
         m_scoreSystem?.RegisterDirectKill(enemyType, weapon, isHeadshot);
         if (isHeadshot)
         {
@@ -1304,6 +1333,64 @@ public sealed class FirstPersonController : MonoBehaviour
             _ => 0f
         };
         return shotsPerSecond > 0f ? 1f / shotsPerSecond : float.MaxValue;
+    }
+
+    private static float CalculateNextFireTime(float previousFireTime, float now, float interval)
+    {
+        interval = Mathf.Max(0f, interval);
+        float scheduledNext = previousFireTime + interval;
+        return previousFireTime <= 0f || scheduledNext <= now
+            ? now + interval
+            : scheduledNext;
+    }
+
+    private static int SimulateAutomaticShots(float framesPerSecond, float duration, float shotsPerSecond)
+    {
+        if (framesPerSecond <= 0f || duration <= 0f || shotsPerSecond <= 0f)
+        {
+            return 0;
+        }
+
+        float deltaTime = 1f / framesPerSecond;
+        float interval = 1f / shotsPerSecond;
+        float nextFireTime = 0f;
+        int shots = 0;
+        for (int frame = 0; frame * deltaTime < duration; frame++)
+        {
+            float now = frame * deltaTime;
+            if (now + 0.00001f < nextFireTime)
+            {
+                continue;
+            }
+            shots++;
+            nextFireTime = CalculateNextFireTime(nextFireTime, now, interval);
+        }
+        return shots;
+    }
+
+    private static float SimulateJumpApex(float framesPerSecond, float jumpHeight, float gravity)
+    {
+        if (framesPerSecond <= 0f || jumpHeight <= 0f || gravity >= 0f)
+        {
+            return 0f;
+        }
+
+        float deltaTime = 1f / framesPerSecond;
+        float velocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        float height = 0f;
+        while (velocity > 0f)
+        {
+            float nextVelocity = velocity + gravity * deltaTime;
+            if (nextVelocity <= 0f)
+            {
+                float timeToApex = -velocity / gravity;
+                return height + velocity * timeToApex
+                    + 0.5f * gravity * timeToApex * timeToApex;
+            }
+            height += (velocity + nextVelocity) * 0.5f * deltaTime;
+            velocity = nextVelocity;
+        }
+        return height;
     }
 
     private float GetHeadshotMultiplier(WeaponId weapon)
@@ -1571,6 +1658,36 @@ public sealed class FirstPersonController : MonoBehaviour
             && Mathf.Approximately(CalculateLookSensitivity(0.1f, 0.5f, false), 0.05f)
             && Mathf.Approximately(CalculateLookSensitivity(0.1f, 1f, false), 0.1f)
             && Mathf.Approximately(CalculateLookSensitivity(0.1f, 1f, true), 0.05f));
+        Debug.Assert(Mathf.Approximately(GetLookInputTimeScale(false, 1f / 30f), 1f)
+            && Mathf.Approximately(GetLookInputTimeScale(false, 1f / 500f), 1f)
+            && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 30f), 2f)
+            && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 500f), 0.12f));
+        Debug.Assert(Mathf.Approximately(GetLookInputTimeScale(true, 1f / 30f) * 30f, 60f)
+            && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 60f) * 60f, 60f)
+            && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 144f) * 144f, 60f)
+            && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 500f) * 500f, 60f));
+        Debug.Assert(SimulateAutomaticShots(30f, 4f, m_rifleShotsPerSecond) == 44
+            && SimulateAutomaticShots(60f, 4f, m_rifleShotsPerSecond) == 44
+            && SimulateAutomaticShots(144f, 4f, m_rifleShotsPerSecond) == 44
+            && SimulateAutomaticShots(500f, 4f, m_rifleShotsPerSecond) == 44);
+        Debug.Assert(Mathf.Abs(SimulateJumpApex(30f, m_jumpHeight, m_gravity) - m_jumpHeight) < 0.001f
+            && Mathf.Abs(SimulateJumpApex(60f, m_jumpHeight, m_gravity) - m_jumpHeight) < 0.001f
+            && Mathf.Abs(SimulateJumpApex(144f, m_jumpHeight, m_gravity) - m_jumpHeight) < 0.001f
+            && Mathf.Abs(SimulateJumpApex(500f, m_jumpHeight, m_gravity) - m_jumpHeight) < 0.001f);
+        Debug.Assert(CalculateNextFireTime(1f, 1.25f, 1f / 11f) > 1.25f);
+        float aimPunch30Fps = 0f;
+        float aimPunch500Fps = 0f;
+        for (int step = 0; step < 30; step++)
+        {
+            aimPunch30Fps = Mathf.Lerp(aimPunch30Fps, 1f,
+                CalculateFrameIndependentBlend(8f, 1f / 30f));
+        }
+        for (int step = 0; step < 500; step++)
+        {
+            aimPunch500Fps = Mathf.Lerp(aimPunch500Fps, 1f,
+                CalculateFrameIndependentBlend(8f, 1f / 500f));
+        }
+        Debug.Assert(Mathf.Abs(aimPunch30Fps - aimPunch500Fps) < 0.0001f);
         Debug.Assert(ResolveDmrZoomState(false, ZoomInputMode.Toggle, true, true)
             && !ResolveDmrZoomState(true, ZoomInputMode.Toggle, true, true)
             && ResolveDmrZoomState(false, ZoomInputMode.Hold, true, true)
