@@ -94417,6 +94417,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1192802413}
     - target: {fileID: 3668781440361344697, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
+      propertyPath: m_sniperCooldown
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3668781440361344697, guid: 913838a95f6eafe4b86110583a5bbfbf, type: 3}
       propertyPath: m_engineerCooldown
       value: 12
       objectReference: {fileID: 0}
