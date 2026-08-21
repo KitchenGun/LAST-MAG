@@ -25772,6 +25772,7 @@ MonoBehaviour:
   m_jumpHeight: 1.2
   m_gravity: -20
   m_lookSensitivity: 0.1
+  m_maxMouseAngularSpeed: 7200
   m_damageAimPunchKickSpeed: 30
   m_damageAimPunchReturnSpeed: 8
   m_damageAimPunchSoftCap: 3
