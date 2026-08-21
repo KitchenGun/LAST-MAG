@@ -50,7 +50,7 @@ Fab 에셋은 완성된 게임에 포함해 사용할 수 있지만, 원본 WAV 
 
 ## 현재 빌드에서 제외된 외부 폴더
 
-- 미사용 오디오와 Unity 템플릿 잔재는 로컬 `Archive/UnusedResources`로 분리했다. 이동 내역은 [미사용 리소스 분리 명세](13_UNUSED_RESOURCE_ARCHIVE.md)를 따른다.
+- 미사용 오디오와 Unity 템플릿 잔재는 로컬 `Archive/UnusedResources`로 분리했다. 보존·복원 규칙은 아래 `미사용 리소스 아카이브` 절을 따른다.
 - 컨셉 이미지, Blender 제작 소스, 생성 중간물은 런타임 배포 에셋이 아니므로 이 문서의 사용 목록에 포함하지 않는다.
 
 ## 2026-08-11 공개 배포 감사
@@ -62,4 +62,11 @@ Fab 에셋은 완성된 게임에 포함해 사용할 수 있지만, 원본 WAV 
 | `Fading Transmission.mp3`, `Iron Horizon.mp3`, `Iron Lung Protocol.mp3`, `Iron Pulse.mp3`, `Rust and Static.mp3`, `Rust Circuit.mp3`, `dooms day.mp3`, `The Last Stand of Valhalla.mp3` | `Assets/Audio/BGM`에서 게임 씬이 사용 | 제작자·원본 링크·라이선스 미확인 |
 | FreeWeaponSounds, Footsteps Mini Sound Pack, Sewing Machine Samples, ZombieHorrorPackageFree | 위의 기존 감사 표와 동일 | 원본 링크·라이선스 미확인 |
 
-Unity Asset Store 표준 EULA는 적법하게 취득한 비제한 에셋을 완성된 게임에 포함하여 배포하는 것을 허용하지만, 저장소의 메타데이터만으로 실제 취득 계정 기록까지 증명할 수는 없다. 위 미확인 항목이 모두 해소되기 전에는 공개 WebGL 배포를 보류하고 로컬 빌드까지만 허용한다.
+Unity Asset Store 표준 EULA는 적법하게 취득한 비제한 에셋을 완성된 게임에 포함하여 배포하는 것을 허용하지만, 저장소의 메타데이터만으로 실제 취득 계정 기록까지 증명할 수는 없다. 미확인 항목은 공개 배포의 라이선스 리스크로 계속 추적하며, 현재 사용자가 승인한 공개 WebGL 배포를 자동으로 중단하는 규칙으로 사용하지 않는다.
+
+## 미사용 리소스 아카이브
+
+- 빌드 씬과 프로젝트 설정·Resources·문자열 참조를 검사해 미사용 리소스는 `Archive/UnusedResources`에 원래 상대 경로와 `.meta`를 함께 보존한다.
+- 아카이브는 로컬 복구용이며 Git 커밋 대상이 아니다. 복원할 때는 에셋과 동일 이름의 `.meta`를 함께 되돌린다.
+- 콘셉트 아트, 제작 원본, `BlenderSource/**`, `tmp/**`, TextMesh Pro Resources와 동적 생성 참조는 정리 대상에서 제외한다.
+- 마지막 정적 GUID 의존성·Resources.Load·Addressables·AssetBundle·StreamingAssets 검사는 통과했으며 Unity 재임포트·Play Mode·WebGL 재검증은 별도 실행 항목이다.
