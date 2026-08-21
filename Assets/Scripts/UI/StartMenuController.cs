@@ -17,6 +17,7 @@ public sealed class StartMenuController : MonoBehaviour
 
     private Button m_playButton;
     private Button m_confirmButton;
+    private Button m_backButton;
     private Button m_settingsButton;
     private Button[] m_classButtons;
     private TMP_Text m_selectedClassName;
@@ -38,9 +39,10 @@ public sealed class StartMenuController : MonoBehaviour
         InitializeBuildVersion();
         m_playButton = FindButton("PlayButton");
         m_confirmButton = FindButton("ConfirmButton");
-        if (m_playButton == null || m_confirmButton == null)
+        m_backButton = FindButton("BackButton");
+        if (m_playButton == null || m_confirmButton == null || m_backButton == null)
         {
-            Debug.LogError("[StartMenu] PlayButton or ConfirmButton was not found.");
+            Debug.LogError("[StartMenu] PlayButton, ConfirmButton, or BackButton was not found.");
             return;
         }
 
@@ -48,6 +50,8 @@ public sealed class StartMenuController : MonoBehaviour
         m_playButton.onClick.AddListener(Play);
         m_confirmButton.onClick.RemoveAllListeners();
         m_confirmButton.onClick.AddListener(ConfirmClassSelection);
+        m_backButton.onClick.RemoveAllListeners();
+        m_backButton.onClick.AddListener(BackToMainMenu);
 
         m_settingsButton = FindButton("SettingsButton");
         m_settingsPanel = GetComponentInChildren<SettingsPanelController>(true);
@@ -74,6 +78,8 @@ public sealed class StartMenuController : MonoBehaviour
         m_playButton.gameObject.SetActive(true);
         m_confirmButton.gameObject.SetActive(false);
         m_confirmButton.interactable = false;
+        m_backButton.gameObject.SetActive(true);
+        m_backButton.interactable = true;
         m_selectedClassName = FindText("SelectedClassName");
         m_selectedClassLoadout = FindText("SelectedClassLoadout");
         m_selectedClassSkill = FindText("SelectedClassSkill");
@@ -350,6 +356,32 @@ public sealed class StartMenuController : MonoBehaviour
         SceneManager.LoadScene("GameplayScene");
     }
 
+    public void BackToMainMenu()
+    {
+        if (!m_showingClassSelection)
+        {
+            return;
+        }
+
+        RunResultStore.SelectClass(PlayerClassId.Unknown);
+        m_showingClassSelection = false;
+        if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(false);
+        if (m_title != null) m_title.SetActive(true);
+        if (m_controls != null) m_controls.SetActive(true);
+        if (m_settingsButton != null) m_settingsButton.gameObject.SetActive(true);
+        if (m_playButton != null)
+        {
+            m_playButton.gameObject.SetActive(true);
+            m_playButton.interactable = true;
+        }
+        if (m_confirmButton != null)
+        {
+            m_confirmButton.gameObject.SetActive(false);
+            m_confirmButton.interactable = false;
+        }
+        UpdateSelectionVisuals(PlayerClassId.Unknown);
+    }
+
     private void ShowClassSelection()
     {
         CloseSettings();
@@ -361,6 +393,8 @@ public sealed class StartMenuController : MonoBehaviour
         m_playButton.gameObject.SetActive(false);
         m_confirmButton.gameObject.SetActive(false);
         m_confirmButton.interactable = false;
+        m_backButton.gameObject.SetActive(true);
+        m_backButton.interactable = true;
     }
 
     [ContextMenu("Run Class Selection Self Check")]
