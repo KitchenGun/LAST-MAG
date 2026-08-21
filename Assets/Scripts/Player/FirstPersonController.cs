@@ -168,8 +168,9 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_PistolContinuousWindow = 0.24f;
     private const float k_RifleContinuousWindow = 0.32f;
     private const float k_DmrContinuousWindow = 0.42f;
-    private const float k_MouseLookSmoothingTime = 0.012f;
-    private const float k_MaxMouseDeltaPerUpdate = 1200f;
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    private const float k_MouseDiagnosticsInterval = 10f;
+#endif
     // ponytail: fixed buffer avoids WebGL GC; raise only if one shot can cross 64 solid colliders.
     private const int k_DmrRaycastBufferSize = 64;
     private const int k_ShotgunEnemyHitsPerPellet = 2;
@@ -187,6 +188,8 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
+    [Tooltip("비정상 마우스 입력을 제한하는 최대 회전 속도입니다. 정상 입력은 그대로 통과합니다.")]
+    [SerializeField, Min(1f)] private float m_maxMouseAngularSpeed = 7200f;
     [Header("Damage Aim Punch")]
     [Tooltip("피격 카메라 흔들림이 목표 강도에 도달하는 속도입니다.")]
     [SerializeField, Min(0.1f)] private float m_damageAimPunchKickSpeed = 30f;
@@ -271,8 +274,16 @@ public sealed class FirstPersonController : MonoBehaviour
     private float m_verticalVelocity;
     private float m_pitch;
     private float m_yaw;
-    private Vector2 m_smoothedMouseVelocity;
     private bool m_ignoreNextMouseDelta;
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    private float m_mouseDiagnosticsStartedAt;
+    private int m_mouseDiagnosticsStartEventCount;
+    private float m_maxRawMouseDelta;
+    private float m_maxRawMouseAngularSpeed;
+    private float m_maxLimitedMouseAngularSpeed;
+    private int m_mouseClampCount;
+    private int m_mouseTransitionDiscardCount;
+#endif
     private float m_defaultCameraFieldOfView;
     private float m_cameraRecoilPitch;
     private float m_cameraRecoilYaw;
@@ -371,6 +382,13 @@ public sealed class FirstPersonController : MonoBehaviour
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
         SelectWeapon(1);
         LockCursor();
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        ResetMouseDiagnostics();
+        if (InputSystem.settings.disableRedundantEventsMerging)
+        {
+            Debug.LogWarning("[Mouse Input] Redundant input event merging is disabled; high-polling mice may overload WebGL input processing.");
+        }
+#endif
     }
 
     private void OnEnable()
@@ -741,9 +759,20 @@ public sealed class FirstPersonController : MonoBehaviour
             m_lookSensitivity, GameSettings.MouseSensitivity, m_isDmrZoomed);
         bool isGamepad = m_lookAction.activeControl?.device is Gamepad;
         Vector2 rawLook = m_lookAction.ReadValue<Vector2>();
+        float deltaTime = GameplayClock.DeltaTime;
+        bool wasClamped = false;
+        bool discardedTransitionDelta = false;
         Vector2 look = isGamepad
-            ? rawLook * sensitivity * GetLookInputTimeScale(true, GameplayClock.DeltaTime)
-            : FilterMouseLook(rawLook, GameplayClock.DeltaTime) * sensitivity;
+            ? rawLook * sensitivity * GetLookInputTimeScale(true, deltaTime)
+            : ProcessMouseLook(rawLook, sensitivity, deltaTime,
+                out wasClamped, out discardedTransitionDelta);
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        if (!isGamepad)
+        {
+            RecordMouseDiagnostics(rawLook, sensitivity, look, deltaTime,
+                wasClamped, discardedTransitionDelta);
+        }
+#endif
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
         UpdateCameraRecoil();
         UpdateFireImpulse();
@@ -776,38 +805,82 @@ public sealed class FirstPersonController : MonoBehaviour
         return isGamepad ? Mathf.Max(0f, deltaTime) * 60f : 1f;
     }
 
-    private Vector2 FilterMouseLook(Vector2 rawDelta, float deltaTime)
+    private Vector2 ProcessMouseLook(Vector2 rawDelta, float sensitivity, float deltaTime,
+        out bool wasClamped, out bool discardedTransitionDelta)
     {
+        wasClamped = false;
+        discardedTransitionDelta = false;
         if (m_ignoreNextMouseDelta)
         {
             m_ignoreNextMouseDelta = false;
-            m_smoothedMouseVelocity = Vector2.zero;
+            discardedTransitionDelta = rawDelta != Vector2.zero;
             return Vector2.zero;
         }
 
-        return SmoothMouseDelta(rawDelta, deltaTime, ref m_smoothedMouseVelocity);
+        return LimitMouseAngularDelta(rawDelta * sensitivity, deltaTime,
+            m_maxMouseAngularSpeed, out wasClamped);
     }
 
-    private static Vector2 SmoothMouseDelta(Vector2 rawDelta, float deltaTime,
-        ref Vector2 smoothedVelocity)
+    private static Vector2 LimitMouseAngularDelta(Vector2 angularDelta, float deltaTime,
+        float maxAngularSpeed, out bool wasClamped)
     {
-        float safeDeltaTime = Mathf.Max(0.0001f, deltaTime);
-        rawDelta = Vector2.ClampMagnitude(rawDelta, k_MaxMouseDeltaPerUpdate);
-        Vector2 rawVelocity = rawDelta / safeDeltaTime;
-        float blend = 1f - Mathf.Exp(-safeDeltaTime / k_MouseLookSmoothingTime);
-        smoothedVelocity = Vector2.LerpUnclamped(smoothedVelocity, rawVelocity, blend);
-        if (rawDelta == Vector2.zero && smoothedVelocity.sqrMagnitude < 0.0001f)
+        float maxAngularDelta = Mathf.Max(0f, maxAngularSpeed) * Mathf.Max(0f, deltaTime);
+        float maxAngularDeltaSquared = maxAngularDelta * maxAngularDelta;
+        if (angularDelta.sqrMagnitude <= maxAngularDeltaSquared)
         {
-            smoothedVelocity = Vector2.zero;
+            wasClamped = false;
+            return angularDelta;
         }
-        return smoothedVelocity * safeDeltaTime;
+
+        wasClamped = true;
+        return maxAngularDelta > 0f
+            ? angularDelta.normalized * maxAngularDelta
+            : Vector2.zero;
     }
 
     private void ResetMouseLookFilter(bool ignoreNextDelta)
     {
-        m_smoothedMouseVelocity = Vector2.zero;
         m_ignoreNextMouseDelta = ignoreNextDelta;
     }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+    private void RecordMouseDiagnostics(Vector2 rawDelta, float sensitivity,
+        Vector2 limitedAngularDelta, float deltaTime, bool wasClamped,
+        bool discardedTransitionDelta)
+    {
+        float safeDeltaTime = Mathf.Max(0.0001f, deltaTime);
+        m_maxRawMouseDelta = Mathf.Max(m_maxRawMouseDelta, rawDelta.magnitude);
+        m_maxRawMouseAngularSpeed = Mathf.Max(m_maxRawMouseAngularSpeed,
+            rawDelta.magnitude * sensitivity / safeDeltaTime);
+        m_maxLimitedMouseAngularSpeed = Mathf.Max(m_maxLimitedMouseAngularSpeed,
+            limitedAngularDelta.magnitude / safeDeltaTime);
+        m_mouseClampCount += wasClamped ? 1 : 0;
+        m_mouseTransitionDiscardCount += discardedTransitionDelta ? 1 : 0;
+
+        if (Time.realtimeSinceStartup - m_mouseDiagnosticsStartedAt < k_MouseDiagnosticsInterval)
+        {
+            return;
+        }
+
+        int currentEventCount = InputSystem.metrics.totalEventCount;
+        Debug.Log($"[Mouse Input] {k_MouseDiagnosticsInterval:0}s events={currentEventCount - m_mouseDiagnosticsStartEventCount} "
+            + $"maxDelta={m_maxRawMouseDelta:0.##}px raw={m_maxRawMouseAngularSpeed:0}deg/s "
+            + $"limited={m_maxLimitedMouseAngularSpeed:0}deg/s clamps={m_mouseClampCount} "
+            + $"transitionDrops={m_mouseTransitionDiscardCount}");
+        ResetMouseDiagnostics();
+    }
+
+    private void ResetMouseDiagnostics()
+    {
+        m_mouseDiagnosticsStartedAt = Time.realtimeSinceStartup;
+        m_mouseDiagnosticsStartEventCount = InputSystem.metrics.totalEventCount;
+        m_maxRawMouseDelta = 0f;
+        m_maxRawMouseAngularSpeed = 0f;
+        m_maxLimitedMouseAngularSpeed = 0f;
+        m_mouseClampCount = 0;
+        m_mouseTransitionDiscardCount = 0;
+    }
+#endif
 
     private void UpdateCameraRecoil()
     {
@@ -1413,22 +1486,22 @@ public sealed class FirstPersonController : MonoBehaviour
         return shots;
     }
 
-    private static float SimulateMouseImpulse(float framesPerSecond, float rawDelta)
+    private static float SimulateMouseMotion(float framesPerSecond, float duration,
+        float angularSpeed, float maxAngularSpeed)
     {
-        if (framesPerSecond <= 0f)
+        if (framesPerSecond <= 0f || duration <= 0f)
         {
             return 0f;
         }
 
         float deltaTime = 1f / framesPerSecond;
-        Vector2 smoothedVelocity = Vector2.zero;
         float accumulatedDelta = 0f;
-        int frameCount = Mathf.CeilToInt(framesPerSecond);
+        int frameCount = Mathf.RoundToInt(framesPerSecond * duration);
         for (int frame = 0; frame < frameCount; frame++)
         {
-            Vector2 input = frame == 0 ? new Vector2(rawDelta, 0f) : Vector2.zero;
-            accumulatedDelta += SmoothMouseDelta(
-                input, deltaTime, ref smoothedVelocity).x;
+            accumulatedDelta += LimitMouseAngularDelta(
+                new Vector2(angularSpeed * deltaTime, 0f), deltaTime,
+                maxAngularSpeed, out _).x;
         }
         return accumulatedDelta;
     }
@@ -1731,16 +1804,29 @@ public sealed class FirstPersonController : MonoBehaviour
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 60f) * 60f, 60f)
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 144f) * 144f, 60f)
             && Mathf.Approximately(GetLookInputTimeScale(true, 1f / 500f) * 500f, 60f));
-        float mouseImpulse30Fps = SimulateMouseImpulse(30f, 600f);
-        float mouseImpulse60Fps = SimulateMouseImpulse(60f, 600f);
-        float mouseImpulse144Fps = SimulateMouseImpulse(144f, 600f);
-        float mouseImpulse500Fps = SimulateMouseImpulse(500f, 600f);
-        Debug.Assert(Mathf.Abs(mouseImpulse30Fps - 600f) < 0.01f
-            && Mathf.Abs(mouseImpulse60Fps - mouseImpulse30Fps) < 0.01f
-            && Mathf.Abs(mouseImpulse144Fps - mouseImpulse30Fps) < 0.01f
-            && Mathf.Abs(mouseImpulse500Fps - mouseImpulse30Fps) < 0.01f);
-        Debug.Assert(Mathf.Abs(SimulateMouseImpulse(500f, 2400f)
-            - k_MaxMouseDeltaPerUpdate) < 0.01f);
+        float mouseMotion30Fps = SimulateMouseMotion(30f, 1f, 600f, m_maxMouseAngularSpeed);
+        float mouseMotion60Fps = SimulateMouseMotion(60f, 1f, 600f, m_maxMouseAngularSpeed);
+        float mouseMotion144Fps = SimulateMouseMotion(144f, 1f, 600f, m_maxMouseAngularSpeed);
+        float mouseMotion500Fps = SimulateMouseMotion(500f, 1f, 600f, m_maxMouseAngularSpeed);
+        Debug.Assert(Mathf.Abs(mouseMotion30Fps - 600f) < 0.01f
+            && Mathf.Abs(mouseMotion60Fps - mouseMotion30Fps) < 0.01f
+            && Mathf.Abs(mouseMotion144Fps - mouseMotion30Fps) < 0.01f
+            && Mathf.Abs(mouseMotion500Fps - mouseMotion30Fps) < 0.01f);
+        Debug.Assert(Mathf.Abs(SimulateMouseMotion(30f, 1f, 10000f, m_maxMouseAngularSpeed)
+                - m_maxMouseAngularSpeed) < 0.01f
+            && Mathf.Abs(SimulateMouseMotion(500f, 1f, 10000f, m_maxMouseAngularSpeed)
+                - m_maxMouseAngularSpeed) < 0.01f);
+        Vector2 limitedMouseSpike = LimitMouseAngularDelta(
+            new Vector2(1000f, 0f), 1f / 500f, m_maxMouseAngularSpeed, out bool spikeClamped);
+        Vector2 mouseAfterSpike = LimitMouseAngularDelta(
+            Vector2.zero, 1f / 500f, m_maxMouseAngularSpeed, out bool zeroClamped);
+        Debug.Assert(spikeClamped && !zeroClamped
+            && Mathf.Approximately(limitedMouseSpike.x, m_maxMouseAngularSpeed / 500f)
+            && mouseAfterSpike == Vector2.zero);
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        Debug.Assert(!InputSystem.settings.disableRedundantEventsMerging,
+            "High-polling mouse event merging must remain enabled.");
+#endif
         Debug.Assert(SimulateAutomaticShots(30f, 4f, m_rifleShotsPerSecond) == 44
             && SimulateAutomaticShots(60f, 4f, m_rifleShotsPerSecond) == 44
             && SimulateAutomaticShots(144f, 4f, m_rifleShotsPerSecond) == 44
@@ -1893,6 +1979,7 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         m_moveSpeed = Mathf.Max(0f, m_moveSpeed);
         m_jumpHeight = Mathf.Max(0f, m_jumpHeight);
+        m_maxMouseAngularSpeed = Mathf.Max(1f, m_maxMouseAngularSpeed);
         m_pistolAmmoCapacity = Mathf.Max(1, m_pistolAmmoCapacity);
         m_shotgunAmmoCapacity = Mathf.Max(1, m_shotgunAmmoCapacity);
         m_rifleAmmoCapacity = Mathf.Max(1, m_rifleAmmoCapacity);
