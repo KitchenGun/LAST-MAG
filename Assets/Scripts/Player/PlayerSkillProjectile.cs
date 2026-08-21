@@ -90,8 +90,18 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         float radius, float lifetime, bool useGravity, WeaponId sourceWeapon, PlayerDeathCause selfDeathCause)
     {
         gameObject.SetActive(true);
+        m_collider.enabled = false;
+        if (!m_body.isKinematic)
+        {
+            m_body.linearVelocity = Vector3.zero;
+            m_body.angularVelocity = Vector3.zero;
+        }
+        m_body.isKinematic = true;
+        m_body.interpolation = RigidbodyInterpolation.None;
         transform.SetParent(null, true);
-        transform.SetPositionAndRotation(position, Quaternion.LookRotation(direction));
+        m_body.position = position;
+        m_body.rotation = Quaternion.LookRotation(direction);
+        m_body.PublishTransform();
         m_enemyDamage = enemyDamage;
         m_selfDamage = selfDamage;
         m_radius = radius;
@@ -103,11 +113,11 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_lastTrailPosition = position;
         m_explodeAt = Time.fixedTime + lifetime;
         m_isLaunched = true;
-        m_collider.enabled = true;
-        m_body.interpolation = RigidbodyInterpolation.Interpolate;
-        m_body.isKinematic = false;
         m_body.useGravity = useGravity;
         ResetAirDamping();
+        m_body.isKinematic = false;
+        m_body.interpolation = RigidbodyInterpolation.Interpolate;
+        m_collider.enabled = true;
         m_body.linearVelocity = direction.normalized * speed;
         m_body.angularVelocity = useGravity ? new Vector3(4f, 2f, 3f) : Vector3.zero;
         if (useGravity)
@@ -260,6 +270,7 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         {
             return;
         }
+        m_collider.enabled = false;
         if (!m_body.isKinematic)
         {
             m_body.linearVelocity = Vector3.zero;
@@ -268,13 +279,15 @@ public sealed class PlayerSkillProjectile : MonoBehaviour
         m_body.isKinematic = true;
         m_body.interpolation = RigidbodyInterpolation.None;
         ResetAirDamping();
-        m_collider.enabled = false;
         m_explodeAt = 0f;
         m_explosionsRemaining = 0;
         m_isGrenadePulsing = false;
         if (m_homeParent != null)
         {
             transform.SetParent(m_homeParent, false);
+            transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+            m_body.position = transform.position;
+            m_body.rotation = transform.rotation;
         }
         gameObject.SetActive(false);
     }
