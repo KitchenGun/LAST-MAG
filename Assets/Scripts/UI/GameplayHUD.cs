@@ -115,9 +115,14 @@ public sealed class GameplayHUD : MonoBehaviour
     private int m_pickupPopupCount;
     private int m_scoreFeedbackCount;
     private int m_lastComboCount = -1;
+    private int m_lastComboVisibleBullets = -1;
+    private int m_lastComboDecayDecisecond = -1;
     private int m_lastDisplayedSurvivalSecond = -1;
+    private int m_lastSkillCooldownStep = -1;
     private string m_lastSkillName;
     private string m_lastSkillStatus;
+    private Sprite m_lastSkillCooldownSprite;
+    private Color m_lastSkillCooldownColor;
     private bool m_lastSkillHighlighted;
     private bool m_emptyAmmoActive;
     private PlayerSkillState m_lastSkillState;
@@ -183,7 +188,11 @@ public sealed class GameplayHUD : MonoBehaviour
     {
         if (m_activeWeaponText != null)
         {
-            m_activeWeaponText.color = GameplayClock.Now < m_emptyAmmoFeedbackUntil ? Color.red : m_activeWeaponBaseColor;
+            Color color = GameplayClock.Now < m_emptyAmmoFeedbackUntil ? Color.red : m_activeWeaponBaseColor;
+            if (m_activeWeaponText.color != color)
+            {
+                m_activeWeaponText.color = color;
+            }
         }
 
         UpdateEmptyAmmoText();
@@ -388,7 +397,7 @@ public sealed class GameplayHUD : MonoBehaviour
         int visibleBullets = GetVisibleComboBulletCount(remainingSeconds);
         bool isVisible = safeCount > 0 && remainingSeconds > 0f;
         bool wasVisible = m_comboPanel != null && m_comboPanel.gameObject.activeSelf;
-        if (m_comboPanel != null)
+        if (m_comboPanel != null && wasVisible != isVisible)
         {
             m_comboPanel.gameObject.SetActive(isVisible);
         }
@@ -397,8 +406,13 @@ public sealed class GameplayHUD : MonoBehaviour
             m_lastComboCount = safeCount;
             if (m_comboProgressFill != null)
             {
-                m_comboProgressFill.fillAmount = 0f;
+                if (m_comboProgressFill.fillAmount != 0f)
+                {
+                    m_comboProgressFill.fillAmount = 0f;
+                }
             }
+            m_lastComboVisibleBullets = -1;
+            m_lastComboDecayDecisecond = -1;
             m_comboPopStartedAt = -1f;
             if (m_comboTextRect != null)
             {
@@ -419,34 +433,52 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         Color comboDecayColor = GetComboDecayColor(visibleBullets);
-        if (m_comboText != null)
+        if (m_comboText != null && m_comboText.color != comboDecayColor)
         {
             m_comboText.color = comboDecayColor;
         }
 
+        float bulletDecay = GetComboBulletDecaySeconds(remainingSeconds);
+        int decayDecisecond = Mathf.RoundToInt(bulletDecay * 10f);
         if (m_comboDecayText != null)
         {
-            float secondsUntilNextBullet = GetComboBulletDecaySeconds(remainingSeconds);
-            m_comboDecayText.text = $"{secondsUntilNextBullet:0.0}s";
-            m_comboDecayText.color = comboDecayColor;
+            if (m_lastComboDecayDecisecond != decayDecisecond || !wasVisible)
+            {
+                m_comboDecayText.SetText("{0:0.0}s", decayDecisecond * 0.1f);
+                m_lastComboDecayDecisecond = decayDecisecond;
+            }
+            if (m_comboDecayText.color != comboDecayColor)
+            {
+                m_comboDecayText.color = comboDecayColor;
+            }
         }
 
         if (m_comboProgressFill != null)
         {
-            m_comboProgressFill.fillAmount = GetComboBulletDecaySeconds(remainingSeconds);
-            m_comboProgressFill.color = comboDecayColor;
+            if (m_comboProgressFill.fillAmount != bulletDecay)
+            {
+                m_comboProgressFill.fillAmount = bulletDecay;
+            }
+            if (m_comboProgressFill.color != comboDecayColor)
+            {
+                m_comboProgressFill.color = comboDecayColor;
+            }
         }
 
-        for (int index = 0; index < m_comboBulletImages.Length; index++)
+        if (m_lastComboVisibleBullets != visibleBullets || !wasVisible)
         {
-            Image bullet = m_comboBulletImages[index];
-            if (bullet != null)
+            for (int index = 0; index < m_comboBulletImages.Length; index++)
             {
-                bool filled = index < visibleBullets;
-                bullet.sprite = filled ? m_comboBulletSprite : m_comboBulletEmptySprite;
-                bullet.color = filled ? comboDecayColor : new Color(0.35f, 0.42f, 0.46f, 0.8f);
-                bullet.enabled = bullet.sprite != null;
+                Image bullet = m_comboBulletImages[index];
+                if (bullet != null)
+                {
+                    bool filled = index < visibleBullets;
+                    bullet.sprite = filled ? m_comboBulletSprite : m_comboBulletEmptySprite;
+                    bullet.color = filled ? comboDecayColor : new Color(0.35f, 0.42f, 0.46f, 0.8f);
+                    bullet.enabled = bullet.sprite != null;
+                }
             }
+            m_lastComboVisibleBullets = visibleBullets;
         }
     }
 
@@ -736,8 +768,12 @@ public sealed class GameplayHUD : MonoBehaviour
     {
         if (m_emptyAmmoText != null)
         {
-            m_emptyAmmoText.enabled = IsEmptyAmmoBlinkVisible(m_emptyAmmoActive,
+            bool visible = IsEmptyAmmoBlinkVisible(m_emptyAmmoActive,
                 GameplayClock.Now - m_emptyAmmoBlinkStartedAt);
+            if (m_emptyAmmoText.enabled != visible)
+            {
+                m_emptyAmmoText.enabled = visible;
+            }
         }
     }
 
@@ -908,9 +944,17 @@ public sealed class GameplayHUD : MonoBehaviour
         float speed = m_damageVignetteTargetAlpha > color.a
             ? k_DamageVignetteIncreaseSpeed
             : k_DamageVignetteRecoverySpeed;
-        color.a = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * GameplayClock.DeltaTime);
-        m_damageVignetteImage.color = color;
-        m_damageVignetteImage.enabled = color.a > 0.001f;
+        float alpha = Mathf.MoveTowards(color.a, m_damageVignetteTargetAlpha, speed * GameplayClock.DeltaTime);
+        if (color.a != alpha)
+        {
+            color.a = alpha;
+            m_damageVignetteImage.color = color;
+        }
+        bool visible = alpha > 0.001f;
+        if (m_damageVignetteImage.enabled != visible)
+        {
+            m_damageVignetteImage.enabled = visible;
+        }
     }
 
     private void UpdateDeathTint()
@@ -923,9 +967,17 @@ public sealed class GameplayHUD : MonoBehaviour
         float progress = Mathf.Clamp01((GameplayClock.Now - m_deathPresentationStartedAt)
             / m_deathPresentationDuration);
         Color color = m_deathTintImage.color;
-        color.a = Mathf.SmoothStep(0f, k_DeathTintAlpha, progress);
-        m_deathTintImage.color = color;
-        m_deathTintImage.enabled = color.a > 0.001f;
+        float alpha = Mathf.SmoothStep(0f, k_DeathTintAlpha, progress);
+        if (color.a != alpha)
+        {
+            color.a = alpha;
+            m_deathTintImage.color = color;
+        }
+        bool visible = alpha > 0.001f;
+        if (m_deathTintImage.enabled != visible)
+        {
+            m_deathTintImage.enabled = visible;
+        }
     }
 
     private void UpdateDmrScopeVignette()
@@ -937,10 +989,18 @@ public sealed class GameplayHUD : MonoBehaviour
 
         Color color = m_dmrScopeVignetteImage.color;
         float speed = k_DmrScopeVignetteAlpha / k_DmrScopeTransitionDuration;
-        color.a = Mathf.MoveTowards(
+        float alpha = Mathf.MoveTowards(
             color.a, m_dmrScopeVignetteTargetAlpha, speed * GameplayClock.DeltaTime);
-        m_dmrScopeVignetteImage.color = color;
-        m_dmrScopeVignetteImage.enabled = color.a > 0.001f;
+        if (color.a != alpha)
+        {
+            color.a = alpha;
+            m_dmrScopeVignetteImage.color = color;
+        }
+        bool visible = alpha > 0.001f;
+        if (m_dmrScopeVignetteImage.enabled != visible)
+        {
+            m_dmrScopeVignetteImage.enabled = visible;
+        }
     }
 
     private void InitializePickupPopupPool()
@@ -1262,19 +1322,35 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         bool isCoolingDown = state == PlayerSkillState.Cooldown && skillSprite != null;
-        m_skillCooldownFill.gameObject.SetActive(isCoolingDown);
+        bool wasCoolingDown = m_skillCooldownFill.gameObject.activeSelf;
+        if (wasCoolingDown != isCoolingDown)
+        {
+            m_skillCooldownFill.gameObject.SetActive(isCoolingDown);
+        }
         if (!isCoolingDown)
+        {
+            m_lastSkillCooldownStep = -1;
+            m_lastSkillCooldownSprite = null;
+            return;
+        }
+
+        float normalized = Mathf.Clamp01(cooldownNormalized);
+        int step = normalized >= 1f ? 10 : Mathf.FloorToInt(normalized * 10f);
+        Color color = skillName == "GRENADE" ? new Color32(234, 64, 71, 255)
+            : skillName == "ROCKET" ? new Color32(53, 199, 89, 255)
+            : new Color32(44, 135, 232, 255);
+        if (wasCoolingDown && m_lastSkillCooldownStep == step
+            && m_lastSkillCooldownSprite == skillSprite && m_lastSkillCooldownColor == color)
         {
             return;
         }
 
         m_skillCooldownFill.sprite = skillSprite;
-        float normalized = Mathf.Clamp01(cooldownNormalized);
-        m_skillCooldownFill.fillAmount = normalized >= 1f
-            ? 1f : Mathf.Floor(normalized * 10f) * 0.1f;
-        m_skillCooldownFill.color = skillName == "GRENADE" ? new Color32(234, 64, 71, 255)
-            : skillName == "ROCKET" ? new Color32(53, 199, 89, 255)
-            : new Color32(44, 135, 232, 255);
+        m_skillCooldownFill.fillAmount = step * 0.1f;
+        m_skillCooldownFill.color = color;
+        m_lastSkillCooldownStep = step;
+        m_lastSkillCooldownSprite = skillSprite;
+        m_lastSkillCooldownColor = color;
     }
 
     private void UpdateSkillReadyBlink()
@@ -1286,8 +1362,12 @@ public sealed class GameplayHUD : MonoBehaviour
         }
 
         bool isReady = m_lastSkillState == PlayerSkillState.Ready;
-        skillIcon.enabled = skillIcon.sprite != null
+        bool visible = skillIcon.sprite != null
             && (!isReady || IsSkillReadyBlinkVisible(GameplayClock.Now));
+        if (skillIcon.enabled != visible)
+        {
+            skillIcon.enabled = visible;
+        }
     }
 
     private static bool IsSkillReadyBlinkVisible(float elapsed)
@@ -1308,7 +1388,10 @@ public sealed class GameplayHUD : MonoBehaviour
             TextMeshProUGUI feedback = m_scoreFeedbackTexts[index];
             Color color = m_scoreFeedbackBaseColors[index];
             color.a *= GetScoreFeedbackAlpha(m_scoreFeedbackExpiry[index], GameplayClock.Now);
-            feedback.color = color;
+            if (feedback.color != color)
+            {
+                feedback.color = color;
+            }
         }
     }
 
@@ -1355,15 +1438,22 @@ public sealed class GameplayHUD : MonoBehaviour
         {
             TextMeshProUGUI popup = m_pickupPopups[index];
             Vector2 target = m_pickupPopupSlotPositions[m_pickupPopupCount - 1 - index];
-            popup.rectTransform.anchoredPosition = Vector2.MoveTowards(
+            Vector2 position = Vector2.MoveTowards(
                 popup.rectTransform.anchoredPosition,
                 target,
                 k_PickupPopupMoveSpeed * GameplayClock.DeltaTime);
+            if (popup.rectTransform.anchoredPosition != position)
+            {
+                popup.rectTransform.anchoredPosition = position;
+            }
 
             Color color = m_pickupPopupBaseColors[index];
             float alpha = Mathf.Clamp01((m_pickupPopupExpiry[index] - GameplayClock.Now) / k_PickupPopupFadeDuration);
             color.a *= alpha;
-            popup.color = color;
+            if (popup.color != color)
+            {
+                popup.color = color;
+            }
         }
     }
 

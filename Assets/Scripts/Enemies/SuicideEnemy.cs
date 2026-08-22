@@ -72,7 +72,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         }
 
         InitializeWarningMaterial();
-        m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+        m_scoreSystem = FirstPersonController.CurrentInstance?.ScoreSystemComponent;
         m_gasEmitter = FindFirstObjectByType<SuicideGasEmitter>();
     }
 
@@ -165,7 +165,6 @@ public sealed class SuicideEnemy : MonoBehaviour
             return;
         }
 
-        m_agent.speed = m_moveSpeed;
         Vector3 targetPosition = m_target.transform.position;
         bool destinationChanged = !m_hasPathDestination
             || (targetPosition - m_lastPathDestination).sqrMagnitude >= k_PathDestinationThresholdSqr;
@@ -194,8 +193,8 @@ public sealed class SuicideEnemy : MonoBehaviour
             return;
         }
 
-        m_target = FindFirstObjectByType<PlayerHealth>();
-        m_targetController = m_target != null ? m_target.GetComponent<FirstPersonController>() : null;
+        m_targetController = FirstPersonController.CurrentInstance;
+        m_target = m_targetController != null ? m_targetController.PlayerHealthComponent : null;
     }
 
     private void StartWarning()
@@ -222,7 +221,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         m_nextWarningGasTime = 0f;
         if (m_scoreSystem == null)
         {
-            m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+            m_scoreSystem = FirstPersonController.CurrentInstance?.ScoreSystemComponent;
         }
         m_sourceWeapon = context.Weapon;
         m_hasPlayerAttribution = context.IsPlayerAttributed;
@@ -271,7 +270,7 @@ public sealed class SuicideEnemy : MonoBehaviour
         WeaponId sourceWeapon = ResolveSourceWeapon();
         if (m_scoreSystem == null)
         {
-            m_scoreSystem = FindFirstObjectByType<ScoreSystem>();
+            m_scoreSystem = FirstPersonController.CurrentInstance?.ScoreSystemComponent;
         }
         m_chainKills.Clear();
         KillContext explosionContext = KillContext.Chain(

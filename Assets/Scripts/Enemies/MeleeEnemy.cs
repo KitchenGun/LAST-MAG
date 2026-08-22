@@ -106,7 +106,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
         if (m_target == null)
         {
-            m_target = FindFirstObjectByType<PlayerHealth>();
+            m_target = FirstPersonController.CurrentInstance?.PlayerHealthComponent;
         }
         if (m_target == null || !m_agent.isOnNavMesh)
         {
@@ -125,7 +125,7 @@ public sealed class MeleeEnemy : MonoBehaviour
 
         Vector3 toTarget = m_target.transform.position - transform.position;
         toTarget.y = 0f;
-        if (toTarget.magnitude <= m_attackRange && Time.fixedTime >= m_nextAttackTime)
+        if (toTarget.sqrMagnitude <= m_attackRange * m_attackRange && Time.fixedTime >= m_nextAttackTime)
         {
             BeginAttack(toTarget);
             return;

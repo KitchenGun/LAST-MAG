@@ -332,6 +332,9 @@ public sealed class FirstPersonController : MonoBehaviour
     public WeaponId CurrentWeapon => m_loadout[m_activeWeaponSlot - 1];
     public WeaponId PrimaryWeapon => m_loadout[0];
     public bool IsDeathPresentation => m_isDeathPresentation;
+    internal CharacterController CharacterControllerComponent => m_characterController;
+    internal PlayerHealth PlayerHealthComponent => m_playerHealth;
+    internal ScoreSystem ScoreSystemComponent => m_scoreSystem;
 
     private void Awake()
     {
@@ -1272,9 +1275,10 @@ public sealed class FirstPersonController : MonoBehaviour
         m_shotgunDamageByEnemy.Clear();
         m_shotgunHeadshotEnemies.Clear();
         bool playedWallImpact = false;
+        Quaternion aimRotation = GetAimRotation();
         for (int pellet = 0; pellet < m_shotgunPelletCount; pellet++)
         {
-            Ray ray = new(m_playerCamera.transform.position, CreateShotgunDirection());
+            Ray ray = new(m_playerCamera.transform.position, CreateShotgunDirection(aimRotation));
             float rayLength = k_RaycastDistance;
             int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
                 Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
@@ -1401,11 +1405,10 @@ public sealed class FirstPersonController : MonoBehaviour
         }
     }
 
-    private Vector3 CreateShotgunDirection()
+    private Vector3 CreateShotgunDirection(Quaternion aimRotation)
     {
         Vector2 spread = UnityEngine.Random.insideUnitCircle
             * Mathf.Tan(m_shotgunSpreadAngle * Mathf.Deg2Rad);
-        Quaternion aimRotation = GetAimRotation();
         return (aimRotation * Vector3.forward + aimRotation * Vector3.right * spread.x
             + aimRotation * Vector3.up * spread.y).normalized;
     }

@@ -16,6 +16,7 @@ public sealed class AmmoPickup : MonoBehaviour
     private static readonly int[] s_AmmoAmounts = { 5, 3, 20, 5 };
     private static Material s_GlowMaterial;
     private static FirstPersonController s_Player;
+    private static CharacterController s_PlayerController;
     private static AudioClip s_CollectClip;
 
     [SerializeField] private WeaponId m_weapon = WeaponId.Pistol;
@@ -28,6 +29,7 @@ public sealed class AmmoPickup : MonoBehaviour
     private Collider m_trigger;
     private Transform m_cameraTransform;
     private GameplayObjectPool m_pool;
+    private MaterialPropertyBlock m_properties;
 
     public bool IsPooled { get; private set; }
 
@@ -77,10 +79,11 @@ public sealed class AmmoPickup : MonoBehaviour
 
             Color color = GetColor(m_weapon);
             m_boxRenderer.sharedMaterial = s_GlowMaterial;
-            MaterialPropertyBlock properties = new();
-            properties.SetColor(s_BaseColor, color);
-            properties.SetColor(s_EmissionColor, color);
-            m_boxRenderer.SetPropertyBlock(properties);
+            m_properties ??= new MaterialPropertyBlock();
+            m_properties.Clear();
+            m_properties.SetColor(s_BaseColor, color);
+            m_properties.SetColor(s_EmissionColor, color);
+            m_boxRenderer.SetPropertyBlock(m_properties);
         }
         ConfigureSilhouette();
     }
@@ -168,6 +171,7 @@ public sealed class AmmoPickup : MonoBehaviour
     private void Awake()
     {
         m_trigger = GetComponent<Collider>();
+        m_properties = new MaterialPropertyBlock();
         s_CollectClip ??= Resources.Load<AudioClip>("Audio/Pickups/SFX_AmmoPickup");
     }
 
@@ -189,12 +193,14 @@ public sealed class AmmoPickup : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (s_Player == null)
+        FirstPersonController currentPlayer = FirstPersonController.CurrentInstance;
+        if (s_Player != currentPlayer)
         {
-            s_Player = FirstPersonController.CurrentInstance;
+            s_Player = currentPlayer;
+            s_PlayerController = currentPlayer != null ? currentPlayer.CharacterControllerComponent : null;
         }
-        CharacterController controller = s_Player != null ? s_Player.GetComponent<CharacterController>() : null;
-        if (controller != null && m_trigger != null && m_trigger.bounds.Intersects(controller.bounds))
+        if (s_PlayerController != null && m_trigger != null
+            && m_trigger.bounds.Intersects(s_PlayerController.bounds))
         {
             TryCollect(s_Player);
         }
@@ -218,6 +224,7 @@ public sealed class AmmoPickup : MonoBehaviour
         }
 
         s_Player = player;
+        s_PlayerController = player.CharacterControllerComponent;
         SpatialAudio.PlayOneShot2D(s_CollectClip, 0.75f, SpatialAudio.CuePriority.Gameplay);
         if (m_pool != null)
         {

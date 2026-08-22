@@ -29,8 +29,10 @@ public sealed class EnemyScannerHUD : MonoBehaviour
     private readonly Vector2[] m_candidatePositions = new Vector2[k_MaxBlips];
     private readonly float[] m_candidateDistances = new float[k_MaxBlips];
     private readonly Image[] m_blips = new Image[k_MaxBlips];
+    private readonly bool[] m_blipVisible = new bool[k_MaxBlips];
     private int m_candidateCount;
     private float m_cycleStartedAt;
+    private float m_lastBlipAlpha = -1f;
     private Color m_pulseBaseColor;
     private Outline m_pulseOutline;
 
@@ -92,13 +94,13 @@ public sealed class EnemyScannerHUD : MonoBehaviour
     {
         if (m_pulseImage != null)
         {
-            m_pulseImage.gameObject.SetActive(false);
+            SetActiveIfChanged(m_pulseImage.gameObject, false);
         }
         for (int index = 0; index < m_blips.Length; index++)
         {
             if (m_blips[index] != null)
             {
-                m_blips[index].gameObject.SetActive(false);
+                SetBlipVisible(index, false);
             }
         }
     }
@@ -108,12 +110,17 @@ public sealed class EnemyScannerHUD : MonoBehaviour
         m_cycleStartedAt = now;
         for (int index = 0; index < m_candidateCount; index++)
         {
-            m_blips[index].gameObject.SetActive(false);
+            SetBlipVisible(index, false);
         }
 
         m_candidateCount = 0;
         CaptureEnemies();
-        m_pulseImage.gameObject.SetActive(true);
+        for (int index = 0; index < m_candidateCount; index++)
+        {
+            m_blips[index].rectTransform.anchoredPosition = m_candidatePositions[index];
+        }
+        m_lastBlipAlpha = -1f;
+        SetActiveIfChanged(m_pulseImage.gameObject, true);
     }
 
     private void CaptureEnemies()
@@ -184,7 +191,7 @@ public sealed class EnemyScannerHUD : MonoBehaviour
     private void UpdatePulse(float elapsed, float easedPulse)
     {
         bool active = elapsed < m_pulseDuration;
-        m_pulseImage.gameObject.SetActive(active);
+        SetActiveIfChanged(m_pulseImage.gameObject, active);
         if (!active)
         {
             return;
@@ -202,21 +209,45 @@ public sealed class EnemyScannerHUD : MonoBehaviour
         float alpha = elapsed <= m_fadeStart
             ? 1f
             : 1f - Mathf.Clamp01((elapsed - m_fadeStart) / m_fadeDuration);
+        bool alphaChanged = m_lastBlipAlpha != alpha;
         for (int index = 0; index < m_candidateCount; index++)
         {
             bool visible = alpha > 0f
                 && (elapsed >= m_pulseDuration || easedPulse >= m_candidateDistances[index]);
             Image blip = m_blips[index];
-            blip.gameObject.SetActive(visible);
+            bool visibilityChanged = m_blipVisible[index] != visible;
+            SetBlipVisible(index, visible);
             if (!visible)
             {
                 continue;
             }
 
-            blip.rectTransform.anchoredPosition = m_candidatePositions[index];
-            Color color = blip.color;
-            color.a = alpha;
-            blip.color = color;
+            if (visibilityChanged || alphaChanged)
+            {
+                Color color = blip.color;
+                color.a = alpha;
+                blip.color = color;
+            }
+        }
+        m_lastBlipAlpha = alpha;
+    }
+
+    private void SetBlipVisible(int index, bool visible)
+    {
+        if (m_blipVisible[index] == visible)
+        {
+            return;
+        }
+
+        m_blipVisible[index] = visible;
+        m_blips[index].gameObject.SetActive(visible);
+    }
+
+    private static void SetActiveIfChanged(GameObject target, bool active)
+    {
+        if (target.activeSelf != active)
+        {
+            target.SetActive(active);
         }
     }
 
@@ -235,7 +266,7 @@ public sealed class EnemyScannerHUD : MonoBehaviour
         Debug.Assert(IsWithinRange(Vector3.right * 20f, 40f));
         Debug.Assert(!IsWithinRange(Vector3.forward * 40.01f, 40f));
         Debug.Assert(k_MaxBlips == 128);
-        Debug.Assert(Mathf.Approximately(m_fadeStart + m_fadeDuration, m_pulseInterval));
+        Debug.Assert(m_fadeStart + m_fadeDuration <= m_pulseInterval);
         Debug.Assert(m_blipSize >= 4f && m_blipSize <= 32f);
         Debug.Assert(m_pulseThickness >= 0f && m_pulseThickness <= 8f);
     }

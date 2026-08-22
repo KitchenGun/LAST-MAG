@@ -354,6 +354,27 @@
 - GC Alloc, 실제 청취 연속성, 외부 Chrome·Edge 및 문제 발생 PC 재현: `not_run`
 - 판정: 오디오 요청 제한과 중요도별 폐기·교체 계측은 통과했다. 전체 음소거가 재현되면 AudioContext·포커스 경로를 별도 조사한다.
 
+## WebGL UI·참조 캐시 최적화 검증 기록
+
+- 측정일: 2026-08-23
+- 빌드: Unity MCP Development WebGL, 1280×720, `Builds/WebGLPerformance`
+- 빌드 결과: `[MCP Build] Build succeeded`, 156.77MB, 209.8초
+- 변경 범위: HUD 동일값 쓰기 억제, 스캐너 블립 상태 캐시, 플레이어 컴포넌트 참조 캐시, 탄약 상자 `MaterialPropertyBlock` 재사용, 샷건 조준 회전 1회 계산, 근접 거리 제곱 비교
+- 조건: 외부 Chrome 하드웨어 가속, 목표 인원 도달 후 10초 워밍업, 60초 연속 측정
+
+| 적 수 | 평균 FPS | 프레임 p95 | CPU p95 | 33ms 이상 |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 | 200.0 이상 | 4.00ms | 4.40ms | 0회 |
+| 48 | 200.0 이상 | 7.00ms | 7.00ms | 0회 |
+| 108 | 200.0 이상 | 9.00ms | 8.50ms | 0회 |
+
+- 평균 FPS는 스트레스 샘플 버퍼 상한인 200 FPS에서 포화되므로 하한으로만 기록한다.
+- 동일 빌드의 변경 전 재측정값이 없어 기존 108명 CPU p95 9.40ms 대비 개선율은 확정하지 않는다.
+- Unity Play Mode HUD·스캐너 self-check와 활성 적 5명의 플레이어 참조 확인은 통과했으며 Console 오류는 0이다.
+- Edit Mode 테스트는 22/22 통과했고 로컬 WebGL의 HTML·data·framework·loader·wasm 응답은 모두 HTTP 200이다.
+- GPU p95는 FrameTiming 값이 없어 `not_run`, 지속 GC Alloc과 UI Profiler 마커 10% 개선 비교는 변경 전 캡처 부재로 `not_run`이다.
+- 조건부 스플랫 instancing은 비용 기준을 확인할 Profiler 증거가 없어 적용하지 않았다.
+
 ## WebGL 초기 로딩 진단 기록
 
 - 측정일: 2026-08-21

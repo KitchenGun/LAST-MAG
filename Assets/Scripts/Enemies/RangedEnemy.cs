@@ -148,7 +148,7 @@ public sealed class RangedEnemy : MonoBehaviour
 
         if (m_target == null)
         {
-            m_target = FindFirstObjectByType<PlayerHealth>();
+            m_target = FirstPersonController.CurrentInstance?.PlayerHealthComponent;
         }
         if (m_target == null || !m_agent.isOnNavMesh)
         {
