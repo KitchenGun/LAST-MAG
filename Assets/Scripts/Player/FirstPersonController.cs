@@ -139,6 +139,11 @@ internal enum RecoilPhase
 [RequireComponent(typeof(PlayerSkillController))]
 public sealed class FirstPersonController : MonoBehaviour
 {
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [System.Runtime.InteropServices.DllImport("__Internal")]
+    private static extern void EnableRawPointerLock();
+#endif
+
     private const int k_WeaponSlotCount = 2;
     private const float k_RaycastDistance = 100f;
     private const float k_MaxPitch = 80f;
@@ -188,7 +193,7 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField] private float m_jumpHeight = 1.2f;
     [SerializeField] private float m_gravity = -20f;
     [SerializeField] private float m_lookSensitivity = 0.1f;
-    [Tooltip("비정상 마우스 입력을 제한하는 최대 회전 속도입니다. 정상 입력은 그대로 통과합니다.")]
+    [Tooltip("이 속도를 넘는 비정상 마우스 입력은 회전에 반영하지 않습니다. 정상 입력은 그대로 통과합니다.")]
     [SerializeField, Min(1f)] private float m_maxMouseAngularSpeed = 7200f;
     [Header("Damage Aim Punch")]
     [Tooltip("피격 카메라 흔들림이 목표 강도에 도달하는 속도입니다.")]
@@ -280,8 +285,8 @@ public sealed class FirstPersonController : MonoBehaviour
     private int m_mouseDiagnosticsStartEventCount;
     private float m_maxRawMouseDelta;
     private float m_maxRawMouseAngularSpeed;
-    private float m_maxLimitedMouseAngularSpeed;
-    private int m_mouseClampCount;
+    private float m_maxAppliedMouseAngularSpeed;
+    private int m_mouseSpikeDiscardCount;
     private int m_mouseTransitionDiscardCount;
 #endif
     private float m_defaultCameraFieldOfView;
@@ -384,6 +389,9 @@ public sealed class FirstPersonController : MonoBehaviour
         m_scoreSystem.Initialize(m_gameplayHUD);
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
         SelectWeapon(1);
+#if UNITY_WEBGL && !UNITY_EDITOR
+        EnableRawPointerLock();
+#endif
         LockCursor();
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         ResetMouseDiagnostics();
@@ -763,17 +771,17 @@ public sealed class FirstPersonController : MonoBehaviour
         bool isGamepad = m_lookAction.activeControl?.device is Gamepad;
         Vector2 rawLook = m_lookAction.ReadValue<Vector2>();
         float deltaTime = GameplayClock.DeltaTime;
-        bool wasClamped = false;
+        bool discardedSpike = false;
         bool discardedTransitionDelta = false;
         Vector2 look = isGamepad
             ? rawLook * sensitivity * GetLookInputTimeScale(true, deltaTime)
             : ProcessMouseLook(rawLook, sensitivity, deltaTime,
-                out wasClamped, out discardedTransitionDelta);
+                out discardedSpike, out discardedTransitionDelta);
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         if (!isGamepad)
         {
             RecordMouseDiagnostics(rawLook, sensitivity, look, deltaTime,
-                wasClamped, discardedTransitionDelta);
+                discardedSpike, discardedTransitionDelta);
         }
 #endif
         m_pitch = Mathf.Clamp(m_pitch - look.y, -k_MaxPitch, k_MaxPitch);
@@ -809,9 +817,9 @@ public sealed class FirstPersonController : MonoBehaviour
     }
 
     private Vector2 ProcessMouseLook(Vector2 rawDelta, float sensitivity, float deltaTime,
-        out bool wasClamped, out bool discardedTransitionDelta)
+        out bool discardedSpike, out bool discardedTransitionDelta)
     {
-        wasClamped = false;
+        discardedSpike = false;
         discardedTransitionDelta = false;
         if (m_ignoreNextMouseDelta)
         {
@@ -820,25 +828,25 @@ public sealed class FirstPersonController : MonoBehaviour
             return Vector2.zero;
         }
 
-        return LimitMouseAngularDelta(rawDelta * sensitivity, deltaTime,
-            m_maxMouseAngularSpeed, out wasClamped);
+        return FilterMouseAngularDelta(rawDelta * sensitivity, deltaTime,
+            m_maxMouseAngularSpeed, out discardedSpike);
     }
 
-    private static Vector2 LimitMouseAngularDelta(Vector2 angularDelta, float deltaTime,
-        float maxAngularSpeed, out bool wasClamped)
+    private static Vector2 FilterMouseAngularDelta(Vector2 angularDelta, float deltaTime,
+        float maxAngularSpeed, out bool discardedSpike)
     {
         float maxAngularDelta = Mathf.Max(0f, maxAngularSpeed) * Mathf.Max(0f, deltaTime);
         float maxAngularDeltaSquared = maxAngularDelta * maxAngularDelta;
         if (angularDelta.sqrMagnitude <= maxAngularDeltaSquared)
         {
-            wasClamped = false;
+            discardedSpike = false;
             return angularDelta;
         }
 
-        wasClamped = true;
-        return maxAngularDelta > 0f
-            ? angularDelta.normalized * maxAngularDelta
-            : Vector2.zero;
+        // A merged high-polling spike has no trustworthy direction or magnitude.
+        // Clamping it still creates a maximum-speed camera snap, so reject the sample.
+        discardedSpike = true;
+        return Vector2.zero;
     }
 
     private void ResetMouseLookFilter(bool ignoreNextDelta)
@@ -848,16 +856,16 @@ public sealed class FirstPersonController : MonoBehaviour
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
     private void RecordMouseDiagnostics(Vector2 rawDelta, float sensitivity,
-        Vector2 limitedAngularDelta, float deltaTime, bool wasClamped,
+        Vector2 appliedAngularDelta, float deltaTime, bool discardedSpike,
         bool discardedTransitionDelta)
     {
         float safeDeltaTime = Mathf.Max(0.0001f, deltaTime);
         m_maxRawMouseDelta = Mathf.Max(m_maxRawMouseDelta, rawDelta.magnitude);
         m_maxRawMouseAngularSpeed = Mathf.Max(m_maxRawMouseAngularSpeed,
             rawDelta.magnitude * sensitivity / safeDeltaTime);
-        m_maxLimitedMouseAngularSpeed = Mathf.Max(m_maxLimitedMouseAngularSpeed,
-            limitedAngularDelta.magnitude / safeDeltaTime);
-        m_mouseClampCount += wasClamped ? 1 : 0;
+        m_maxAppliedMouseAngularSpeed = Mathf.Max(m_maxAppliedMouseAngularSpeed,
+            appliedAngularDelta.magnitude / safeDeltaTime);
+        m_mouseSpikeDiscardCount += discardedSpike ? 1 : 0;
         m_mouseTransitionDiscardCount += discardedTransitionDelta ? 1 : 0;
 
         if (Time.realtimeSinceStartup - m_mouseDiagnosticsStartedAt < k_MouseDiagnosticsInterval)
@@ -868,7 +876,7 @@ public sealed class FirstPersonController : MonoBehaviour
         int currentEventCount = InputSystem.metrics.totalEventCount;
         Debug.Log($"[Mouse Input] {k_MouseDiagnosticsInterval:0}s events={currentEventCount - m_mouseDiagnosticsStartEventCount} "
             + $"maxDelta={m_maxRawMouseDelta:0.##}px raw={m_maxRawMouseAngularSpeed:0}deg/s "
-            + $"limited={m_maxLimitedMouseAngularSpeed:0}deg/s clamps={m_mouseClampCount} "
+            + $"applied={m_maxAppliedMouseAngularSpeed:0}deg/s spikeDrops={m_mouseSpikeDiscardCount} "
             + $"transitionDrops={m_mouseTransitionDiscardCount}");
         ResetMouseDiagnostics();
     }
@@ -879,8 +887,8 @@ public sealed class FirstPersonController : MonoBehaviour
         m_mouseDiagnosticsStartEventCount = InputSystem.metrics.totalEventCount;
         m_maxRawMouseDelta = 0f;
         m_maxRawMouseAngularSpeed = 0f;
-        m_maxLimitedMouseAngularSpeed = 0f;
-        m_mouseClampCount = 0;
+        m_maxAppliedMouseAngularSpeed = 0f;
+        m_mouseSpikeDiscardCount = 0;
         m_mouseTransitionDiscardCount = 0;
     }
 #endif
@@ -1502,7 +1510,7 @@ public sealed class FirstPersonController : MonoBehaviour
         int frameCount = Mathf.RoundToInt(framesPerSecond * duration);
         for (int frame = 0; frame < frameCount; frame++)
         {
-            accumulatedDelta += LimitMouseAngularDelta(
+            accumulatedDelta += FilterMouseAngularDelta(
                 new Vector2(angularSpeed * deltaTime, 0f), deltaTime,
                 maxAngularSpeed, out _).x;
         }
@@ -1815,17 +1823,17 @@ public sealed class FirstPersonController : MonoBehaviour
             && Mathf.Abs(mouseMotion60Fps - mouseMotion30Fps) < 0.01f
             && Mathf.Abs(mouseMotion144Fps - mouseMotion30Fps) < 0.01f
             && Mathf.Abs(mouseMotion500Fps - mouseMotion30Fps) < 0.01f);
-        Debug.Assert(Mathf.Abs(SimulateMouseMotion(30f, 1f, 10000f, m_maxMouseAngularSpeed)
-                - m_maxMouseAngularSpeed) < 0.01f
-            && Mathf.Abs(SimulateMouseMotion(500f, 1f, 10000f, m_maxMouseAngularSpeed)
-                - m_maxMouseAngularSpeed) < 0.01f);
-        Vector2 limitedMouseSpike = LimitMouseAngularDelta(
-            new Vector2(1000f, 0f), 1f / 500f, m_maxMouseAngularSpeed, out bool spikeClamped);
-        Vector2 mouseAfterSpike = LimitMouseAngularDelta(
-            Vector2.zero, 1f / 500f, m_maxMouseAngularSpeed, out bool zeroClamped);
-        Debug.Assert(spikeClamped && !zeroClamped
-            && Mathf.Approximately(limitedMouseSpike.x, m_maxMouseAngularSpeed / 500f)
-            && mouseAfterSpike == Vector2.zero);
+        Debug.Assert(Mathf.Approximately(
+                SimulateMouseMotion(30f, 1f, 10000f, m_maxMouseAngularSpeed), 0f)
+            && Mathf.Approximately(
+                SimulateMouseMotion(500f, 1f, 10000f, m_maxMouseAngularSpeed), 0f));
+        Vector2 discardedMouseSpike = FilterMouseAngularDelta(
+            new Vector2(1000f, 0f), 1f / 500f, m_maxMouseAngularSpeed, out bool spikeDiscarded);
+        Vector2 mouseAfterSpike = FilterMouseAngularDelta(
+            new Vector2(1f, 0f), 1f / 500f, m_maxMouseAngularSpeed, out bool normalDiscarded);
+        Debug.Assert(spikeDiscarded && !normalDiscarded
+            && discardedMouseSpike == Vector2.zero
+            && mouseAfterSpike == new Vector2(1f, 0f));
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
         Debug.Assert(!InputSystem.settings.disableRedundantEventsMerging,
             "High-polling mouse event merging must remain enabled.");
