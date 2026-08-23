@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -29,9 +30,12 @@ public sealed class StartMenuController : MonoBehaviour
     private GameObject m_classSelectionPanel;
     private GameObject m_title;
     private GameObject m_controls;
+    private GameObject m_tutorialLoadingPanel;
+    private TMP_Text m_loadingStatusText;
     private SettingsPanelController m_settingsPanel;
     private bool m_showingClassSelection;
     private bool m_showingSettings;
+    private bool m_isLoadingGameplay;
 
     private void Awake()
     {
@@ -67,6 +71,8 @@ public sealed class StartMenuController : MonoBehaviour
         m_classSelectionPanel = FindChildObject("ClassSelectionPanel");
         m_title = FindChildObject("Title");
         m_controls = FindChildObject("Controls");
+        m_tutorialLoadingPanel = FindChildObject("TutorialLoadingPanel");
+        m_loadingStatusText = FindText("LoadingStatusText");
         InitializeFlashlightControlHint();
         m_showingClassSelection = false;
         m_showingSettings = false;
@@ -74,6 +80,7 @@ public sealed class StartMenuController : MonoBehaviour
         if (m_classSelectionPanel != null) m_classSelectionPanel.SetActive(false);
         if (m_title != null) m_title.SetActive(true);
         if (m_controls != null) m_controls.SetActive(true);
+        if (m_tutorialLoadingPanel != null) m_tutorialLoadingPanel.SetActive(false);
         m_playButton.interactable = true;
         m_playButton.gameObject.SetActive(true);
         m_confirmButton.gameObject.SetActive(false);
@@ -347,13 +354,61 @@ public sealed class StartMenuController : MonoBehaviour
 
     public void ConfirmClassSelection()
     {
-        if (!m_showingClassSelection || RunResultStore.SelectedClass == PlayerClassId.Unknown)
+        if (m_isLoadingGameplay || !m_showingClassSelection
+            || RunResultStore.SelectedClass == PlayerClassId.Unknown)
         {
             return;
         }
 
+        if (m_tutorialLoadingPanel == null || m_loadingStatusText == null)
+        {
+            Debug.LogError("[StartMenu] TutorialLoadingPanel or LoadingStatusText was not found.");
+            return;
+        }
+
         RunResultStore.ClearResult();
-        SceneManager.LoadScene("GameplayScene");
+        StartCoroutine(LoadGameplayAfterTutorial());
+    }
+
+    private IEnumerator LoadGameplayAfterTutorial()
+    {
+        m_isLoadingGameplay = true;
+        m_confirmButton.interactable = false;
+        m_backButton.interactable = false;
+        m_loadingStatusText.text = "LOADING...";
+        m_tutorialLoadingPanel.SetActive(true);
+        m_tutorialLoadingPanel.transform.SetAsLastSibling();
+
+        AsyncOperation loadOperation = SceneManager.LoadSceneAsync("GameplayScene");
+        if (loadOperation == null)
+        {
+            Debug.LogError("[StartMenu] GameplayScene async load could not be started.");
+            m_tutorialLoadingPanel.SetActive(false);
+            m_confirmButton.interactable = true;
+            m_backButton.interactable = true;
+            m_isLoadingGameplay = false;
+            yield break;
+        }
+
+        loadOperation.allowSceneActivation = false;
+        while (!IsLoadReady(loadOperation.progress))
+        {
+            yield return null;
+        }
+
+        m_loadingStatusText.text = "PRESS ANY KEY TO DEPLOY";
+        yield return null;
+        while (Keyboard.current == null || !Keyboard.current.anyKey.wasPressedThisFrame)
+        {
+            yield return null;
+        }
+
+        loadOperation.allowSceneActivation = true;
+    }
+
+    internal static bool IsLoadReady(float progress)
+    {
+        return progress >= 0.9f;
     }
 
     public void BackToMainMenu()
@@ -416,5 +471,7 @@ public sealed class StartMenuController : MonoBehaviour
         Debug.Assert(GameSettings.IsValidZoomInputMode(ZoomInputMode.Toggle)
             && GameSettings.IsValidZoomInputMode(ZoomInputMode.Hold)
             && !GameSettings.IsValidZoomInputMode((ZoomInputMode)2));
+        Debug.Assert(!IsLoadReady(0.89f));
+        Debug.Assert(IsLoadReady(0.9f));
     }
 }

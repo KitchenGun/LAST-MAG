@@ -6,6 +6,7 @@ public sealed class GameplayPauseController : MonoBehaviour
 {
     [SerializeField] private SettingsPanelController m_settingsPanel;
     [SerializeField] private FirstPersonController m_player;
+    [SerializeField] private GameObject m_controls;
 
     private void Awake()
     {
@@ -14,7 +15,13 @@ public sealed class GameplayPauseController : MonoBehaviour
         {
             m_settingsPanel = GetComponentInChildren<SettingsPanelController>(true);
         }
+        if (m_controls == null)
+        {
+            Transform controls = transform.Find("Controls");
+            if (controls != null) m_controls = controls.gameObject;
+        }
         m_settingsPanel?.Hide();
+        if (m_controls != null) m_controls.SetActive(false);
     }
 
     private void Start()
@@ -53,6 +60,11 @@ public sealed class GameplayPauseController : MonoBehaviour
         m_player.SetPaused(true);
         GameplayClock.Pause();
         m_settingsPanel.Show(ResumeGame);
+        if (m_controls != null)
+        {
+            m_controls.SetActive(true);
+            m_controls.transform.SetAsLastSibling();
+        }
     }
 
     private void OnApplicationFocus(bool hasFocus)
@@ -73,6 +85,7 @@ public sealed class GameplayPauseController : MonoBehaviour
 
     private void ResumeGame()
     {
+        if (m_controls != null) m_controls.SetActive(false);
         m_settingsPanel?.Hide();
         GameplayClock.Resume();
         if (m_player != null && !m_player.IsDeathPresentation)
