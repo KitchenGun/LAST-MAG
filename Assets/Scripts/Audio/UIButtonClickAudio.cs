@@ -39,6 +39,7 @@ public sealed class UIButtonClickAudio : MonoBehaviour
         m_audioSource.playOnAwake = false;
         m_audioSource.loop = false;
         m_audioSource.spatialBlend = 0f;
+        m_audioSource.ignoreListenerPause = true;
         SceneManager.sceneLoaded += OnSceneLoaded;
         HookButtons();
     }
