@@ -508,8 +508,7 @@ public sealed class FirstPersonController : MonoBehaviour
         }
 
         if (Keyboard.current != null && Keyboard.current.vKey.wasPressedThisFrame
-            && m_flashLight != null
-            && (m_skillController == null || m_skillController.State is PlayerSkillState.Ready or PlayerSkillState.Cooldown))
+            && m_flashLight != null)
         {
             m_flashLight.enabled = !m_flashLight.enabled;
             m_gameplayHUD?.SetFlashlightState(m_flashLight.enabled);
