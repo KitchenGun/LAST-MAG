@@ -1160,10 +1160,9 @@ public sealed class FirstPersonController : MonoBehaviour
     {
         Ray ray = new(m_playerCamera.transform.position, CreateSingleRayDirection(weapon));
         float rayLength = k_RaycastDistance;
-        if (Physics.Raycast(ray, out RaycastHit hit, k_RaycastDistance, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+        if (TryGetFirstWeaponHit(ray, out RaycastHit hit, out EnemyHealth enemy))
         {
             rayLength = hit.distance;
-            EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
             if (enemy != null)
             {
                 bool isHeadshot = enemy.IsHeadHit(ray, k_RaycastDistance);
@@ -1187,11 +1186,34 @@ public sealed class FirstPersonController : MonoBehaviour
         Debug.DrawRay(ray.origin, ray.direction * rayLength, Color.red, 0.1f);
     }
 
+    private bool TryGetFirstWeaponHit(Ray ray, out RaycastHit hit, out EnemyHealth enemy)
+    {
+        int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
+            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
+        Array.Sort(m_dmrHits, 0, hitCount, s_RaycastHitDistanceComparer);
+        for (int index = 0; index < hitCount; index++)
+        {
+            RaycastHit candidate = m_dmrHits[index];
+            enemy = candidate.collider.GetComponentInParent<EnemyHealth>();
+            if (candidate.collider.isTrigger && enemy == null)
+            {
+                continue;
+            }
+
+            hit = candidate;
+            return true;
+        }
+
+        hit = default;
+        enemy = null;
+        return false;
+    }
+
     private void FireDmr()
     {
         Ray ray = new(m_playerCamera.transform.position, GetAimRotation() * Vector3.forward);
         int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
         Array.Sort(m_dmrHits, 0, hitCount, s_RaycastHitDistanceComparer);
         m_dmrDamagedEnemies.Clear();
         m_dmrHitStructures.Clear();
@@ -1209,6 +1231,10 @@ public sealed class FirstPersonController : MonoBehaviour
         {
             RaycastHit hit = m_dmrHits[hitIndex];
             EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+            if (hit.collider.isTrigger && enemy == null)
+            {
+                continue;
+            }
             if (enemy != null)
             {
                 if (!m_dmrDamagedEnemies.Add(enemy))
@@ -1227,7 +1253,7 @@ public sealed class FirstPersonController : MonoBehaviour
                 1 => m_dmrSecondHitDamage,
                 _ => m_dmrThirdHitDamage
             };
-            bool isHeadshot = enemy != null && enemy.IsHeadHit(ray, hit.distance + 0.5f);
+            bool isHeadshot = enemy != null && enemy.IsHeadHit(ray, k_RaycastDistance);
             if (enemy != null)
             {
                 m_impactSparkEmitter?.EmitBiologicalAt(hit.point, hit.normal, isHeadshot, enemy.Type, ray.direction);
@@ -1288,7 +1314,7 @@ public sealed class FirstPersonController : MonoBehaviour
             Ray ray = new(m_playerCamera.transform.position, CreateShotgunDirection(aimRotation));
             float rayLength = k_RaycastDistance;
             int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
-                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore);
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
             Array.Sort(m_dmrHits, 0, hitCount, s_RaycastHitDistanceComparer);
             m_dmrDamagedEnemies.Clear();
             for (int hitIndex = 0; hitIndex < hitCount; hitIndex++)
@@ -1296,6 +1322,10 @@ public sealed class FirstPersonController : MonoBehaviour
                 RaycastHit hit = m_dmrHits[hitIndex];
                 rayLength = hit.distance;
                 EnemyHealth enemy = hit.collider.GetComponentInParent<EnemyHealth>();
+                if (hit.collider.isTrigger && enemy == null)
+                {
+                    continue;
+                }
                 if (enemy != null)
                 {
                     if (!m_dmrDamagedEnemies.Add(enemy))
