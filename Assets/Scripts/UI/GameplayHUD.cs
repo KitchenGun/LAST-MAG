@@ -310,18 +310,18 @@ public sealed class GameplayHUD : MonoBehaviour
             : new Color(0.18f, 0.24f, 0.28f, 0.35f);
     }
 
-    public void SetDmrAimState(bool dmrEquipped, bool zoomed)
+    public void SetDmrAimState(bool dmrEquipped, bool aimReady)
     {
         if (m_crosshairImage != null)
         {
-            m_crosshairImage.enabled = ShouldShowCrosshair(dmrEquipped, zoomed);
+            m_crosshairImage.enabled = ShouldShowCrosshair(dmrEquipped, aimReady);
         }
-        m_dmrScopeVignetteTargetAlpha = zoomed ? k_DmrScopeVignetteAlpha : 0f;
+        m_dmrScopeVignetteTargetAlpha = aimReady ? k_DmrScopeVignetteAlpha : 0f;
     }
 
-    internal static bool ShouldShowCrosshair(bool dmrEquipped, bool zoomed)
+    internal static bool ShouldShowCrosshair(bool dmrEquipped, bool aimReady)
     {
-        return !dmrEquipped || zoomed;
+        return !dmrEquipped || aimReady;
     }
 
     public void RefreshSkill(string skillName, PlayerSkillState state, float cooldownNormalized)

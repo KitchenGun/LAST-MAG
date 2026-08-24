@@ -25803,6 +25803,7 @@ MonoBehaviour:
   m_dmrThirdHitDamage: 20
   m_dmrShotsPerSecond: 5.25
   m_dmrHeadshotMultiplier: 2
+  m_dmrHipfireSpreadAngle: 1.5
   m_pistolRecoil:
     m_pitch: 2.2
     m_yaw: 0.35

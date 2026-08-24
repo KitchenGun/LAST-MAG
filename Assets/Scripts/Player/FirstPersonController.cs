@@ -150,6 +150,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private const float k_DmrZoomFieldOfView = 45f;
     private const float k_DmrZoomTransitionDuration = 0.12f;
     private const float k_DmrZoomSensitivityMultiplier = 0.5f;
+    private const float k_DmrAimFovTolerance = 0.01f;
     private const float k_DeathFallDuration = 1.8f;
     private const float k_DeathFallForwardDistance = 0.35f;
     private const float k_DeathFallLateralDistance = 0.2f;
@@ -235,6 +236,7 @@ public sealed class FirstPersonController : MonoBehaviour
     [SerializeField, Min(0.01f)] private float m_dmrThirdHitDamage = 20f;
     [SerializeField, Min(0.01f)] private float m_dmrShotsPerSecond = 5.25f;
     [SerializeField, Min(1f)] private float m_dmrHeadshotMultiplier = 2f;
+    [SerializeField, Min(0f)] private float m_dmrHipfireSpreadAngle = 1.5f;
     [Header("Weapon Recoil")]
     [SerializeField] private RecoilProfile m_pistolRecoil = new(2.2f, 0.35f, 0.1f, 3.5f, 4.5f,
         0.2f, 0.055f, 0.1f, 0.12f, 0.35f, 0.05f, 0.12f, 0.08f);
@@ -324,6 +326,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private int m_activeWeaponSlot = 1;
     private bool m_isRifleFiring;
     private bool m_isDmrZoomed;
+    private bool m_isDmrAimReady;
     private bool m_isDeathPresentation;
     private float m_deathPresentationStartedAt;
     private Vector3 m_deathCameraStartPosition;
@@ -680,6 +683,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_skillController?.CancelArmedSkill();
         m_isRifleFiring = false;
         m_isDmrZoomed = false;
+        m_isDmrAimReady = false;
         m_activeWeaponSlot = slot;
         m_weaponViewmodel?.SelectWeapon(CurrentWeapon);
         m_gameplayHUD?.SetDmrAimState(CurrentWeapon == WeaponId.DMR, false);
@@ -700,7 +704,6 @@ public sealed class FirstPersonController : MonoBehaviour
             return;
         }
         m_isDmrZoomed = zoomed;
-        m_gameplayHUD?.SetDmrAimState(true, m_isDmrZoomed);
     }
 
     internal static bool ResolveDmrZoomState(bool current, ZoomInputMode mode,
@@ -723,11 +726,24 @@ public sealed class FirstPersonController : MonoBehaviour
             / k_DmrZoomTransitionDuration;
         m_playerCamera.fieldOfView = Mathf.MoveTowards(
             m_playerCamera.fieldOfView, targetFieldOfView, speed * GameplayClock.DeltaTime);
+
+        bool aimReady = IsDmrAimReady(m_isDmrZoomed, m_playerCamera.fieldOfView);
+        if (aimReady != m_isDmrAimReady)
+        {
+            m_isDmrAimReady = aimReady;
+            m_gameplayHUD?.SetDmrAimState(CurrentWeapon == WeaponId.DMR, aimReady);
+        }
+    }
+
+    internal static bool IsDmrAimReady(bool zoomed, float fieldOfView)
+    {
+        return zoomed && Mathf.Abs(fieldOfView - k_DmrZoomFieldOfView) <= k_DmrAimFovTolerance;
     }
 
     private void ResetDmrZoom(bool immediate)
     {
         m_isDmrZoomed = false;
+        m_isDmrAimReady = false;
         if (immediate && m_playerCamera != null && m_defaultCameraFieldOfView > 0f)
         {
             m_playerCamera.fieldOfView = m_defaultCameraFieldOfView;
@@ -1211,7 +1227,8 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void FireDmr()
     {
-        Ray ray = new(m_playerCamera.transform.position, GetAimRotation() * Vector3.forward);
+        Quaternion aimRotation = GetAimRotation();
+        Ray ray = new(m_playerCamera.transform.position, CreateDmrDirection(aimRotation));
         int hitCount = Physics.RaycastNonAlloc(ray, m_dmrHits, k_RaycastDistance,
             Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide);
         Array.Sort(m_dmrHits, 0, hitCount, s_RaycastHitDistanceComparer);
@@ -1444,8 +1461,20 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private Vector3 CreateShotgunDirection(Quaternion aimRotation)
     {
-        Vector2 spread = UnityEngine.Random.insideUnitCircle
-            * Mathf.Tan(m_shotgunSpreadAngle * Mathf.Deg2Rad);
+        return CreateConeDirection(aimRotation, m_shotgunSpreadAngle, UnityEngine.Random.insideUnitCircle);
+    }
+
+    private Vector3 CreateDmrDirection(Quaternion aimRotation)
+    {
+        return m_isDmrAimReady
+            ? aimRotation * Vector3.forward
+            : CreateConeDirection(aimRotation, m_dmrHipfireSpreadAngle, UnityEngine.Random.insideUnitCircle);
+    }
+
+    private static Vector3 CreateConeDirection(Quaternion aimRotation, float spreadAngle, Vector2 spreadSample)
+    {
+        Vector2 spread = Vector2.ClampMagnitude(spreadSample, 1f)
+            * Mathf.Tan(Mathf.Max(0f, spreadAngle) * Mathf.Deg2Rad);
         return (aimRotation * Vector3.forward + aimRotation * Vector3.right * spread.x
             + aimRotation * Vector3.up * spread.y).normalized;
     }
@@ -1893,6 +1922,12 @@ public sealed class FirstPersonController : MonoBehaviour
             && !ResolveDmrZoomState(true, ZoomInputMode.Toggle, true, true)
             && ResolveDmrZoomState(false, ZoomInputMode.Hold, true, true)
             && !ResolveDmrZoomState(true, ZoomInputMode.Hold, false, false));
+        Debug.Assert(IsDmrAimReady(true, 45f)
+            && IsDmrAimReady(true, 45.005f)
+            && !IsDmrAimReady(true, 45.02f)
+            && !IsDmrAimReady(false, 45f));
+        Vector3 maximumDmrSpread = CreateConeDirection(Quaternion.identity, 1.5f, Vector2.right);
+        Debug.Assert(Vector3.Angle(Vector3.forward, maximumDmrSpread) <= 1.5f + 0.001f);
         Debug.Assert(GetStartingAmmo(WeaponId.Pistol) == m_pistolAmmoCapacity
             && GetStartingAmmo(WeaponId.Shotgun) == m_shotgunAmmoCapacity
             && GetStartingAmmo(WeaponId.Rifle) == m_rifleAmmoCapacity
@@ -1911,7 +1946,8 @@ public sealed class FirstPersonController : MonoBehaviour
         Debug.Assert(Mathf.Approximately(m_dmrFirstHitDamage, 60f)
             && Mathf.Approximately(m_dmrSecondHitDamage, 40f)
             && Mathf.Approximately(m_dmrThirdHitDamage, 20f)
-            && Mathf.Approximately(m_dmrHeadshotMultiplier, 2f));
+            && Mathf.Approximately(m_dmrHeadshotMultiplier, 2f)
+            && Mathf.Approximately(m_dmrHipfireSpreadAngle, 1.5f));
         Debug.Assert(Mathf.Approximately(m_pistolDamage * m_pistolShotsPerSecond, 202.5f)
             && Mathf.Approximately(m_shotgunPelletDamage * m_shotgunPelletCount
                 * m_shotgunShotsPerSecond, 105.6f)
@@ -2040,6 +2076,7 @@ public sealed class FirstPersonController : MonoBehaviour
         m_dmrFirstHitDamage = Mathf.Max(0.01f, m_dmrFirstHitDamage);
         m_dmrSecondHitDamage = Mathf.Max(0.01f, m_dmrSecondHitDamage);
         m_dmrThirdHitDamage = Mathf.Max(0.01f, m_dmrThirdHitDamage);
+        m_dmrHipfireSpreadAngle = Mathf.Max(0f, m_dmrHipfireSpreadAngle);
         m_dmrShotsPerSecond = Mathf.Max(0.01f, m_dmrShotsPerSecond);
         m_dmrHeadshotMultiplier = Mathf.Max(1f, m_dmrHeadshotMultiplier);
         m_damageAimPunchKickSpeed = Mathf.Max(0.1f, m_damageAimPunchKickSpeed);
