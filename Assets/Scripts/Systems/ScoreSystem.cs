@@ -74,6 +74,7 @@ public sealed class ScoreSystem : MonoBehaviour
     private readonly int[] m_enemyKills = new int[3];
     private readonly int[] m_weaponKills = new int[4];
     private bool m_bulletTimeActive;
+    private bool m_runStarted;
     private bool m_runComplete;
     private WeaponId m_lastDirectKillWeapon = WeaponId.Unknown;
     private float m_lastDirectKillTime = float.NegativeInfinity;
@@ -87,7 +88,7 @@ public sealed class ScoreSystem : MonoBehaviour
         RunResultStore.ClearResult();
         m_hud = hud;
         m_bulletTimeActive = false;
-        m_survivalStartedAt = GameplayClock.Now;
+        m_runStarted = false;
         m_survivalAccumulator = 0f;
         m_survivalScore = 0;
         ComboCount = 0;
@@ -97,6 +98,17 @@ public sealed class ScoreSystem : MonoBehaviour
         RefreshHud();
     }
 
+    public void BeginRun()
+    {
+        if (m_runStarted || m_runComplete)
+        {
+            return;
+        }
+
+        m_runStarted = true;
+        m_survivalStartedAt = GameplayClock.Now;
+    }
+
     public void SetBulletTimeActive(bool active)
     {
         m_bulletTimeActive = active;
@@ -104,7 +116,7 @@ public sealed class ScoreSystem : MonoBehaviour
 
     private void Update()
     {
-        if (m_runComplete)
+        if (m_runComplete || !m_runStarted)
         {
             return;
         }
@@ -190,7 +202,10 @@ public sealed class ScoreSystem : MonoBehaviour
             return;
         }
 
-        RefreshSurvivalTime(GameplayClock.Now);
+        if (m_runStarted)
+        {
+            RefreshSurvivalTime(GameplayClock.Now);
+        }
         m_runComplete = true;
         int previousBest = RunResultStore.PersonalBest;
         bool isNewPersonalBest = TotalScore > previousBest;

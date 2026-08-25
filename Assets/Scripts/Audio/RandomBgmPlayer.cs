@@ -49,7 +49,10 @@ public sealed class RandomBgmPlayer : MonoBehaviour
     {
         if (m_facilityLockdownAnnouncement != null)
         {
-            yield return new WaitForSecondsRealtime(m_facilityLockdownAnnouncement.SubtitleEndDelay);
+            while (!m_facilityLockdownAnnouncement.IsComplete)
+            {
+                yield return null;
+            }
         }
 
         yield return PlayRandomLoop();

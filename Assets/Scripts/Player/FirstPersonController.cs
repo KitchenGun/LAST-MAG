@@ -278,6 +278,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private InputAction m_attackAction;
     private InputAction m_jumpAction;
     private ScoreSystem m_scoreSystem;
+    private bool m_isStartupLocked;
     private float m_verticalVelocity;
     private float m_pitch;
     private float m_yaw;
@@ -390,6 +391,10 @@ public sealed class FirstPersonController : MonoBehaviour
         m_gameplayHUD?.BindPlayerHealth(m_playerHealth);
         m_gameplayHUD?.SetFlashlightState(false);
         m_scoreSystem.Initialize(m_gameplayHUD);
+        if (!m_isStartupLocked)
+        {
+            m_scoreSystem.BeginRun();
+        }
         m_skillController.Initialize(SelectedClass, m_playerCamera, m_playerHealth, m_gameplayHUD, m_scoreSystem);
         SelectWeapon(1);
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -441,6 +446,7 @@ public sealed class FirstPersonController : MonoBehaviour
     private void OnDisable()
     {
         m_isRifleFiring = false;
+        m_isStartupLocked = false;
         if (m_flashLight != null)
         {
             m_flashLight.enabled = false;
@@ -482,6 +488,12 @@ public sealed class FirstPersonController : MonoBehaviour
 
         if (GameplayClock.IsPaused)
         {
+            return;
+        }
+
+        if (m_isStartupLocked)
+        {
+            m_isRifleFiring = false;
             return;
         }
 
@@ -2007,7 +2019,7 @@ public sealed class FirstPersonController : MonoBehaviour
 
     private void OnJump(InputAction.CallbackContext context)
     {
-        if (!GameplayClock.IsPaused && Cursor.lockState == CursorLockMode.Locked
+        if (!m_isStartupLocked && !GameplayClock.IsPaused && Cursor.lockState == CursorLockMode.Locked
             && m_characterController.isGrounded)
         {
             m_verticalVelocity = Mathf.Sqrt(m_jumpHeight * -2f * m_gravity);
@@ -2030,6 +2042,18 @@ public sealed class FirstPersonController : MonoBehaviour
             m_playerMap?.Enable();
             LockCursor();
         }
+    }
+
+    public void SetStartupLocked(bool locked)
+    {
+        m_isStartupLocked = locked;
+        if (locked)
+        {
+            m_isRifleFiring = false;
+            return;
+        }
+
+        m_scoreSystem?.BeginRun();
     }
 
     private void LockCursor()
